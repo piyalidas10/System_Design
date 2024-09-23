@@ -1,6 +1,6 @@
 ### System Design
 
-| No. | Questions                                                                                                                                                         |
+| No. | Questions & Answers                                                                                                                                                  |
 | --- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 1   |  What is System Design? <br><br> - A systematic approach to building and scaling software systems that meet specific requirements and constraints. <br><br>- Involves making high-level architectural choices about components, interactions, data storage, and technologies. <br><br> - Aims to create systems that are scalable, reliable, maintainable, and performant.
 | 2   |  The System Design Process : <br><br> 1. Requirement Gathering <br> 2. High-Level Design <br> 3. Low-Level Design <br> 4. Implementation <br> 5. Testing and Deployment <br> 6. Maintenance
