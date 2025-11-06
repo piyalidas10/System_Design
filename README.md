@@ -56,6 +56,18 @@
 5. Design Search Autocomplete | Design Typeahead
 6. Design Zomato Restaurant Search | Design Proximity Service
 
+
+| **Env** | **Full Form**                | **Main Purpose**                                                       | **Who Uses It**       | **Type of Testing**               | **Code Stability**                  | **Typical Tools / Examples**                 |
+| ------- | ---------------------------- | ---------------------------------------------------------------------- | --------------------- | --------------------------------- | ----------------------------------- | -------------------------------------------- |
+| **DEV** | Development                  | Developers write and test new code; initial verification of features   | Developers            | Unit Testing, Local Integration   | 🔴 Unstable (frequent code changes) | Local builds, Postman, Jest, JUnit           |
+| **ST**  | System Testing               | To verify full system behavior before integration with other apps      | QA Team               | Functional, Regression            | 🟡 Moderate                         | Selenium, Cypress                            |
+| **SI**  | System Integration           | To ensure data flow and communication between multiple systems/modules | QA / Integration Team | Integration Testing               | 🟡 Moderate                         | Postman, RestAssured, SoapUI                 |
+| **AIT** | Automated Integrated Testing | Automated validation of integrated services after each deployment      | CI/CD, QA Automation  | Automated Integration, Smoke      | 🟢 Fairly Stable                    | Jenkins, GitHub Actions, Cypress, Playwright |
+| **SIT** | System Integration Testing   | Full end-to-end integration across all components + 3rd party systems  | QA, DevOps            | End-to-End, Interface, Regression | 🟢 Stable                           | Selenium, Postman, Newman                    |
+| **UAT** | User Acceptance Testing      | Final validation by business users before go-live                      | Business / Client     | Business Process, Acceptance      | 🟢 Stable / Release-ready           | Manual / Business workflow tools             |
+
+
+
 | No. | Questions & Answers                                                                                                                                                  |
 | --- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 1   |  What is System Design? <br><br> - A systematic approach to building and scaling software systems that meet specific requirements and constraints. <br><br>- Involves making high-level architectural choices about components, interactions, data storage, and technologies. <br><br> - Aims to create systems that are scalable, reliable, maintainable, and performant.
