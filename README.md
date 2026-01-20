@@ -1,6 +1,44 @@
 ### System Design
 
 <details>
+<summary><strong>30 Essential System Design Concepts: </strong></summary>
+
+  -  Client-Server Architecture – Clients send requests, servers respond; foundational for web apps.
+  -  DNS (Domain Name System) – Converts domain names to IP addresses.
+  -  Proxy & Reverse Proxy – Intermediaries for routing, caching, security.
+  -  Latency & Data Centers – Physical distance affects response time; use global data centers to reduce delays.
+  -  HTTP/HTTPS Protocols – Communication standards between client and server; HTTPS adds security.
+  -  APIs (REST & GraphQL) – Interfaces for structured communication; REST is simple and stateless, GraphQL lets clients request exactly the needed data.
+  -  Databases (SQL vs NoSQL) – SQL for structured data and strong consistency, NoSQL for flexibility and high scale.
+  -  Vertical Scaling – Improve capacity by enhancing a single server’s resources (CPU, RAM).
+  -  Horizontal Scaling – Add more servers to share load; reliable and scalable.
+  -  Load Balancers – Distribute incoming traffic across servers using algorithms like round-robin or least connections.
+  -  Indexing – Speed up database reads at cost of slower writes.
+  -  Replication – Copy data across multiple servers to improve read performance and availability.
+  -  Sharding – Split databases horizontally to handle large data volumes efficiently.
+  -  Vertical Partitioning – Split database tables by columns to optimize queries.
+  -  Caching – Store frequently accessed data in memory to reduce database load and speed up responses.
+  -  Denormalization – Combine related data into fewer tables to speed reads (trade-off with storage/updates).
+  -  CAP Theorem – In distributed systems, you can pick only two: Consistency, Availability, Partition tolerance.
+  -  Blob Storage (e.g., AWS S3) – Store large unstructured files like images/videos.
+  -  CDNs (Content Delivery Networks) – Cache static assets globally to reduce latency.
+  -  WebSockets – Enable persistent two-way real-time communication.
+  -  Webhooks – Allow servers to notify other systems of events without polling.
+  -  Microservices Architecture – Break systems into independent services for better scalability and deployment.
+  -  Message Queues – Async communication between services to decouple work (producers/consumers).
+  -  Rate Limiting – Control request rates per client/IP to prevent abuse.
+  -  API Gateway – Centralized entry for microservices, handles auth, routing, rate limiting, metrics.
+  -  Idempotency – Ensure repeated API requests produce the same outcome (critical for safe operations like payments).
+  -  Session Management / Cookies – Track user sessions securely across requests (covered within API practices).
+  -  Authentication & Authorization – Confirm identity and access rights in systems (often paired with gateways).
+  -  Observability (Tracing, Metrics) – Track system health, performance, and bottlenecks (mentioned across summaries).
+  -  Resilience Patterns (Retries, Circuit Breakers) – Improve reliability by handling failures gracefully.
+
+
+
+</details>
+
+<details>
 <summary><strong>System Design Key Concepts: </strong></summary>
 
 1. Scalability: https://lnkd.in/gpge_z76
