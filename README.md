@@ -34,22 +34,27 @@
 15. Message Queues: https://lnkd.in/gTzY6uk8
 </details>
 
-➤ System Design Architectural Patterns:
+<details>
+<summary><strong>System Design Architectural Patterns: </strong></summary>
 
 1. Event-Driven Architecture: https://lnkd.in/dp8CPvey 
 2. Client-Server Architecture: https://lnkd.in/dAARQYzq
 3. Serverless Architecture: https://lnkd.in/gQNAXKkb
 4. Microservices Architecture: https://lnkd.in/gFXUrz_T
+</details>
 
-➤ Machine Coding Round and Low Level Design Problems:
+<details>
+<summary><strong>Machine Coding Round and Low Level Design Problems: </strong></summary>
 
 1. Design a Parking Lot: https://lnkd.in/dQaAuFd2
 2. Design Splitwise: https://lnkd.in/dF5fBnex
 3. Design Chess Validator: https://lnkd.in/dfAQHvN4
 4. Design a Distributed Queue | Kafka: https://lnkd.in/dQ6_B4_M
 5. Design Tic-Tac-Toe: https://lnkd.in/dFDApUBt
-
-➤ System Design and Architecture (HLD):
+</details>
+  
+<details>
+<summary><strong>System Design and Architecture (HLD): </strong></summary>
 
 1. Design a Unique ID Generator Service
 2. Design bit.ly | Design a URL Shortening Service
@@ -57,7 +62,7 @@
 4. Design Instagram/Twitter News Feed
 5. Design Search Autocomplete | Design Typeahead
 6. Design Zomato Restaurant Search | Design Proximity Service
-
+</details>
 
 | **Env** | **Full Form**                | **Main Purpose**                                                       | **Who Uses It**       | **Type of Testing**               | **Code Stability**                  | **Typical Tools / Examples**                 |
 | ------- | ---------------------------- | ---------------------------------------------------------------------- | --------------------- | --------------------------------- | ----------------------------------- | -------------------------------------------- |
