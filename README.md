@@ -1,6 +1,8 @@
 ### System Design
 
-➤ System Design Key Concepts: 
+<details>
+
+<summary><strong>System Design Key Concepts: </strong></summary>
 
 1. Scalability: https://lnkd.in/gpge_z76
 2. Latency vs Throughput: https://lnkd.in/g_amhAtN
@@ -31,6 +33,7 @@
 13. WebSocket: https://lnkd.in/g76Gv2KQ
 14. API Gateway: https://lnkd.in/gnsJGJaM
 15. Message Queues: https://lnkd.in/gTzY6uk8
+</details>
 
 ➤ System Design Architectural Patterns:
 
