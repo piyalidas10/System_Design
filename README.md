@@ -1,7 +1,6 @@
 ### System Design
 
 <details>
-
 <summary><strong>System Design Key Concepts: </strong></summary>
 
 1. Scalability: https://lnkd.in/gpge_z76
