@@ -39,4 +39,277 @@ I built the entire system from scratch covering the 𝗢𝗧𝗣 𝗴𝗲𝗻�
 
 If this made you pause and think, “𝘁𝗵𝗲𝗿𝗲’𝘀 𝘁𝗵𝗶𝘀 𝗺𝘂𝗰𝗵 𝗵𝗮𝗽𝗽𝗲𝗻𝗶𝗻𝗴 𝗯𝗲𝗵𝗶𝗻𝗱 𝗮 𝘀𝗶𝗺𝗽𝗹𝗲 𝗢𝗧𝗣?”, I break the entire flow down step-by-step in my video.
 
+# 🏦 Production OTP System Architecture
+```
+                        +--------------------+
+                        |       CLIENTS      |
+                        |--------------------|
+                        |  Mobile App        |
+                        |  Web App           |
+                        |  API Client        |
+                        +----------+---------+
+                                   |
+                                   v
+                     +---------------------------+
+                     | CDN / WAF (Cloudflare)    |
+                     | DDoS protection           |
+                     +------------+--------------+
+                                  |
+                                  v
+                     +---------------------------+
+                     | API Gateway / LoadBalancer|
+                     | Authentication            |
+                     +------------+--------------+
+                                  |
+               +------------------+------------------+
+               |                                     |
+               v                                     v
+      +-------------------+                +-------------------+
+      |   Auth Service    |                |  Rate Limit Layer |
+      |-------------------|                |-------------------|
+      | login()           |                | Redis / TokenBucket|
+      | requestOTP()      |                | abuse detection    |
+      +---------+---------+                +---------+---------+
+                |                                     |
+                +------------------+------------------+
+                                   |
+                                   v
+                          +------------------+
+                          |   OTP Service    |
+                          |------------------|
+                          | generateOTP()    |
+                          | validateOTP()    |
+                          | manageExpiry()   |
+                          +--------+---------+
+                                   |
+                    +--------------+--------------+
+                    |                             |
+                    v                             v
+          +-------------------+         +----------------------+
+          | Notification      |         |  Event Streaming     |
+          | Service           |         |  (Kafka / PubSub)    |
+          |-------------------|         | logging / analytics  |
+          | sendSMS()         |         +-----------+----------+
+          | sendEmail()       |                     |
+          +---------+---------+                     v
+                    |                      +--------------------+
+                    v                      | Monitoring & Fraud |
+         +---------------------+           | Detection System   |
+         | SMS / Email Gateway |           +--------------------+
+         | Twilio / AWS SNS    |
+         +---------------------+
+
+                          DATA LAYER
+    --------------------------------------------------------------
+        Redis Cache        OTP Database        User Database
+    (rate limit + TTL)     (hashed OTP)        (user profile)
+
+        Audit Logs         Verification Logs   Analytics DB
+```
+## 🔁 Full OTP Flow in Production
+**1️⃣ User requests OTP**
+
+Example:
+```
+User → Mobile App → API Gateway
+```
+API Gateway performs:
+- authentication
+- rate limiting
+- bot protection
+
+**2️⃣ Request reaches Auth Service**
+```
+Auth Service → requestOTP(user_id)
+```
+Auth service verifies:
+- user exists
+- user account status
+- OTP eligibility
+
+**3️⃣ Rate Limiting (Very Important)**
+
+To prevent abuse.
+
+Example rule:
+- Max 3 OTP per minute
+- Max 10 OTP per hour
+
+Implementation:
+```
+Redis Token Bucket Algorithm
+```
+
+**4️⃣ OTP Generation**
+
+OTP Service generates OTP.
+
+Example:
+```
+generateOTP(6 digits)
+```
+Example OTP:
+```
+829145
+```
+Stored in DB as:
+```
+user_id = 101
+otp_hash = SHA256(829145)
+expiry = now + 90 sec
+attempts = 0
+```
+Important security: OTP is NEVER stored in plain text
+
+**5️⃣ OTP Delivery**
+
+OTP service sends event:
+```
+OTP_CREATED → Kafka
+```
+Notification service consumes the event.
+
+Then sends:
+```
+SMS → Twilio / AWS SNS
+Email → SES / SendGrid
+```
+User receives message:
+```
+Your OTP is 829145
+Valid for 90 seconds
+```
+
+**6️⃣ User submits OTP**
+```
+User → API Gateway → OTP Service
+```
+OTP Service validates:
+- Check expiry
+- Compare hash
+- Check retry attempts
+- Check user lock status
+
+If valid:
+```
+status = VERIFIED
+```
+
+**7️⃣ Event Logging**
+
+Events sent to Kafka:
+```
+OTP_GENERATED
+OTP_SENT
+OTP_FAILED
+OTP_VERIFIED
+```
+Used for:
+- fraud detection
+- analytics
+- monitoring
+
+## 🔒 Security Measures Used by Banks
+**1️⃣ OTP Expiration**
+
+Typical expiry:
+```
+30 – 120 seconds
+```
+
+**2️⃣ Attempt Limit**
+
+Example:
+```
+Max 3 attempts
+```
+After that:
+
+Account temporarily locked
+
+**3️⃣ Device Fingerprinting**
+
+System checks:
+```
+IP address
+Device ID
+Location
+Browser fingerprint
+```
+If suspicious → trigger extra verification.
+
+**4️⃣ Distributed Locking**
+
+Prevent duplicate OTP verification.
+
+Example:
+```
+Redis Distributed Lock
+```
+
+**5️⃣ Idempotent APIs**
+
+If user presses Verify multiple times, only one request succeeds.
+
+## 📊 OTP State Machine
+```
+NEW
+ ↓
+GENERATED
+ ↓
+SENT
+ ↓
+VERIFIED
+ ↓
+EXPIRED
+```
+
+## ⚡ Scalability Techniques
+
+Production systems use:
+
+**Horizontal scaling**
+```
+Multiple OTP service instances
+behind load balancer
+```
+
+**Redis caching**  
+Used for:  
+```
+rate limit
+OTP expiry
+session validation
+```
+
+**Message Queue**  
+Example:
+```
+Kafka / RabbitMQ
+```
+Benefits:
+- asynchronous SMS sending
+- failure retries
+- decoupled services
+
+## 📈 Handling 10M OTP Requests
+
+Large companies optimize by:
+| Layer        | Technology            |
+| ------------ | --------------------- |
+| API Gateway  | Kong / NGINX          |
+| Cache        | Redis Cluster         |
+| Queue        | Kafka                 |
+| DB           | PostgreSQL / DynamoDB |
+| SMS Provider | Twilio / AWS SNS      |
+| Monitoring   | Prometheus / Grafana  |
+
+## 🧠 Advanced OTP Types Used by Google/Banks
+1️⃣ SMS OTP : Most common.  
+2️⃣ Email OTP : For login verification.  
+3️⃣ TOTP (Time-based OTP) : Used in Google Authenticator.  
+4️⃣ Push OTP : Approve login via app notification.  
+
+
+
 It’s also a vital authentication system design concept many developers struggle to explain in interviews.
