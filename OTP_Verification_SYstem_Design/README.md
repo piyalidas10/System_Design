@@ -1,0 +1,40 @@
+# 𝗢𝗧𝗣 Verification System Design
+
+𝗧𝗵𝗮𝘁 𝟲-𝗱𝗶𝗴𝗶𝘁 𝗢𝗧𝗣 𝘆𝗼𝘂 𝗲𝗻𝘁𝗲𝗿 𝗶𝗻 𝘀𝗲𝗰𝗼𝗻𝗱𝘀...𝗶𝘀 𝗽𝗼𝘄𝗲𝗿𝗲𝗱 𝗯𝘆 𝗮𝗻 𝗲𝗻𝘁𝗶𝗿𝗲 𝗮𝘂𝘁𝗵𝗲𝗻𝘁𝗶𝗰𝗮𝘁𝗶𝗼𝗻 𝘀𝘆𝘀𝘁𝗲𝗺 𝘄𝗼𝗿𝗸𝗶𝗻𝗴 𝗯𝗲𝗵𝗶𝗻𝗱 𝘁𝗵𝗲 𝘀𝗰𝗲𝗻𝗲𝘀....
+
+I built an OTP login system from scratch and realized how much goes into verifying those 6 digits.
+
+𝗛𝗲𝗿𝗲'𝘀 𝘄𝗵𝗮𝘁 𝗵𝗮𝗽𝗽𝗲𝗻𝘀 𝘄𝗵𝗲𝗻 𝘆𝗼𝘂 𝗿𝗲𝗾𝘂𝗲𝘀𝘁 𝗮𝗻 𝗢𝗧𝗣:
+
+𝟭) 𝗥𝗮𝗻𝗱𝗼𝗺 𝗡𝘂𝗺𝗯𝗲𝗿 𝗚𝗲𝗻𝗲𝗿𝗮𝘁𝗶𝗼𝗻
+The system generates a cryptographically secure 6-digit code. Not just random, but unpredictable enough that attackers can't guess patterns.
+
+𝟮) 𝗧𝗶𝗺𝗲-𝗕𝗮𝘀𝗲𝗱 𝗘𝘅𝗽𝗶𝗿𝗮𝘁𝗶𝗼𝗻
+Your OTP expires in 5-10 minutes. The backend stores the code with a timestamp and validates it's still fresh when you submit it.
+
+𝟯) 𝗥𝗮𝘁𝗲 𝗟𝗶𝗺𝗶𝘁𝗶𝗻𝗴
+Try requesting 20 OTPs in a minute? Blocked. This prevents brute force attacks and SMS spam that could cost thousands in API fees.
+
+𝟰) 𝗦𝗠𝗦/𝗘𝗺𝗮𝗶𝗹 𝗜𝗻𝘁𝗲𝗴𝗿𝗮𝘁𝗶𝗼𝗻
+The OTP gets sent via Twilio, AWS SNS, or email providers. This means handling API credentials, retry logic, and delivery failures gracefully.
+
+𝟱) 𝗩𝗲𝗿𝗶𝗳𝗶𝗰𝗮𝘁𝗶𝗼𝗻 𝗟𝗼𝗴𝗶𝗰
+When you submit the OTP, the system checks: Is it correct? Is it expired? Has it already been used? Only then does it create your session.
+
+𝟲) 𝗦𝗲𝘀𝘀𝗶𝗼𝗻 𝗠𝗮𝗻𝗮𝗴𝗲𝗺𝗲𝗻𝘁
+After successful verification, the backend generates a JWT or session token that keeps you logged in securely.
+
+𝗖𝗵𝗮𝗹𝗹𝗲𝗻𝗴𝗲𝘀 & 𝗘𝗱𝗴𝗲 𝗖𝗮𝘀𝗲𝘀 𝗬𝗼𝘂 𝗠𝘂𝘀𝘁 𝗛𝗮𝗻𝗱𝗹𝗲:
+• 𝗢𝗧𝗣 𝗯𝗿𝘂𝘁𝗲 𝗳𝗼𝗿𝗰𝗲 → limit retries and temporarily block repeated attempts.
+• 𝗠𝘂𝗹𝘁𝗶𝗽𝗹𝗲 𝗢𝗧𝗣 𝗿𝗲𝗾𝘂𝗲𝘀𝘁𝘀 → invalidate previous codes when a new OTP is generated.
+• 𝗦𝗠𝗦 𝗱𝗲𝗹𝗶𝘃𝗲𝗿𝘆 𝗱𝗲𝗹𝗮𝘆𝘀 → balance OTP expiration time with real-world delivery delays.
+• 𝗢𝗧𝗣 𝗿𝗲𝘂𝘀𝗲 𝗮𝘁𝘁𝗲𝗺𝗽𝘁𝘀 → invalidate the OTP immediately after successful verification.
+• 𝗖𝗼𝗻𝗰𝘂𝗿𝗿𝗲𝗻𝘁 𝗹𝗼𝗴𝗶𝗻𝘀 → handle race conditions when users request or verify OTPs from multiple devices.
+
+The difference between a secure OTP login and a system vulnerable to abuse is how y𝗼𝘂 𝗵𝗮𝗻𝗱𝗹𝗲 𝗿𝗮𝘁𝗲 𝗹𝗶𝗺𝗶𝘁𝗶𝗻𝗴, 𝗲𝘅𝗽𝗶𝗿𝗮𝘁𝗶𝗼𝗻, 𝗮𝗻𝗱 𝗲𝗱𝗴𝗲 𝗰𝗮𝘀𝗲𝘀.
+
+I built the entire system from scratch covering the 𝗢𝗧𝗣 𝗴𝗲𝗻𝗲𝗿𝗮𝘁𝗶𝗼𝗻, 𝘃𝗲𝗿𝗶𝗳𝗶𝗰𝗮𝘁𝗶𝗼𝗻 𝗹𝗼𝗴𝗶𝗰, 𝗦𝗠𝗦 𝗶𝗻𝘁𝗲𝗴𝗿𝗮𝘁𝗶𝗼𝗻, and 𝘀𝗲𝘀𝘀𝗶𝗼𝗻 𝗵𝗮𝗻𝗱𝗹𝗶𝗻𝗴.
+
+If this made you pause and think, “𝘁𝗵𝗲𝗿𝗲’𝘀 𝘁𝗵𝗶𝘀 𝗺𝘂𝗰𝗵 𝗵𝗮𝗽𝗽𝗲𝗻𝗶𝗻𝗴 𝗯𝗲𝗵𝗶𝗻𝗱 𝗮 𝘀𝗶𝗺𝗽𝗹𝗲 𝗢𝗧𝗣?”, I break the entire flow down step-by-step in my video.
+
+It’s also a vital authentication system design concept many developers struggle to explain in interviews.
