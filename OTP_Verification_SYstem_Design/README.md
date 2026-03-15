@@ -1,5 +1,7 @@
 # 𝗢𝗧𝗣 Verification System Design
 
+<img src="OTP_Verification_System.png" />
+
 𝗧𝗵𝗮𝘁 𝟲-𝗱𝗶𝗴𝗶𝘁 𝗢𝗧𝗣 𝘆𝗼𝘂 𝗲𝗻𝘁𝗲𝗿 𝗶𝗻 𝘀𝗲𝗰𝗼𝗻𝗱𝘀...𝗶𝘀 𝗽𝗼𝘄𝗲𝗿𝗲𝗱 𝗯𝘆 𝗮𝗻 𝗲𝗻𝘁𝗶𝗿𝗲 𝗮𝘂𝘁𝗵𝗲𝗻𝘁𝗶𝗰𝗮𝘁𝗶𝗼𝗻 𝘀𝘆𝘀𝘁𝗲𝗺 𝘄𝗼𝗿𝗸𝗶𝗻𝗴 𝗯𝗲𝗵𝗶𝗻𝗱 𝘁𝗵𝗲 𝘀𝗰𝗲𝗻𝗲𝘀....
 
 I built an OTP login system from scratch and realized how much goes into verifying those 6 digits.
