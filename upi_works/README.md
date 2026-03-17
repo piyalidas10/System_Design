@@ -1,5 +1,5 @@
 # How UPI Works
-<img src="how_upi_works.gif" width="100%"/>
+<img src="how_upi_works.gif" width="60%"/>
 
 🔹 How UPI Works
  UPI links virtual payment addresses (VPAs) like rahul@hdfc directly to bank accounts, eliminating the need for IFSC codes. But what happens behind the scenes when you send money?
