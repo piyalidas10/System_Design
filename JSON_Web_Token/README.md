@@ -199,18 +199,18 @@ But:
 
 🔍 Flow Explanation
 --------------------------------------------------------------------
-**1. User → Login Request**
+1. **User → Login Request**
     - Sends email/password to server
-**2. Auth Server**
+2. **Auth Server**
     - Validates user from DB
     - Generates JWT (header + payload + signature)
     - Signs with secret key
-**3. Token Sent to Client**
+3. **Token Sent to Client**
     - Stored in:
       - LocalStorage / Cookie
-**4. Client → API Requests**
+4. **Client → API Requests**
     - Sends JWT in headers (Authorization: Bearer <token>)
-**5. Any Server (Behind Load Balancer)**
+5. **Any Server (Behind Load Balancer)**
     - Verifies token using same secret key
     - Extracts user info from payload
 
