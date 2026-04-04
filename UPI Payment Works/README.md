@@ -1,5 +1,7 @@
 # UPI Payment Works
 
+<img src="upi_payment.png" width="100%"/>
+
 Step 1: VPA Creation
 --------------------------------------------------------------------------------------
 - The customer creates a Virtual Payment Address (VPA) using their PSP’s mobile app.
