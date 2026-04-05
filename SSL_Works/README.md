@@ -10,6 +10,7 @@ Both ensure that data transmitted over the internet remains private and tamper-p
 1. SSL / TLS Handshake Explained For DevOps Engineers in Hindi : https://www.youtube.com/watch?v=EBh6emvhUNw
 2. HTTPS, SSL, TLS & Certificate Authority Explained : https://www.youtube.com/watch?v=EnY6fSng3Ew
 
+<img src="imgs/SSL_Certificate.png" width="70%" />
 
 ## How SSL Certificate Works?
 
@@ -165,6 +166,8 @@ Secure Communication (HTTPS 🔒)
 ## Encryption
 
 ### 🧠 1. Basic (Insecure) Communication
+<img src="imgs/basic_connection.jpg" width="70%" />
+
 ```
 Client  ───────►  Server
         ◄───────
@@ -175,6 +178,9 @@ Client  ───────►  Server
 👉 Problem: Data is in plain text → easy to steal
 
 ### 🔐 2. Symmetric Encryption Problem
+<img src="imgs/Symmetric_Encryption.jpg" width="70%" />
+<img src="imgs/middle_attack.jpg" width="70%" />
+
 ```
 Client generates KEY 🔑
 
@@ -189,6 +195,8 @@ Hacker also has KEY → can decrypt ❌
 👉 Problem: Key sharing is insecure
 
 ### 🔑 3. Asymmetric Encryption (Key Exchange Solution)
+<img src="imgs/Asymmetric_Encryption.jpg" width="70%" />
+
 ```
 Server:
   Public Key 🔓
@@ -211,7 +219,25 @@ Server decrypts using Private Key
 ```
 👉 Secure key exchange achieved ✔️
 
+### ⚠️ 4. MITM Attack Still Possible
+<img src="imgs/MITM_Attack_Asymmetric_Encryption.jpg" width="70%" />
+
+```
+Server ──► Hacker ──► Client
+
+Hacker replaces Public Key ❌
+
+Client uses Hacker's key:
+Client ──► Hacker (decrypts everything)
+
+Hacker ──► Server (re-encrypts)
+
+👉 Hacker reads ALL data
+```
+👉 Problem: No identity verification
+
 ### 🛡️ 5. SSL Certificate Solution
+<img src="imgs/SSL_Certificate.png" width="70%" />
 
 Key Entity: Certificate Authority like Let's Encrypt
 ```
@@ -228,6 +254,8 @@ Server gets SSL Certificate 📜
 ```
 
 ### 🔍 6. Certificate Verification (Browser Side)
+<img src="imgs/ssl_ceritificate_creation.jpg" width="70%" />
+
 ```
 Server ──► Client:
   - Public Key
@@ -245,6 +273,9 @@ ELSE ❌:
 ```
 
 ### 🔐 7. Final Secure Communication (HTTPS)
+<img src="imgs/secure_connection.jpg" width="70%" />
+<img src="imgs/Final_Secure_Communication.jpg" width="70%" />
+
 ```
 1. Certificate Verified ✅
 2. Client sends encrypted symmetric key
