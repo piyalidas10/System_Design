@@ -1,0 +1,240 @@
+<mxfile host="app.diagrams.net">
+  <diagram name="Page-1" id="DnIdBQ_Coecnqo6hchIa">
+    <mxGraphModel dx="1212" dy="733" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="PfeJg5knRbvR-tlkYSCK-89" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="" vertex="1">
+          <mxGeometry height="50" width="90" x="86" y="386" as="geometry" />
+        </mxCell>
+        <mxCell id="PfeJg5knRbvR-tlkYSCK-56" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="" vertex="1">
+          <mxGeometry height="130" width="140" x="313.25" y="750" as="geometry" />
+        </mxCell>
+        <mxCell id="PfeJg5knRbvR-tlkYSCK-32" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=light-dark(#fdff6b, #281d00);strokeColor=#d6b656;" value="" vertex="1">
+          <mxGeometry height="47.2" width="116" x="96" y="150.8" as="geometry" />
+        </mxCell>
+        <mxCell id="PfeJg5knRbvR-tlkYSCK-21" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="" vertex="1">
+          <mxGeometry height="186" width="210" x="556" y="250" as="geometry" />
+        </mxCell>
+        <mxCell id="PfeJg5knRbvR-tlkYSCK-112" edge="1" parent="1" source="PfeJg5knRbvR-tlkYSCK-2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="133.76999999999998" y="200" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="PfeJg5knRbvR-tlkYSCK-2" parent="1" style="image;aspect=fixed;html=1;points=[];align=center;fontSize=12;image=img/lib/azure2/identity/Users.svg;" value="" vertex="1">
+          <mxGeometry height="87" width="79.54" x="93" y="264" as="geometry" />
+        </mxCell>
+        <mxCell id="PfeJg5knRbvR-tlkYSCK-3" parent="1" style="image;html=1;image=img/lib/clip_art/computers/Network_128x128.png" value="" vertex="1">
+          <mxGeometry height="80" width="80" x="621" y="274" as="geometry" />
+        </mxCell>
+        <mxCell id="PfeJg5knRbvR-tlkYSCK-5" edge="1" parent="1" style="edgeStyle=none;orthogonalLoop=1;jettySize=auto;html=1;rounded=0;strokeWidth=2;" value="">
+          <mxGeometry relative="1" width="80" as="geometry">
+            <Array as="points" />
+            <mxPoint x="163" y="318.5" as="sourcePoint" />
+            <mxPoint x="539" y="319" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="PfeJg5knRbvR-tlkYSCK-6" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;fontSize=14;fontStyle=1" value="&lt;span style=&quot;font-weight: normal;&quot;&gt;Server send encrypted Client&#39;s &lt;/span&gt;Symetric Key" vertex="1">
+          <mxGeometry height="30" width="290" x="205" y="236" as="geometry" />
+        </mxCell>
+        <mxCell id="PfeJg5knRbvR-tlkYSCK-7" edge="1" parent="1" style="edgeStyle=none;orthogonalLoop=1;jettySize=auto;html=1;rounded=0;strokeWidth=2;" value="">
+          <mxGeometry relative="1" width="80" as="geometry">
+            <Array as="points" />
+            <mxPoint x="546.54" y="342.41" as="sourcePoint" />
+            <mxPoint x="176.54" y="342.91" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="PfeJg5knRbvR-tlkYSCK-8" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;fontSize=14;fontStyle=1" value="&lt;span style=&quot;font-weight: normal;&quot;&gt;Server sends&amp;nbsp;&amp;nbsp;&lt;/span&gt;&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255)); font-weight: normal;&quot;&gt;&quot;Here is my &lt;/span&gt;&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;Certificate (with my PUB key)&lt;/span&gt;&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255)); font-weight: normal;&quot;&gt;&quot; &amp;amp; verify the certificate with the Key&lt;/span&gt;" vertex="1">
+          <mxGeometry height="30" width="360" x="176" y="356" as="geometry" />
+        </mxCell>
+        <mxCell id="PfeJg5knRbvR-tlkYSCK-9" parent="1" style="shape=image;html=1;verticalAlign=top;verticalLabelPosition=bottom;labelBackgroundColor=#ffffff;imageAspect=0;aspect=fixed;image=https://icons.diagrams.net/icon-cache1/Woothemes_Ultimate_Icon_Set-2035/intruder-714.png" value="" vertex="1">
+          <mxGeometry height="68" width="68" x="360.25" y="982" as="geometry" />
+        </mxCell>
+        <mxCell id="PfeJg5knRbvR-tlkYSCK-10" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;fontSize=14;fontStyle=1" value="&lt;span style=&quot;color: rgb(10, 10, 10); font-family: &amp;quot;Google Sans&amp;quot;, Arial, sans-serif; text-align: start; background-color: rgb(255, 255, 255);&quot;&gt;&lt;font style=&quot;&quot;&gt;Man-in-the-Middle (MitM) attack&lt;/font&gt;&lt;/span&gt;" vertex="1">
+          <mxGeometry height="30" width="220" x="289" y="1050" as="geometry" />
+        </mxCell>
+        <mxCell id="PfeJg5knRbvR-tlkYSCK-13" parent="1" style="sketch=0;pointerEvents=1;shadow=0;dashed=0;html=1;strokeColor=none;labelPosition=center;verticalLabelPosition=bottom;verticalAlign=top;outlineConnect=0;align=center;shape=mxgraph.office.security.key_permissions;fillColor=#2072B8;rotation=-180;labelBorderColor=default;" value="" vertex="1">
+          <mxGeometry height="31.8" width="15" x="574" y="360" as="geometry" />
+        </mxCell>
+        <mxCell id="PfeJg5knRbvR-tlkYSCK-15" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;fontSize=14;fontStyle=1" value="User" vertex="1">
+          <mxGeometry height="30" width="53" x="104.5" y="354" as="geometry" />
+        </mxCell>
+        <mxCell id="PfeJg5knRbvR-tlkYSCK-16" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;fontSize=14;fontStyle=1" value="Server" vertex="1">
+          <mxGeometry height="30" width="53" x="633" y="220" as="geometry" />
+        </mxCell>
+        <mxCell id="PfeJg5knRbvR-tlkYSCK-17" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;fontSize=14;fontStyle=1" value="Public Key" vertex="1">
+          <mxGeometry height="30" width="76.5" x="592" y="360.9" as="geometry" />
+        </mxCell>
+        <mxCell id="PfeJg5knRbvR-tlkYSCK-18" parent="1" style="sketch=0;pointerEvents=1;shadow=0;dashed=0;html=1;strokeColor=none;labelPosition=center;verticalLabelPosition=bottom;verticalAlign=top;outlineConnect=0;align=center;shape=mxgraph.office.security.key_permissions;fillColor=light-dark(#2ab620, #5aa1dd);rotation=-180;" value="" vertex="1">
+          <mxGeometry height="31.8" width="15" x="573.25" y="395" as="geometry" />
+        </mxCell>
+        <mxCell id="PfeJg5knRbvR-tlkYSCK-19" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;fontSize=14;fontStyle=1" value="Private Key" vertex="1">
+          <mxGeometry height="30" width="96.5" x="582.25" y="396.8" as="geometry" />
+        </mxCell>
+        <mxCell id="PfeJg5knRbvR-tlkYSCK-23" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="&lt;font style=&quot;font-size: 14px; color: light-dark(rgb(255, 0, 0), rgb(237, 237, 237));&quot;&gt;&lt;b&gt;Asymetric Encryption&lt;/b&gt;&lt;/font&gt;" vertex="1">
+          <mxGeometry height="30" width="60" x="686" y="381" as="geometry" />
+        </mxCell>
+        <mxCell id="PfeJg5knRbvR-tlkYSCK-26" parent="1" style="sketch=0;aspect=fixed;pointerEvents=1;shadow=0;dashed=0;html=1;strokeColor=none;labelPosition=center;verticalLabelPosition=bottom;verticalAlign=top;align=center;fillColor=#990099;shape=mxgraph.mscae.enterprise.key_permissions;rotation=-180;" value="" vertex="1">
+          <mxGeometry height="30.77" width="16" x="105" y="156.59999999999997" as="geometry" />
+        </mxCell>
+        <mxCell id="PfeJg5knRbvR-tlkYSCK-28" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=light-dark(#fdff6b, #281d00);align=center;verticalAlign=middle;rounded=0;fontSize=14;fontStyle=1" value="&lt;font style=&quot;font-size: 12px;&quot;&gt;Client&#39;s Symetric Key&lt;/font&gt;" vertex="1">
+          <mxGeometry height="30" width="90" x="119" y="156.59999999999997" as="geometry" />
+        </mxCell>
+        <mxCell id="PfeJg5knRbvR-tlkYSCK-31" parent="1" style="sketch=0;aspect=fixed;pointerEvents=1;shadow=0;dashed=0;html=1;strokeColor=none;labelPosition=center;verticalLabelPosition=bottom;verticalAlign=top;align=center;fillColor=light-dark(#000000, #bfd3ff);shape=mxgraph.mscae.enterprise.lock" value="" vertex="1">
+          <mxGeometry height="20" width="15.6" x="205" y="178.8" as="geometry" />
+        </mxCell>
+        <mxCell id="PfeJg5knRbvR-tlkYSCK-40" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="Client encrypt his symmetric&amp;nbsp;key using server&#39;s public key" vertex="1">
+          <mxGeometry height="40.8" width="191" x="76" y="100" as="geometry" />
+        </mxCell>
+        <mxCell id="PfeJg5knRbvR-tlkYSCK-42" parent="1" style="rounded=0;whiteSpace=wrap;html=1;align=left;fillColor=light-dark(#bbff9e, #1f2f1e);strokeColor=light-dark(#13a300, #446e2c);" value="&lt;div&gt;&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;&amp;nbsp; - Domain: *.google.com&lt;/span&gt;&lt;/div&gt;&lt;div&gt;&amp;nbsp; - Public Key: (RSA / ECC)&lt;/div&gt;&lt;div&gt;&amp;nbsp; - Issuer: Google Trust Services&lt;/div&gt;" vertex="1">
+          <mxGeometry height="50" width="178" x="582.25" y="650" as="geometry" />
+        </mxCell>
+        <mxCell id="PfeJg5knRbvR-tlkYSCK-43" parent="1" style="rounded=0;whiteSpace=wrap;html=1;align=center;fillColor=light-dark(#bbff9e, #1f2f1e);strokeColor=light-dark(#13a300, #446e2c);" value="&lt;div&gt;Signature = Server PUB key +&amp;nbsp; Issuer PUB key&lt;/div&gt;" vertex="1">
+          <mxGeometry height="40" width="178" x="582.25" y="701" as="geometry" />
+        </mxCell>
+        <mxCell id="PfeJg5knRbvR-tlkYSCK-44" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="&lt;b&gt;&lt;font style=&quot;font-size: 14px;&quot;&gt;Certificate&lt;/font&gt;&lt;/b&gt;" vertex="1">
+          <mxGeometry height="30" width="80" x="631.25" y="740" as="geometry" />
+        </mxCell>
+        <mxCell id="PfeJg5knRbvR-tlkYSCK-45" parent="1" style="outlineConnect=0;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;shape=mxgraph.aws3.certificate_manager_2;fillColor=#759C3E;gradientColor=none;" value="" vertex="1">
+          <mxGeometry height="63" width="73.5" x="344.25" y="759.2" as="geometry" />
+        </mxCell>
+        <mxCell id="PfeJg5knRbvR-tlkYSCK-46" parent="1" style="text;whiteSpace=wrap;html=1;align=center;" value="&lt;span style=&quot;color: rgb(0, 0, 0); font-family: Helvetica; font-size: 12px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; letter-spacing: normal; orphans: 2; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; float: none; display: inline !important;&quot;&gt;&lt;b&gt;Google Trust Services&lt;/b&gt;&lt;/span&gt;" vertex="1">
+          <mxGeometry height="27" width="138" x="316" y="876" as="geometry" />
+        </mxCell>
+        <mxCell id="PfeJg5knRbvR-tlkYSCK-47" edge="1" parent="1" source="PfeJg5knRbvR-tlkYSCK-21" style="edgeStyle=none;orthogonalLoop=1;jettySize=auto;html=1;rounded=0;exitX=0.11;exitY=1.033;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.907;entryY=-0.008;entryDx=0;entryDy=0;entryPerimeter=0;strokeWidth=2;" target="PfeJg5knRbvR-tlkYSCK-56" value="">
+          <mxGeometry relative="1" width="80" as="geometry">
+            <Array as="points" />
+            <mxPoint x="426" y="536" as="sourcePoint" />
+            <mxPoint x="506" y="536" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="PfeJg5knRbvR-tlkYSCK-48" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="&lt;font style=&quot;font-size: 14px;&quot;&gt;ask to issue a certificate&lt;/font&gt;" vertex="1">
+          <mxGeometry height="40.8" width="95" x="453.25" y="500" as="geometry" />
+        </mxCell>
+        <mxCell id="PfeJg5knRbvR-tlkYSCK-49" edge="1" parent="1" style="edgeStyle=none;orthogonalLoop=1;jettySize=auto;html=1;rounded=0;strokeWidth=2;" value="">
+          <mxGeometry relative="1" width="80" as="geometry">
+            <Array as="points" />
+            <mxPoint x="456" y="770" as="sourcePoint" />
+            <mxPoint x="576" y="640" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="PfeJg5knRbvR-tlkYSCK-50" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="create a certificate with info" vertex="1">
+          <mxGeometry height="40.8" width="120" x="472" y="750" as="geometry" />
+        </mxCell>
+        <mxCell id="PfeJg5knRbvR-tlkYSCK-51" edge="1" parent="1" style="edgeStyle=none;orthogonalLoop=1;jettySize=auto;html=1;rounded=0;strokeWidth=2;" value="">
+          <mxGeometry relative="1" width="80" as="geometry">
+            <Array as="points" />
+            <mxPoint x="606" y="600" as="sourcePoint" />
+            <mxPoint x="606" y="442" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="PfeJg5knRbvR-tlkYSCK-52" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="&lt;font style=&quot;font-size: 14px;&quot;&gt;issue certificate to Server&lt;/font&gt;" vertex="1">
+          <mxGeometry height="40.8" width="120" x="606" y="520" as="geometry" />
+        </mxCell>
+        <mxCell id="PfeJg5knRbvR-tlkYSCK-57" parent="1" style="sketch=0;html=1;pointerEvents=1;dashed=0;fillColor=light-dark(#2072b8, #53a9cf);strokeColor=none;strokeWidth=2;verticalLabelPosition=bottom;verticalAlign=top;align=center;outlineConnect=0;shape=mxgraph.cisco.misc.key;" value="" vertex="1">
+          <mxGeometry height="14.25" width="36" x="326.25" y="832.2" as="geometry" />
+        </mxCell>
+        <mxCell id="PfeJg5knRbvR-tlkYSCK-59" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;fontSize=14;fontStyle=1" value="Public Key" vertex="1">
+          <mxGeometry height="30" width="76.5" x="365.25" y="825.3199999999999" as="geometry" />
+        </mxCell>
+        <mxCell id="PfeJg5knRbvR-tlkYSCK-60" parent="1" style="sketch=0;html=1;pointerEvents=1;dashed=0;fillColor=light-dark(#34ad00, #53a9cf);strokeColor=none;strokeWidth=2;verticalLabelPosition=bottom;verticalAlign=top;align=center;outlineConnect=0;shape=mxgraph.cisco.misc.key;" value="" vertex="1">
+          <mxGeometry height="14.25" width="36" x="326.25" y="855.3199999999999" as="geometry" />
+        </mxCell>
+        <mxCell id="PfeJg5knRbvR-tlkYSCK-61" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;fontSize=14;fontStyle=1" value="Private Key" vertex="1">
+          <mxGeometry height="30" width="96.5" x="357.5" y="848" as="geometry" />
+        </mxCell>
+        <mxCell id="PfeJg5knRbvR-tlkYSCK-63" edge="1" parent="1" style="edgeStyle=none;orthogonalLoop=1;jettySize=auto;html=1;rounded=0;strokeWidth=2;" value="">
+          <mxGeometry relative="1" width="80" as="geometry">
+            <Array as="points" />
+            <mxPoint x="72.25" y="809.41" as="sourcePoint" />
+            <mxPoint x="312.25" y="809.7299999999999" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="PfeJg5knRbvR-tlkYSCK-73" edge="1" parent="1" style="endArrow=none;html=1;rounded=0;strokeWidth=2;" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="70" y="810" as="sourcePoint" />
+            <mxPoint x="69" y="316" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="PfeJg5knRbvR-tlkYSCK-75" edge="1" parent="1" style="endArrow=none;html=1;rounded=0;strokeWidth=2;" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="102" y="316.5076923076923" as="sourcePoint" />
+            <mxPoint x="69" y="316" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="PfeJg5knRbvR-tlkYSCK-76" parent="1" style="rounded=0;whiteSpace=wrap;html=1;align=center;fillColor=light-dark(#bbff9e, #1f2f1e);strokeColor=light-dark(#13a300, #446e2c);" value="" vertex="1">
+          <mxGeometry height="40" width="178" x="582.25" y="610" as="geometry" />
+        </mxCell>
+        <mxCell id="PfeJg5knRbvR-tlkYSCK-77" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;fontSize=14;fontStyle=1" value="Server&#39;s Public Key" vertex="1">
+          <mxGeometry height="30" width="142" x="606" y="615" as="geometry" />
+        </mxCell>
+        <mxCell id="PfeJg5knRbvR-tlkYSCK-78" parent="1" style="sketch=0;pointerEvents=1;shadow=0;dashed=0;html=1;strokeColor=none;labelPosition=center;verticalLabelPosition=bottom;verticalAlign=top;outlineConnect=0;align=center;shape=mxgraph.office.security.key_permissions;fillColor=#2072B8;rotation=-180;labelBorderColor=default;" value="" vertex="1">
+          <mxGeometry height="31.8" width="15" x="595" y="613" as="geometry" />
+        </mxCell>
+        <mxCell id="PfeJg5knRbvR-tlkYSCK-79" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="Ask for Issuer&#39;s PUB key" vertex="1">
+          <mxGeometry height="40.8" width="162" x="104.5" y="807.2" as="geometry" />
+        </mxCell>
+        <mxCell id="PfeJg5knRbvR-tlkYSCK-83" edge="1" parent="1" style="endArrow=none;html=1;rounded=0;strokeWidth=2;" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="116" y="780" as="sourcePoint" />
+            <mxPoint x="306" y="780" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="PfeJg5knRbvR-tlkYSCK-84" edge="1" parent="1" style="edgeStyle=none;orthogonalLoop=1;jettySize=auto;html=1;rounded=0;strokeWidth=2;" value="">
+          <mxGeometry relative="1" width="80" as="geometry">
+            <Array as="points" />
+            <mxPoint x="117" y="780" as="sourcePoint" />
+            <mxPoint x="117" y="446" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="PfeJg5knRbvR-tlkYSCK-85" parent="1" style="sketch=0;html=1;pointerEvents=1;dashed=0;fillColor=light-dark(#2072b8, #53a9cf);strokeColor=none;strokeWidth=2;verticalLabelPosition=bottom;verticalAlign=top;align=center;outlineConnect=0;shape=mxgraph.cisco.misc.key;" value="" vertex="1">
+          <mxGeometry height="14.25" width="36" x="96" y="403" as="geometry" />
+        </mxCell>
+        <mxCell id="PfeJg5knRbvR-tlkYSCK-86" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="Issuer sends his public key to Client" vertex="1">
+          <mxGeometry height="40.8" width="162" x="132" y="740" as="geometry" />
+        </mxCell>
+        <mxCell id="PfeJg5knRbvR-tlkYSCK-87" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="&lt;font style=&quot;font-size: 14px;&quot;&gt;Client will encrypt both Server&#39;s PUB key + Issuer&#39;s PUB key to check if creating same signature&lt;/font&gt;" vertex="1">
+          <mxGeometry height="110" width="189" x="121" y="560.8" as="geometry" />
+        </mxCell>
+        <mxCell id="PfeJg5knRbvR-tlkYSCK-93" parent="1" style="sketch=0;pointerEvents=1;shadow=0;dashed=0;html=1;strokeColor=none;labelPosition=center;verticalLabelPosition=bottom;verticalAlign=top;outlineConnect=0;align=center;shape=mxgraph.office.security.key_permissions;fillColor=#2072B8;rotation=-180;labelBorderColor=default;" value="" vertex="1">
+          <mxGeometry height="31.8" width="15" x="148" y="394.23" as="geometry" />
+        </mxCell>
+        <mxCell id="PfeJg5knRbvR-tlkYSCK-94" parent="1" style="sketch=0;pointerEvents=1;shadow=0;dashed=0;html=1;strokeColor=none;labelPosition=center;verticalLabelPosition=bottom;verticalAlign=top;outlineConnect=0;align=center;shape=mxgraph.office.security.key_permissions;fillColor=#2072B8;rotation=-180;labelBorderColor=default;" value="" vertex="1">
+          <mxGeometry height="31.8" width="15" x="241" y="140.80000000000007" as="geometry" />
+        </mxCell>
+        <mxCell id="PfeJg5knRbvR-tlkYSCK-95" edge="1" parent="1" style="edgeStyle=none;orthogonalLoop=1;jettySize=auto;html=1;rounded=0;strokeWidth=2;" value="">
+          <mxGeometry relative="1" width="80" as="geometry">
+            <Array as="points" />
+            <mxPoint x="163" y="274" as="sourcePoint" />
+            <mxPoint x="539" y="274.5" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="PfeJg5knRbvR-tlkYSCK-103" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=light-dark(#fdff6b, #281d00);strokeColor=#d6b656;" value="" vertex="1">
+          <mxGeometry height="47.2" width="116" x="635.65" y="130.8" as="geometry" />
+        </mxCell>
+        <mxCell id="PfeJg5knRbvR-tlkYSCK-104" parent="1" style="sketch=0;aspect=fixed;pointerEvents=1;shadow=0;dashed=0;html=1;strokeColor=none;labelPosition=center;verticalLabelPosition=bottom;verticalAlign=top;align=center;fillColor=#990099;shape=mxgraph.mscae.enterprise.key_permissions;rotation=-180;" value="" vertex="1">
+          <mxGeometry height="30.77" width="16" x="644.65" y="136.59999999999997" as="geometry" />
+        </mxCell>
+        <mxCell id="PfeJg5knRbvR-tlkYSCK-105" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=light-dark(#fdff6b, #281d00);align=center;verticalAlign=middle;rounded=0;fontSize=14;fontStyle=1" value="&lt;font style=&quot;font-size: 12px;&quot;&gt;Client&#39;s Symetric Key&lt;/font&gt;" vertex="1">
+          <mxGeometry height="30" width="90" x="658.65" y="136.59999999999997" as="geometry" />
+        </mxCell>
+        <mxCell id="PfeJg5knRbvR-tlkYSCK-106" parent="1" style="sketch=0;aspect=fixed;pointerEvents=1;shadow=0;dashed=0;html=1;strokeColor=none;labelPosition=center;verticalLabelPosition=bottom;verticalAlign=top;align=center;fillColor=light-dark(#000000, #bfd3ff);shape=mxgraph.mscae.enterprise.lock" value="" vertex="1">
+          <mxGeometry height="20" width="15.6" x="744.65" y="158.8" as="geometry" />
+        </mxCell>
+        <mxCell id="PfeJg5knRbvR-tlkYSCK-107" edge="1" parent="1" source="PfeJg5knRbvR-tlkYSCK-21" style="edgeStyle=none;orthogonalLoop=1;jettySize=auto;html=1;rounded=0;entryX=0.25;entryY=1;entryDx=0;entryDy=0;exitX=0.679;exitY=-0.012;exitDx=0;exitDy=0;exitPerimeter=0;" target="PfeJg5knRbvR-tlkYSCK-103" value="">
+          <mxGeometry relative="1" width="80" as="geometry">
+            <Array as="points" />
+            <mxPoint x="691.75" y="267.59000000000003" as="sourcePoint" />
+            <mxPoint x="748" y="218.8" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="PfeJg5knRbvR-tlkYSCK-108" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="server will decrypt using his PUB key to get Client&#39;s Symentric key.&amp;nbsp;&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;Now server can encrypt &amp;amp; decrypt Dat using Client&#39;s Symetric key&lt;/span&gt;" vertex="1">
+          <mxGeometry height="40.8" width="278.5" x="491.25" y="80" as="geometry" />
+        </mxCell>
+        <mxCell id="PfeJg5knRbvR-tlkYSCK-110" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;fontSize=14;fontStyle=1" value="&lt;span style=&quot;font-weight: normal;&quot;&gt;Cleint sends&lt;/span&gt; &quot;Hello, I want HTTPS&quot;" vertex="1">
+          <mxGeometry height="30" width="290" x="205" y="290" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
