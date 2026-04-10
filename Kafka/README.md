@@ -52,6 +52,7 @@ Kafka was originally developed at LinkedIn to handle high-volume data feeds and 
 - ✅ **Alternative for Multiple Processing**: If you need multiple applications to read the same partition simultaneously, use different consumer group IDs for each application.
   - ✅ Kafka Consumer groups allow to have multiple consumer "sort of" behave like a single entity. The group as a whole should only consume messages once. If multiple consumer in a group were to consume the same partitions, these records would be processed multiple times. **If you need to consume a partition multiple times, be sure these consumers are in different groups.**
 
+<img src="img/Kafka_Diagram.jpg" width="100%" />
 
 ## Create Queue model using Kafka
 **👉 Queue : 1 Producer 1 Consumer (First in first out)**
