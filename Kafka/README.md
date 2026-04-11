@@ -5,9 +5,23 @@ Apache Kafka is not just a message broker. It was initially designed and impleme
 Apache Kafka is an open-source software platform written in Scala and Java, mainly used for stream processing.
 
 > Queue : 1 Producer 1 Consumer (First in first out)
+
 > PubSub : 1 Producer Multiple Consumers
 
-**The use cases of Apache Kafka are:**
+> Kafka With ZooKeeper
+
+## Tutorials
+1. Apache Kafka : https://kafka.apache.org/
+2. Apache Kafka Crash Course | What is Kafka? : https://www.youtube.com/watch?v=ZJJHm_bd9Zo
+3. Kafka geeksforgeeks : https://www.geeksforgeeks.org/apache-kafka/apache-kafka/
+4. Using Kafka With ZooKeeper : https://www.openlogic.com/blog/using-kafka-zookeeper
+
+## What Is Apache Kafka?
+Apache Kafka is a distributed event streaming platform that moves data from producers to consumers in real time. Producers write data to Kafka topics, and consumers read from those topics. Topics are divided into partitions, allowing messages to be distributed across multiple brokers for scalability and fault tolerance. Kafka’s append-only log and replication model enable it to achieve extremely high throughput — ranging from thousands to millions of messages per second.
+
+<img src="img/Kafka_Diagram.jpg" width="100%" />
+
+## The use cases of Apache Kafka are
 - Messaging
 - Website Activity Tracking
 - Metrics
@@ -52,8 +66,6 @@ Kafka was originally developed at LinkedIn to handle high-volume data feeds and 
 - ✅ **Alternative for Multiple Processing**: If you need multiple applications to read the same partition simultaneously, use different consumer group IDs for each application.
   - ✅ Kafka Consumer groups allow to have multiple consumer "sort of" behave like a single entity. The group as a whole should only consume messages once. If multiple consumer in a group were to consume the same partitions, these records would be processed multiple times. **If you need to consume a partition multiple times, be sure these consumers are in different groups.**
 
-<img src="img/Kafka_Diagram.jpg" width="100%" />
-
 ## Create Queue model using Kafka
 **👉 Queue : 1 Producer 1 Consumer (First in first out)**
 
@@ -66,9 +78,14 @@ We have a Kafka topic with 4 partitions. If in my application, i need Queue mode
 
 We have a Kafka topic with 4 partitions. If in my application, i need PubSub model. Then i will create multiple groups with 4 or less than 4 consumers. Suppose we have 2 groups (1st group with 4 consumers, 2nd group with 1 consumer), then then 4 partitions will be assigned to four consumers of 1st group and also 4 partitions will be assigned to 1 consumer of 2nd group).
 
+## Kafka With ZooKeeper
+Apache ZooKeeper is a centralized service that provides coordination, configuration management, and synchronization for Apache Kafka clusters. It acts as the "executive" or "brain," tracking broker health, managing topic metadata, and handling leader elections.
+
+ZooKeeper provides a highly reliable control plane for distributed coordination of clustered applications through a hierarchical key-value store. The suite of services provided by ZooKeeper include distributed configuration services, synchronization services, leadership election services, and a naming registry. 
+
+> In short, ZooKeeper handles autoscalling.
+
+## Is ZooKeeper Still Useful?
+For Kafka — no. Kafka’s ZooKeeper dependency is fully deprecated. ZooKeeper is gone. Kafka 4.0, released March 2025, removed it entirely. KRaft is now the only way to run Kafka.
 
 
-## Tutorials
-1. Apache Kafka : https://kafka.apache.org/
-2. Apache Kafka Crash Course | What is Kafka? : https://www.youtube.com/watch?v=ZJJHm_bd9Zo
-3. Kafka geeksforgeeks : https://www.geeksforgeeks.org/apache-kafka/apache-kafka/
