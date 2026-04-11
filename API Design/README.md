@@ -1,0 +1,317 @@
+# API Design
+https://www.geeksforgeeks.org/blogs/api-design-roadmap/
+
+## What is API Design?
+API Design refers to planning and structuring how applications communicate with each other through an API (Application Programming Interface). Think of an API as a bridge that allows different software systems to talk to one another, share data, or trigger actions.
+------
+A. Learn the Basics
+------
+How Do APIs Work? - APIs operate through a request response cycle between a client and a server.  This exchanged data is in the form of HTML, JSON, XML, and Text.
+1 API client: The API client sends the request to the API server. This request can be triggered in many ways. For example, when a user clicks a button or enters a search term.
+2 API request:
+-Endpoint: An API endpoint is a URL that provides access to a specific resource. For example, the article's end point in GeeksforGeeks would contain the logic for processing all requests that are related to articles.
+-Methods: The request method includes the type of operation that the client needs to perform on a given resource. REST APIs are accessible through standard HTTP methods, which perform common actions like retrieving, creating, updating, and deleting data.
+-Parameters: Parameters are the variables that are passed to an API endpoint to provide specific instructions for the API to process. These parameters can be included in the API request as part of the URL, in the query string, or in the request body. For example, the /articles endpoint of a blogging API might accept a “topic” parameter, which it would use to access and return articles on a specific topic.
+-Request headers : Request headers are key-value pairs that provide extra details about the request, such as its content type or authentication credentials.
+-Request body: The body is the main part of the request, and it includes the actual data that is required to create, update, or delete a resource. For instance, if you were creating a new article in GeeksforGeeks, the request body would likely include the article's content, title, and author.
+3 API server: The API client sends the request to the API server, which is responsible for handling authentication, validating input data, and retrieving or manipulating data.
+4 API response:Finally, the API server sends a response to the client. The API response typically includes the following components such as HTTP status codes, response headers and response body.
+This communication happens over the HTTP/HTTPS protocol, with additional security via headers, tokens, or cookies.
+----------
+
+## Types of API Architectures:
+1.2.1. REST (Representational State Transfer):
+REST is a simple, flexible API architecture that uses HTTP methods (GET, POST, PUT, DELETE) for communication.
+Data Format: JSON, XML.
+1.2.2. SOAP (Simple Object Access Protocol):
+SOAP is a more rigid protocol that requires XML based messaging for communication. Strict and secure protocol using XML for structured messaging.
+Data Format: XML
+1.2.3. GraphQL:
+Modern query language that lets clients fetch only the data they need.GraphQL is an open-source query language for APIs and a server-side runtime for executing queries.
+Data Format: JSON
+Schema: It defines the data types that can be queried and their relationships. GraphQL uses its own language that is Schema Definition Language (SDL) for writing the schema. It is a human-readable language and It does not depends upon any specific language or framework. Schemas has two main types:
+Queries (for retrieving data): It is used to retrieve data from a GraphQL server. A query specifies the fields and data that the client wants to retrieve. It is similar to GET requests in REST APIs but allow to request exactly the data we need. It is reducing over-fetching or under-fetching.
+Mutations (for modifying data): It is used to modify data on the server. It can be used for creating, updating, or deleting data. Mutations are similar to POST, PUT, or DELETE requests in REST APIs.
+1.2.4. gRPC:
+High performance framework using Protocol Buffers (Protobuf). It is an open-source Remote Procedure Call (RPC) protocol meant to enable flawless communication. gRPC is a high-performance, open-source universal RPC (Remote Procedure Call) framework initially developed by Google. It leverages HTTP/2 for transport, Protocol Buffers as the interface description language, and provides features such as authentication, load balancing, and more. gRPC is designed to enable efficient and robust communication between services in a microservices architecture, making it a popular choice for building distributed systems and APIs.
+Data Format: Binary
+1.2.5. WebSocket: WebSocket is a communication protocol that is mainly used for communication between a client and server.
+
+Features of WebSocket are:
+Full-Duplex Protocol: WebSocket is a full-duplex protocol as it allows the application to send and receive data at the same time.
+Stateful Protocol: It means the connection between server and client will not be terminated until and unless closed by any one of them either by the client or by the server. Once the connection is terminated from one end it is also closed by another end.
+3-way handshake: Websocket uses a 3-way handshake also known as TCP connection for establishing communication between a client and server.
+WebSocket API: WebSocket API allows us to create web sockets, it is a javascript API that is capable of full-duplex communication using a TCP connection. WebSocket uses port 80 by default.
+
+Features of WebSocket API are:
+Bidirectional means data can be sent and received by both sides client-side as well as the server-side.
+Use of full-duplex model for communication.
+It uses a single TCP connection for communication between the client and server.
+Mainly used in real-time applications like chat applications, video calls applications, etc.
+------------
+What are REST APIs? - It defines a set of functions (GET, PUT, POST, DELETE) that clients use to access server data. The functions used are:
+GET (retrieve a record)
+PUT (update a record)
+POST (create a record)
+DELETE (delete the record)
+Its main feature is that REST API is stateless, i.e., the servers do not save clients' data between requests.
+--------------
+Types of API - There are four different types of APIs commonly used in web services: public, partner, private and composite.
+Public API : A public API is open and available for use by any outside developer or business. These APIs can be used by anyone and these are also called as open APIs.
+Partner API : A partner API is made available to specifically selected and authorized outside developers or API consumers. The partners have some rights and licenses to access these APIs. These cannot be accessed by the public.
+Private API : Unlike Partner APIs, A private API is used only by internal users of an organization. Outsiders are not given any access to these APIs. These APIs are used by different teams inside the organization.
+Composite API : When the tasks are interconnected with each other, the APIs are combined to perform such tasks. This combination of APIs is called as composite API.
+------------
+TCP/IP- This explains how data is communicated between devices over a network using standardized protocols to ensure reliable and efficient transmission. Simpler and more practical than the seven-layer OSI model. Defined as a four-layer architecture consisting of Application, Transport, Internet, and Network Access layers. Layers of TCP/IP Model:
+1. Application Layer
+Acts as a bridge between user applications and lower network layers
+Supports protocols such as HTTP, FTP, SMTP, and DNS
+Handles data formatting so information is correctly understood by both sender and receiver
+Provides encryption for secure communication
+Manages sessions to track ongoing connections
+
+2. Transport Layer
+Ensures reliable and efficient delivery of data between devices, managing segmentation, ordering, and retransmission as needed. 
+TCP (Transmission Control Protocol): TCP is used when reliability and accuracy are important. It ensures that data is delivered exactly as sent.
+Error Checking: TCP detects errors in the data using checksums to ensure integrity.
+Retransmission: If any data is lost or corrupted during transmission, TCP automatically resends it.
+Ordered Delivery: Data is broken into packets, and TCP ensures these packets arrive in the correct sequence.
+Connection-Oriented: TCP establishes a connection between sender and receiver before sending data, maintaining a stable session throughout the communication.
+Use Cases: Loading web pages, downloading files, sending emails, or any application where data must be complete and accurate.
+
+UDP (User Datagram Protocol): UDP is used when speed is more important than perfect accuracy. It is faster but does not guarantee reliable delivery.
+No Error Checking: UDP does not verify whether the data has errors.
+No Retransmission: Lost or damaged data is not resent.
+No Ordered Delivery: Packets may arrive out of order, and the protocol does not fix it.
+Lightweight: Because it avoids extra checks and connections, UDP is faster and uses fewer resources.
+Use Cases: Live video streaming, online gaming, VoIP calls, or real-time applications where speed matters more than reliability.
+
+3. Internet Layer
+Responsible for addressing, packaging, and routing data packets so they can travel across networks and reach the correct destination device. It ensures that data can move between different networks efficiently.
+
+4. Network Access (Link Layer)
+Responsible for physically transmitting data over network hardware, including cables, switches, and wireless connections. It handles how data is formatted for the network medium and ensures it reaches the next device on the path.
+--------
+Working of TCP/IP Model:
+When Sending Data (From Sender to Receiver)
+Application Layer: The user’s software (like a web browser or email client) creates the data and passes it to the next layer.
+Transport Layer: The data is broken into segments, and TCP or UDP adds control information to ensure reliable delivery or fast transmission.
+Internet Layer: Each segment is encapsulated into packets with IP addresses so it can be routed across networks to the destination device.
+Network Access (Link) Layer: The packets are converted into frames suitable for the physical network (Ethernet, Wi-Fi) and transmitted over cables or wireless signals.
+
+When Receiving Data (At the Destination)
+Network Access Layer: The frames are received from the physical medium and checked for errors.
+Internet Layer: Frames are unpacked to extract packets and use the IP address to ensure it reaches the correct device.
+Transport Layer: Segments are reassembled into the original message, and any missing or corrupted data is corrected (if TCP is used).
+Application Layer: The complete data is delivered to the user application (like the browser displaying a webpage or the email client showing a message).
+------
+Why TCP/IP is Used Over the OSI Model
+TCP/IP is preferred over the OSI model because it is simpler, practical, and widely implemented in real-world networks and the Internet. Unlike OSI, which is mostly theoretical, TCP/IP is protocol-driven and focuses on actual communication needs.
+--------
+DNS: DNS is a system that translates human-readable domain names into IP addresses so computers can communicate over the internet
+How it works:
+User Input: The user enters a domain name (e.g., www.geeksforgeeks.org) in the browser.
+Local Cache Check: The browser or OS checks its cache for a stored IP address.
+DNS Resolver Query: If not found, the request is sent to a DNS resolver (usually by ISP).
+Root Server Query: The resolver queries a root server, which points to the correct TLD server.
+TLD Server Response: The TLD server directs the resolver to the domain’s authoritative server.
+Authoritative Server Response: The authoritative server returns the actual IP address.
+Final Response: The resolver sends the IP back to the user, and the browser connects to the server.
+-------
+Structure of DNS: The structure of DNS is hierarchical in nature, enabling scalable and organized domain name resolution across the global Internet.
+1. Root:
+The topmost level of the DNS hierarchy.
+Represented by a dot (.) at the end of a domain name
+Acts as the starting point of domain resolution
+2. Top-Level Domains (TLDs):
+The level directly below the root that defines domain extensions.
+Includes extensions like .com, .org, .net, .edu
+Helps categorize domains by purpose or region
+3. Second-Level Domains:
+The main domain name registered by an organization.
+Appears before the TLD (e.g., "example" in example.com)
+Uniquely identifies a domain under a TLD
+4. Subdomains:
+Extensions of the main domain used for organization.
+Examples: www, mail, blog
+Helps structure different parts of a website
+5. Hostnames:
+Identifies specific servers or devices within a domain.
+Examples: web1, mailserver, ftp
+Maps to actual IP addresses using DNS records
+--------
+HTTP Methods:
+GET: Retrieves data from the server.
+const getStudents = async(URL) => {
+      const response = await fetch(URL);
+      const data = await response.json();
+      console.log(data)
+}
+getStudents(BASEURL+"/students");
+
+POST: Sends data to the server to create a new resource.
+const addStudent = async (URL, student) => {
+  const response = await fetch(URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: student,
+  });
+  const data = await response.json();
+  console.log(data.message);
+};
+addStudent(BASEURL + "/students", { id: 3, name: "Geek3" });
+
+PATCH:Like the PUT method, PATCH is also used to send data to update an 'existing record' on the server. But the important difference between PUT and PATCH is that PATCH only applies partial modifications to the record instead of replacing the whole record.
+// update using patch
+const updateStudentPatch = async (URL, student) => {
+    const response = await fetch(URL, {
+        method: "PATCH",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: student,
+    });   
+    const data = await response.json();
+    console.log(data);
+};
+updateStudentPatch(BASEURL + "/students/2", { name: "Geek2 Updated using Patch" });
+
+PUT: Updates an existing resource on the server.
+const updateStudent = async (URL, student) => {
+  const response = await fetch(URL, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: student,
+  });
+  const data = await response.json();
+  console.log(data.message);
+};
+updateStudent(BASEURL + "/students/3", { id: 3, name: "Geek3 Updated" });
+
+DELETE: Removes a resource from the server.
+const deleteStudent = async (URL) => {
+   const response = await fetch(URL, {
+       method: "DELETE",
+       headers: {
+           "Content-Type": "application/json",
+       },
+   });
+   const data = await response.json();
+   console.log(data);
+};
+deleteStudent(BASEURL + "/students/3");
+
+GET /api/users        // Fetches a list of users
+POST /api/users       // Creates a new user
+PUT /api/users/123    // Updates user with ID 123
+DELETE /api/users/123 // Deletes user with ID 123
+------
+HTTP Headers:
+HTTP headers provide additional information about the  key-value pairs sent in request or response. In API development, headers are used for various purposes such as authentication, content negotiation, caching, and more. Common headers include:
+Authorization: Provides credentials for authentication.
+Content-Type: Specifies the format of the data being sent (e.g., JSON, XML).
+Accept: Indicates the preferred response format accepted by the client.
+GET /api/users
+Authorization: Bearer <token>
+Accept: application/json
+
+There are four kinds of headers context-wise: 
+General Header: This type of header is applied on Request and Response headers both but without affecting the database body.
+Request Header: This type of header contains information about the fetched request by the client.
+Response Header: This type of header contains the location of the source that has been requested by the client.
+Entity Header: This type of header contains information about the body of the resources like MIME type and content.
+------
+HTTP Status Codes: The HTTP status code is a response made by the server to the client's request. These are three-digit codes. There are over 60 status codes, but they fall into five main categories:
+1xx - Informational Response (These status codes are all about the information received by the server when a request is made).
+2xx - Success (This status code depicts that the request made has been fulfilled by the server and the expected response has been achieved).
+3xx - Redirection (The requested URL is redirected elsewhere).
+4xx - Client Errors (This indicates that the page is not found).
+5xx - Server Errors (A request made by the client but the server fails to complete the request). 
+
+HTTP/1.1 200 OK
+Content-Type: application/json
+{
+  "id": 123,
+  "name": "John Doe"
+}
+
+Ex:
+200 OK 
+201 Created 
+202 Accepted 
+400 Bad Request 
+401 Unauthorized 
+402 Payment Required 
+403 Forbidden 
+404 Not Found 
+405 Method Not Allowed
+------
+HTTP Body: The HTTP body contains the actual content transmitted in requests or replies.
+Data Formats: It can be structured as JSON, XML, HTML, or plain text for different purposes.
+Content-Length: The Content-Length header specifies the size of the message body in bytes.
+Schema Compliance: Developers need to adhere to the API's schema for data consistency and integrity.
+// HTTP body Syntax
+{
+  "name": "Raj Veer",
+  "email": "rajveer@example.com",
+  "age": 30
+}
+------
+HTTP Cookies: HTTP cookies are small text files sent by a server to a web browser, stored locally to enable stateful interactions over the stateless HTTP protocol. They are primarily used for session management (logins), user personalization (themes/language), and tracking browsing habits. Browsers return these cookies to the server with subsequent requests. 
+-----
+C. API Features
+Rest Principles
+URI Design
+API Versioning
+CRUD Operations
+Pagination
+Rate Limiting
+Idempotency
+HATEOAS
+-----
+D. API Authentication and Authorization
+API Gateway Authetication
+Role Based Access Control
+Attribute Based Access Control
+-----
+E. API Documentation Tools
+API Documentation Tools
+-----
+F. API Security
+API Key Security
+-----
+G. API Performance
+Caching Strategies
+Load Balancing
+API Throttling vs Rate Limiting
+API Monitoring
+-----
+H. API Integration Patterns
+API Integration
+Synchronous vs Asynchronous API
+Event Driven Architecture
+API Gateway
+Microservice Architecture
+Webhook vs API Polling
+Batch Processing
+Message Queues
+-----
+I. API Testing
+API Testing
+Mocking APIs
+API Contracts
+Best Practices for REST API Testing
+-----
+J. API Lifecycle Management
+API Lifecycle Management
+-----
+K. Standard and Compliance
+Best Practices for API Security
+GDPR Compliance
+PCI DSS
+HIPAA
+CCPA
