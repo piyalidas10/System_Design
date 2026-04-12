@@ -116,12 +116,11 @@ SET key value EX 60
 IP → count requests → block if exceeded
 ```
 
-## 🔥 19. Redis vs Memcached?
-| Feature     | Redis | Memcached   |
-| ----------- | ----- | ----------- |
-| Data Types  | Rich  | String only |
-| Persistence | Yes   | No          |
-| Use Cases   | Many  | Cache only  |
+## 🔥 19. What if Redis goes down?
+- Use fallback to DB
+- Circuit breaker
+- Retry with timeout
+- Graceful degradation
 
 ## 🏗️ 20. Where do you use Redis in system design?
 
