@@ -2,6 +2,8 @@
 Cross-Origin Resource Sharing (CORS) is a browser security feature that restricts web pages from making requests to a different domain than the one that served the page.
 It uses HTTP headers to allow servers to explicitly permit cross-origin requests, preventing malicious sites from accessing sensitive data while enabling legitimate API integrations. 
 
+<img src="imgs/CORS.png" width="100%" />
+
 # Why CORS is coming with Browser not Postman 📬?
 Postman is not a browser
 
