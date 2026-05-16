@@ -1,5 +1,7 @@
 # 🚀 Scaling System Design: 1 → 10M Users
 
+<img src="imgs/Scaling_System_Design.jpg" width="80%" />
+
 🗂 Basics
 ----------------------------------------------------------------------
 Database indexing  
