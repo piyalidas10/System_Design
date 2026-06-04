@@ -2,6 +2,57 @@
 1. System Design was HARD until I Learned these 30 Concepts : https://www.youtube.com/watch?v=s9Qh9fWeOAk
 2. System Design for Beginners : https://www.youtube.com/watch?v=lFeYU31TnQ8
 
+## Main topics covered
+1. Client–Server Architecture
+- Clients (browser/mobile apps) send requests to servers.
+- Servers process requests and return responses.
+2. DNS, IP Addresses, Proxies
+- DNS maps domain names to IP addresses.
+- Proxy and reverse proxy servers act as intermediaries.
+3. Latency & Global Deployment
+- Physical distance affects response time.
+- Multiple data centers reduce latency.
+4. HTTP, HTTPS & APIs
+- HTTP request/response model.
+- HTTPS adds SSL/TLS encryption.
+- APIs expose server functionality to clients.
+5. REST vs GraphQL
+- REST uses resources and HTTP verbs.
+- GraphQL allows clients to fetch exactly the data they need.
+6. SQL vs NoSQL Databases
+- SQL: structured data, ACID properties, strong consistency.
+- NoSQL: scalability and schema flexibility.
+7. Scaling
+- Vertical Scaling (Scale Up)
+- Horizontal Scaling (Scale Out)
+- Load Balancers distribute traffic.
+8. Database Optimization
+- Indexing
+- Replication
+- Sharding
+- Vertical Partitioning
+- Caching (Cache-Aside Pattern)
+9. Data Modeling
+- Normalization
+- Denormalization for read-heavy systems.
+10. Distributed Systems
+- CAP Theorem
+- Consistency vs Availability trade-offs.
+11. Storage & Content Delivery
+- Blob Storage (e.g., Amazon S3)
+- CDN (Content Delivery Network) for faster content delivery.
+12. Real-Time Communication
+- WebSockets
+- Webhooks
+13. Microservices
+- Independent services with their own databases.
+- Communication via APIs and message queues.
+14. System Protection & Reliability
+- Message Queues
+- Rate Limiting
+- API Gateway
+- Idempotency
+
 ### System Design
 
 <details>
