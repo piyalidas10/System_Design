@@ -1,3 +1,7 @@
+## System Design Tutorials
+1. System Design was HARD until I Learned these 30 Concepts : https://www.youtube.com/watch?v=s9Qh9fWeOAk
+2. System Design for Beginners : https://www.youtube.com/watch?v=lFeYU31TnQ8
+
 ### System Design
 
 <details>
