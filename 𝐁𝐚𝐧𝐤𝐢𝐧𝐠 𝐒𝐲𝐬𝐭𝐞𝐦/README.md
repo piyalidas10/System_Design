@@ -3,6 +3,7 @@
 
 After Architecting 5 Core Platforms handling billions in Transactions, I have Distilled Essential Components into this Design.
 
+<img src="./imgs/𝐁𝐚𝐧𝐤𝐢𝐧𝐠-𝐒𝐲𝐬𝐭𝐞𝐦.gif" width="70%" />
 
 ## 𝐓𝐡𝐞 𝐁𝐚𝐧𝐤𝐢𝐧𝐠 𝐒𝐲𝐬𝐭𝐞𝐦 𝐀𝐫𝐜𝐡𝐢𝐭𝐞𝐜𝐭𝐮𝐫𝐞:
 
