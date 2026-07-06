@@ -2,6 +2,8 @@
 A real-life enterprise application that follows this architecture is an online banking platform (e.g., internet banking or mobile banking).
 Here's how the flow works when a customer checks their account balance.
 
+<img src="imgs/Online banking flow diagram.png" width="90%" />
+
 ```
 Customer
    │
