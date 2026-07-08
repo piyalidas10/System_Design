@@ -1,6 +1,8 @@
 # Load Balancer
 
-## Why Load Balancers Are Dead (And What Comes Next)
+<img src="./Load_Balancer.png" width="100%" />
+
+# Why Load Balancers Are Dead (And What Comes Next)
 
 ## Introduction
 
