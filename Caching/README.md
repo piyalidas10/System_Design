@@ -1,3 +1,7 @@
+# Caching
+
+<img src="./Caching_strategies.jpg" width="100%" />
+
 Caching: Caching is like having a memory bank for your application. Instead of having to ask for the same data repeatedly (which takes time), you temporarily store that data in a fast-access place. When you need the data again, you fetch it from the cache instead of querying the original source. Caching reduces latency and lightens the load on the backend by serving pre-processed data. It also improves scalability and reduces operational costs, making it a lifesaver for businesses of all sizes.
 Imagine if instead of querying the database every time, you could store that data somewhere faster and more accessible. This would speed things up and ease the burden on your server. Caching is exactly that—a way to store data temporarily so that you don’t have to re-fetch it every time it's needed.
 
