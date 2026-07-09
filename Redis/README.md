@@ -2,6 +2,7 @@
 **Redis** : https://redis.io/
 
 <img src="imgs/caching_redis.jpg" width="90%">
+<img src="imgs/Redis.png" width="90%">
 
 **👉 It stores data in RAM (memory) → extremely fast ⚡**
 
