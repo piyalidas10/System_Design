@@ -2,19 +2,19 @@
 
 <img src="imgs/System_Design_Blueprint.jpg" width="100%" />
 
-• Client → The web or mobile application that initiates requests. 
-• DNS → Maps a domain name to the appropriate server. 
-• CDN → Delivers static assets from edge locations to minimize latency. 
-• Load Balancer → Distributes traffic across servers for scalability and high availability. 
-• API Gateway → Manages authentication, routing, and rate limiting. 
-• Application Servers → Execute stateless business logic. 
-• Redis Cache → Provides frequently accessed data with low latency while alleviating database load. 
-• Database + Read Replicas → Stores persistent data and scales read traffic. 
-• Message Queue → Decouples services and facilitates asynchronous processing. 
-• Workers → Handle background tasks such as notifications, image processing, and report generation. 
-• Object Storage (S3) → Stores files, images, videos, and other large objects. 
-• Search Engine → Enables fast full-text search and filtering. 
-• Monitoring & Logging → Offers insights into system health, performance, and failures.
+- 🔴 Client → The web or mobile application that initiates requests. 
+- 🔴 DNS → Maps a domain name to the appropriate server. 
+- 🔴 CDN → Delivers static assets from edge locations to minimize latency. 
+- 🔴 Load Balancer → Distributes traffic across servers for scalability and high availability. 
+- 🔴 API Gateway → Manages authentication, routing, and rate limiting. 
+- 🔴 Application Servers → Execute stateless business logic. 
+- 🔴 Redis Cache → Provides frequently accessed data with low latency while alleviating database load. 
+- 🔴 Database + Read Replicas → Stores persistent data and scales read traffic. 
+- 🔴 Message Queue → Decouples services and facilitates asynchronous processing. 
+- 🔴 Workers → Handle background tasks such as notifications, image processing, and report generation. 
+- 🔴 Object Storage (S3) → Stores files, images, videos, and other large objects. 
+- 🔴 Search Engine → Enables fast full-text search and filtering. 
+- 🔴 Monitoring & Logging → Offers insights into system health, performance, and failures.
 
 ## Five building blocks commonly found in scalable systems:
 ✅ Load Balancer 
