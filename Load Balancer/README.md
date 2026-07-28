@@ -1,15 +1,11 @@
 # Load Balancer
 
+## Tutorials
+1. What is Load Balancer | Load Balancer from Basic to Advance in 2026 : https://www.youtube.com/watch?v=88vl3BfLqUY
+
 <img src="./Load_Balancer.png" width="100%" />
 
-# Why Load Balancers Are Dead (And What Comes Next)
-
 ## Introduction
-
-Hello everyone, welcome back!
-
-In this guide, we'll discuss why people say **"Load Balancers are
-dead."** We'll first understand:
 
 -   What a Load Balancer is
 -   Why we need it
@@ -18,7 +14,7 @@ dead."** We'll first understand:
 
 ------------------------------------------------------------------------
 
-# 1. Basic Client-Server Architecture
+## 1. Basic Client-Server Architecture
 
 Every backend system has two primary components:
 
@@ -43,7 +39,7 @@ This request-response model has powered web applications for decades.
 
 ------------------------------------------------------------------------
 
-# 2. How Does the Client Reach the Server?
+## 2. How Does the Client Reach the Server?
 
 A server can be located anywhere on the Internet.
 
@@ -60,7 +56,7 @@ address.
 
 ------------------------------------------------------------------------
 
-# 3. Why DNS Exists
+## 3. Why DNS Exists
 
 Remembering IP addresses like:
 ```
@@ -98,7 +94,7 @@ Everything works perfectly.
 
 ------------------------------------------------------------------------
 
-# 4. Traffic Problem
+## 4. Traffic Problem
 Eventually, traffic increases.
 
 One server cannot handle millions of requests.
@@ -146,7 +142,7 @@ Advantages:
 
 ------------------------------------------------------------------------
 
-# 5. Multiple Servers Problem
+## 5. Multiple Servers Problem
 Now we have multiple servers.
 
 Each one has a different IP.
@@ -192,7 +188,7 @@ DNS typically returns a single IP address, so managing multiple backend servers 
 
 ------------------------------------------------------------------------
 
-# 6. Load Balancer Solution
+## 6. Load Balancer Solution
 
 ```
 Users
@@ -214,7 +210,7 @@ Load Balancer IP
 ```
 The Load Balancer decides which backend server should receive each request.
 
-## Example: Round Robin Algorithm
+### Example: Round Robin Algorithm
 
 Requests are distributed sequentially:
 
@@ -257,7 +253,7 @@ Backend servers remain hidden from the public internet.
 
 ------------------------------------------------------------------------
 
-# 7. Load Balancers in Microservices
+## 7. Load Balancers in Microservices
 
 Suppose we have an API Service running multiple containers.
 ```
@@ -289,7 +285,7 @@ When the API Service wants to send a notification, it calls the Notification Ser
 
 ------------------------------------------------------------------------
 
-# 8. Challenges
+## 8. Challenges
 
 -   Service-to-service authorization
 -   Difficult container failure tracking
@@ -298,7 +294,7 @@ When the API Service wants to send a notification, it calls the Notification Ser
 
 ------------------------------------------------------------------------
 
-# 9. Service Mesh
+## 9. Service Mesh
 
 Modern architectures often use a **Service Mesh** for internal service
 communication.
@@ -322,7 +318,7 @@ Popular options:
 
 ------------------------------------------------------------------------
 
-# Conclusion
+## Conclusion
 
 Load Balancers are **not dead**.
 
@@ -334,7 +330,7 @@ networking, security, and observability.
 
 ------------------------------------------------------------------------
 
-# Real-World Example (Angular + Node.js)
+## Real-World Example (Angular + Node.js)
 ```
 Users
    ↓
