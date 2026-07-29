@@ -1,6 +1,7 @@
 ## System Design Tutorials
-1. System Design was HARD until I Learned these 30 Concepts : https://www.youtube.com/watch?v=s9Qh9fWeOAk
-2. System Design for Beginners : https://www.youtube.com/watch?v=lFeYU31TnQ8
+1. System Design : https://www.youtube.com/playlist?list=PLFdAYMIVJQHOWJgRrjv_RH-ng95B2h3ON
+2. System Design was HARD until I Learned these 30 Concepts : https://www.youtube.com/watch?v=s9Qh9fWeOAk
+3. System Design for Beginners : https://www.youtube.com/watch?v=lFeYU31TnQ8
 
 ## Main topics covered
 1. Client–Server Architecture
