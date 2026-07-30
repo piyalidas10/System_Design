@@ -734,6 +734,196 @@ Choosing the right TTL depends entirely on the nature of the application and how
 
 In the next section, we'll see what happens when you need users to receive updated content immediately, without waiting for the TTL to expire.
 
+## What If We Need Users to See Updates Immediately?
 
+So far, we've discussed Time-To-Live (TTL).
+
+Normally, the CDN serves cached content until the TTL expires.
+
+But what if you've made an important update and you don't want to wait?
+
+For example:
+- You fixed a critical bug.
+- You updated your website's homepage.
+- You corrected incorrect information.
+- You changed an important CSS or JavaScript file.
+
+Waiting for the cache to expire naturally isn't always acceptable.
+
+In such situations, CDNs provide another mechanism.
+
+## Cache Invalidation
+
+CDN providers allow developers to invalidate or purge cached content.
+
+When you invalidate the cache:
+1. The cached copy is removed from CDN servers.
+2. The next incoming request cannot be served from the cache.
+3. The CDN contacts the origin server.
+4. It retrieves the latest version.
+5. It stores the updated version in the cache.
+6. Future users now receive the latest content.
+
+This process is called cache invalidation or cache purging.
+
+## When Should Cache Be Invalidated?
+
+Cache invalidation is useful whenever users must receive updated content immediately.
+
+Common examples include:
+- Emergency production bug fixes
+- Security patches
+- Updated homepage announcements
+- Pricing changes
+- Product information updates
+- Important business announcements
+
+Instead of waiting for the TTL to expire, developers simply purge the affected cache entries.
+
+## Cache Expiration vs Cache Invalidation
+
+It's important to understand the difference.
+
+**Cache Expiration**
+
+The cache automatically expires after its configured TTL.
+
+No manual action is required.
+
+Example:
+```
+TTL = 1 hour
+```
+After one hour, the CDN requests a fresh copy from the origin server.
+
+**Cache Invalidation**
+
+The developer manually removes the cached resource before the TTL expires.
+
+Example:
+```
+TTL = 1 year
+```
+But today you deploy a new version.
+
+Rather than waiting an entire year, you invalidate the cache immediately.
+
+The CDN fetches the new file on the very next request.
+
+## Can Premium Content Be Served Through a CDN?
+
+Many people ask this question.
+
+Suppose you're running an online learning platform.
+
+Some courses are free.
+
+Some courses are available only to paid subscribers.
+
+Can those paid videos also be delivered through a CDN?
+
+Yes.
+
+They absolutely can.
+
+However, the CDN must first verify whether the user is authorized to access the content.
+
+## Authentication Before Serving Protected Content
+
+The process works like this.
+1. The user logs in.
+2. The application verifies the user's credentials.
+3. The origin server generates an authentication token.
+4. The user includes this token in future requests.
+5. The CDN validates the token.
+6. If the token is valid, the CDN serves the protected resource.
+7. Otherwise, access is denied.
+
+This ensures that only authorized users receive premium content.
+
+## Why Authentication Matters
+
+Imagine a premium course worth thousands of dollars.
+
+If the CDN simply served the cached video without checking authentication, anyone who knew the URL could access the course.
+
+That would be a serious security problem.
+
+Therefore, authentication is always verified before protected content is delivered.
+
+Caching should never bypass authorization.
+
+## Large CDN Architectures
+
+Large CDN providers don't rely on just a single cache server.
+
+Instead, they build multiple layers of caching.
+
+A simplified architecture looks like this:
+```
+User
+   │
+   ▼
+Nearest Edge Server
+   │
+   ▼
+Regional Cache
+   │
+   ▼
+Origin Shield
+   │
+   ▼
+Origin Server
+```
+Each layer increases efficiency.
+
+If the edge server doesn't have the requested resource, it first checks a higher-level cache before contacting the origin server.
+
+This greatly reduces traffic reaching the application server.
+
+## Why Multiple Cache Layers?
+
+Suppose several CDN edge locations belong to the same region.
+
+Instead of every edge server independently contacting the origin server, they can first communicate with a shared regional cache.
+
+Benefits include:
+- Fewer requests to the origin server
+- Lower bandwidth usage
+- Faster cache warm-up
+- Better scalability
+
+This hierarchical design is one of the reasons modern CDNs handle millions of requests efficiently.
+
+## Does Every Request Reach the Origin Server?
+
+No.
+
+Ideally, only a very small percentage of requests ever reach the origin server.
+
+A typical flow looks like this:
+- User requests a resource.
+- Edge cache checks for the file.
+- If found, it serves the response immediately.
+- If not found, it checks higher cache layers.
+- Only if all cache layers miss does the request reach the origin server.
+
+This minimizes both latency and server load.
+
+## Why Is This Beneficial?
+
+Because the origin server no longer needs to handle every user request.
+
+Instead, it only processes:
+- New content
+- Uncached requests
+- Expired content
+- Dynamic user-specific data
+
+Everything else can be served directly from the CDN.
+
+As traffic grows from thousands to millions of users, this dramatically improves scalability while reducing infrastructure costs.
+
+In the final section, we'll discuss another major advantage of CDNs—security—including how they help protect applications against attacks such as DDoS and why many organizations place a CDN in front of their origin servers.
 
 
