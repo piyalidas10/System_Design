@@ -926,4 +926,232 @@ As traffic grows from thousands to millions of users, this dramatically improves
 
 In the final section, we'll discuss another major advantage of CDNs—security—including how they help protect applications against attacks such as DDoS and why many organizations place a CDN in front of their origin servers.
 
+## CDNs Are Not Just About Speed
 
+So far, we've learned that CDNs reduce latency and improve website performance.
+
+But that's not their only advantage.
+
+A CDN also acts as an additional layer between users and your origin server.
+
+Instead of allowing every request to directly reach your application, users first communicate with the CDN.
+
+Only when necessary does the CDN forward requests to the origin server.
+
+This architecture provides significant security benefits.
+
+## Protecting the Origin Server
+
+Without a CDN, users communicate directly with the origin server.
+
+That means:
+```
+User
+   │
+   ▼
+Origin Server
+```
+Every incoming request reaches the application server.
+
+If millions of requests suddenly arrive, the server may become overloaded.
+
+## CDN as a Protective Layer
+
+With a CDN in front of the application, the architecture changes.
+```
+Users
+   │
+   ▼
+Content Delivery Network
+   │
+   ▼
+Origin Server
+```
+Now the origin server is no longer directly exposed to the public internet.
+
+Instead, the CDN becomes the public-facing layer.
+
+Most traffic is handled there.
+
+Only necessary requests reach the application server.
+
+## Hiding the Origin Server
+
+Another important benefit is that the actual IP address of the origin server can remain hidden.
+
+Users interact with the CDN rather than communicating directly with the server hosting the application.
+
+Because the origin server is less exposed, attackers have a more difficult time targeting it directly.
+
+This significantly improves the application's overall security posture.
+
+## Protection Against DDoS Attacks
+
+One of the biggest advantages of using a CDN is protection against Distributed Denial-of-Service (DDoS) attacks.
+
+A DDoS attack attempts to overwhelm a server by sending an enormous number of requests simultaneously.
+
+For example:
+- Thousands
+- Millions
+- Or even billions of requests
+
+may arrive within a short period.
+
+If every request reached the origin server, the application could become unavailable.
+
+## How a CDN Helps
+
+A CDN operates a massive global network.
+
+Instead of allowing all malicious traffic to reach the application, the CDN absorbs and distributes the traffic across its infrastructure.
+
+Many malicious requests are identified and blocked before they ever reach the origin server.
+
+As a result:
+- The application remains available.
+- The origin server processes far fewer unnecessary requests.
+- Legitimate users continue accessing the website.
+
+## Traffic Filtering
+
+Modern CDNs do much more than simple caching.
+
+They also inspect incoming traffic.
+
+Depending on the provider, they can:
+- Detect suspicious requests.
+- Block malicious clients.
+- Rate-limit abusive traffic.
+- Filter automated attacks.
+- Protect against common web threats.
+
+This makes the CDN an important component of an application's security architecture.
+
+## Reduced Load on the Origin Server
+
+Because cached content is served directly from CDN edge servers:
+- Static resources never reach the origin server.
+- Many repeated requests are eliminated.
+- Network bandwidth consumption decreases.
+- CPU utilization on the application server is reduced.
+
+The origin server can dedicate its resources to processing:
+- Dynamic requests
+- Authentication
+- Business logic
+- Database operations
+
+instead of repeatedly serving identical files.
+
+## Improved Scalability
+
+Imagine your website suddenly becomes popular.
+
+Instead of serving ten thousand users, it now serves ten million users.
+
+Without a CDN, your infrastructure requirements would increase dramatically.
+
+With a CDN:
+- Frequently requested content is already distributed globally.
+- Most users are served directly by nearby edge servers.
+- Only a relatively small number of requests reach the origin server.
+
+This allows applications to scale much more efficiently.
+
+## Key Takeaways
+
+Let's summarize everything we've learned.
+
+**Why Do We Need a CDN?**
+
+Because users are located around the world.
+
+Serving content from geographically nearby servers reduces network latency and improves page load speed.
+
+**How Does a CDN Work?**
+1. A user sends a request.
+2. The request reaches the nearest CDN edge server.
+3. If the content is cached (Cache Hit), it is served immediately.
+4. Otherwise (Cache Miss), the CDN requests it from the origin server.
+5. The CDN caches the content.
+6. Future users receive the cached copy.
+
+**What Should Be Cached?**
+
+Cache content that is:
+- Public
+- Shared among most users
+- Relatively stable
+
+Examples include:
+- HTML (where appropriate)
+- CSS
+- JavaScript
+- Images
+- Fonts
+- Videos
+- Documents
+
+**What Should Not Be Cached?**
+
+Avoid globally caching:
+- User profiles
+- Personalized dashboards
+- Shopping carts
+- Account settings
+- Private messages
+- Sensitive personal information
+
+These should be retrieved directly from the origin server.
+
+**How Is Cached Content Updated?**
+
+CDNs use several techniques:
+- File versioning
+- Hashed filenames
+- Time-To-Live (TTL)
+- Cache expiration
+- Manual cache invalidation (purging)
+
+These mechanisms ensure users receive updated content when necessary.
+
+**Can Dynamic Data Be Cached?**
+
+Yes.
+
+If temporary staleness is acceptable, dynamic responses can be cached for short durations.
+
+Examples include:
+- Comments
+- Public statistics
+- Trending content
+- Frequently accessed API responses
+
+The TTL should be selected based on how fresh the data needs to be.
+
+**Security Benefits**
+
+A CDN also improves security by:
+- Acting as a protective layer in front of the origin server.
+- Hiding the origin server from public access.
+- Filtering malicious traffic.
+- Mitigating DDoS attacks.
+- Reducing unnecessary requests to the application.
+
+## Conclusion
+
+Content Delivery Networks are far more than simple caching systems.
+
+They form a globally distributed infrastructure that improves:
+- Website performance
+- Scalability
+- Availability
+- Reliability
+- Security
+
+Understanding what to cache, how long to cache it, when to invalidate cached content, and how CDNs protect applications is essential for designing modern, high-performance web applications.
+
+With that, we've completed our discussion on Content Delivery Networks (CDNs) from first principles.
+
+I hope this session helped you understand not only how CDNs work, but also why they are one of the most important building blocks of modern web architecture.
