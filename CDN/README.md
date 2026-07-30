@@ -1,408 +1,197 @@
 # Content Delivery Networks (CDNs)
 
-## Introduction
+Today we're going to learn about CDNs—Content Delivery Networks.
 
-Every modern website aims to deliver content to users as quickly as possible, regardless of where they are located. Whether someone is accessing a website from New Delhi, New York, London, or Sydney, users expect pages to load almost instantly.
+I hope all of you have at least heard the term before. Even if you haven't, don't worry. Today we'll cover everything from the absolute basics all the way to advanced concepts using first-principles thinking.
 
-One of the most important technologies that makes this possible is the **Content Delivery Network (CDN)**.
+Many people who know a little about CDNs often get confused about one thing:
+- Which type of data should be cached?
+- Which type of data should never be cached?
 
-Many developers understand that CDNs cache static content, but often struggle with practical questions such as:
+The basic definition everyone has heard is:
+```
+"Cache static data, but don't cache dynamic data."
+```
+But how accurate is that statement? Where does the confusion come from?
 
-* What exactly should be cached?
-* What should never be cached?
-* Can dynamic content also be cached?
-* How do CDNs keep cached files up to date?
-* How do CDNs improve both performance and security?
-
-This article explains these concepts from first principles.
-
----
-
-# Why Do We Need a CDN?
-
-Imagine your application's origin server is located in **Mumbai, India**.
-
-Now consider two users:
-
-* User A is in Delhi.
-* User B is in the United States.
-
-Both request the same website.
-
-Although both requests reach the same server, the physical distance traveled by data is very different.
-
-A request from Delhi reaches Mumbai much faster than one originating from the United States.
-
-Longer distances introduce:
-
-* Higher network latency
-* More intermediate routers
-* Additional processing delays
-* Increased round-trip time (RTT)
-
-A page that loads in approximately 30 milliseconds for a nearby user may take around 200 milliseconds—or more—for someone on another continent.
-
-The problem becomes even more noticeable because loading a webpage involves multiple requests.
+Today we'll understand everything from A to Z.
 
 ---
 
-# One Page Requires Multiple Requests
+## Understanding the Problem
 
-When a browser loads a webpage, it does not retrieve everything in a single request.
+Imagine this is my server. It hosts the website striver.in, and the server is located in Mumbai.
 
-The process typically looks like this:
+Now suppose I'm located in Delhi.
 
-1. Request the HTML document.
-2. Parse the HTML.
-3. Discover CSS files.
-4. Download CSS.
-5. Discover JavaScript files.
-6. Download JavaScript.
-7. Download images.
-8. Download fonts.
-9. Download videos or other media.
+Whenever I visit this website, my browser sends a request to the Mumbai server. The server processes the request and sends back a response, after which the website opens in my browser.
 
-Each network request adds additional latency.
+Now imagine another user who is located in the United States.
 
-For users located far from the origin server, these delays accumulate and significantly affect page load performance.
+This user also wants to access the same website. The server is still located in Mumbai, so their request also has to travel all the way to Mumbai before the response comes back.
 
----
+Now let me ask you something.
 
-# A Simple Solution... and Its Problem
+Who will receive the response faster?
+- The user in Delhi?
+- Or the user in the USA?
 
-One possible solution would be deploying servers in every country.
+Some people might think both should receive it at the same speed.
+
+But that's not true.
+
+The physical distance matters a lot.
 
 For example:
+- The round-trip distance between the USA and Mumbai may be around 14,000 kilometers.
+- The round-trip distance between Delhi and Mumbai may be roughly 1,400 kilometers.
 
-* Mumbai
-* Singapore
-* London
-* Frankfurt
-* New York
-* Tokyo
-* Sydney
+The data traveling over the network has a speed limit.
 
-While this would reduce latency, it introduces enormous infrastructure costs.
+Nothing can travel faster than the speed of light.
 
-Organizations would need to:
+The speed of light is approximately 300,000 km/s, while network signals typically travel at around 200,000 km/s through fiber optic cables.
 
-* Purchase servers
-* Maintain hardware
-* Configure networking
-* Handle redundancy
-* Perform updates
-* Monitor availability
+Because of this:
+- The user in the USA may receive a response after roughly 70 milliseconds.
+- The user in Delhi may receive a response in around 7 milliseconds.
 
-Operating global infrastructure independently is expensive.
+So clearly there's a noticeable delay.
 
----
+And honestly, even 70 milliseconds sounds small.
 
-# Enter the Content Delivery Network (CDN)
+In reality, the request doesn't travel directly.
 
-Instead of building worldwide infrastructure yourself, you can use a CDN provider.
+It passes through many routers along the way, and each router performs some processing. Because of this additional network overhead, the delay increases.
 
-Popular CDN providers include:
+In practice:
+- A request from the USA might take around 200 milliseconds.
+- A request from Delhi might take roughly 30 milliseconds.
 
-* Amazon CloudFront
-* Cloudflare
-* Akamai
-
-These companies already operate thousands of servers distributed across the globe.
-
-Rather than contacting your origin server directly, users first connect to the nearest CDN edge server.
-
----
-
-# How a CDN Works
-
-Suppose a user in the United States visits your website for the first time.
-
-### First Request (Cache Miss)
-
-1. User requests the webpage.
-2. Request reaches the nearest CDN server.
-3. CDN checks whether the requested file is already cached.
-4. Since this is the first request, the cache is empty.
-5. CDN forwards the request to the origin server.
-6. Origin server returns the requested content.
-7. CDN sends the content back to the user.
-8. CDN stores a copy locally.
-
-This is called a **Cache Miss**.
-
----
-
-### Subsequent Requests (Cache Hit)
-
-When another user from the same region requests the same resource:
-
-1. Request reaches the nearby CDN.
-2. CDN already has the cached copy.
-3. The content is served immediately.
-
-The origin server is no longer involved.
-
-This is known as a **Cache Hit**.
-
-The result is:
-
-* Lower latency
-* Faster page loads
-* Reduced server load
-* Better scalability
-
----
-
-# What Should Be Cached?
-
-A useful rule of thumb is:
-
-> Cache content that is identical for the majority of users.
-
-Examples include:
-
-* HTML (in some situations)
-* CSS
-* JavaScript bundles
-* Images
-* Fonts
-* Videos
-* Logos
-* Public documentation
-* Product images
-* Static assets
-
-These resources are the same regardless of who visits the website.
-
----
-
-# What Should Not Be Cached?
-
-Personalized or user-specific information should generally not be cached globally.
-
-Examples include:
-
-* User profiles
-* Dashboard information
-* Account settings
-* Shopping cart contents
-* Personalized recommendations
-* User-written code
-* Private messages
-* Personal statistics
-
-Each user sees different data, making these responses dynamic.
-
-Fetching them directly from the origin server ensures correctness and privacy.
-
----
-
-# Static vs Dynamic Content
-
-Many developers assume that only static content can be cached.
-
-The reality is more nuanced.
-
-Instead of asking:
-
-> Is this static?
-
-Ask:
-
-> Is this response identical for most users?
-
-If the answer is yes, it is an excellent CDN candidate.
-
-If the response varies significantly per user, avoid caching it globally.
-
----
-
-# Keeping Cached Files Updated
-
-Suppose you update your CSS file after deployment.
-
-The CDN still holds the older version.
-
-How does it know a new version exists?
-
-A common solution is **asset versioning**.
-
-Instead of:
-
+Now you may think:
 ```
-style.css
+"What's the big deal? Even 200 milliseconds is less than one second."
 ```
+That's true, but this is only the delay for a single request.
 
-Deploy:
+---
 
+## A Website Requires Multiple Requests
+
+Let's see what actually happens when someone visits a website.
+
+Suppose I'm trying to open the Striver website.
+
+The browser first sends a request.
+
+The very first thing the server sends back is an HTML page.
+
+Initially, the browser receives only the HTML document.
+
+Inside that HTML file, there are references to other resources.
+
+For example, the HTML says:
+- I need this CSS file.
+- I need this JavaScript file.
+
+There may be multiple JavaScript files.
+
+There may also be multiple CSS stylesheets.
+
+After receiving the HTML page, the browser has to send additional requests:
+- "Please send me the CSS file."
+- "Please send me the JavaScript file."
+
+The server responds with the CSS.
+
+Then another request is made.
+
+The JavaScript file is downloaded.
+
+Each one of these requests introduces additional network delay.
+
+---
+
+## How Can We Solve This?
+
+We want the user sitting in the USA to experience the website just as quickly as someone sitting near the server.
+
+One possible idea is:
 ```
-style.v2.css
+"Why don't I simply create another server in the USA?"
 ```
+Then American users would directly connect to the US server instead of the Mumbai server.
 
-or
+Sounds like a good solution.
 
-```
-style.4f3b91.css
-```
+But there's a major problem.
 
-The HTML references the new filename, causing the CDN to fetch the updated asset automatically.
+Cost.
 
-Modern build tools such as React, Angular, and similar frameworks generate hashed filenames automatically during production builds.
+If I want fast performance across the world, I'd have to deploy servers in:
+- The USA
+- Europe
+- Asia
+- Australia
+- And many other regions
 
----
+Maintaining servers in every region would be extremely expensive.
 
-# HTML Caching Strategy
+Even within India, if I wanted users from every state to experience very low latency, I might need to deploy 10 to 15 additional servers.
 
-HTML changes more frequently than CSS or JavaScript.
+That would significantly increase infrastructure costs.
 
-Many systems therefore:
+Instead of building all of that infrastructure myself, wouldn't it be better to use a third-party service that has already built a global network of servers?
 
-* Cache HTML for shorter durations
-* Cache assets for much longer periods
-
-For example:
-
-* HTML: 5 minutes to 7 days
-* CSS: several months
-* JavaScript: several months
-* Images: several months
-* Fonts: several months
-
-The appropriate duration depends on how often the content changes.
+That's exactly where a Content Delivery Network (CDN) comes in.
 
 ---
 
-# Time-To-Live (TTL)
+## What Is a CDN?
 
-Every cached resource has a lifetime.
+Companies such as:
+- Amazon CloudFront
+- Cloudflare
+- Akamai
 
-This is known as **Time-To-Live (TTL).**
+already have servers distributed all over the world.
 
-For example:
+These companies provide what we call CDN services.
 
-* HTML cached for 7 days
-* Comments cached for 30 seconds
-* Images cached for one year
+A CDN is essentially a network of servers that cache your data.
 
-After the TTL expires, the CDN requests a fresh copy from the origin server.
-
-Choosing the right TTL balances performance with freshness.
-
----
-
-# Can Dynamic Data Be Cached?
-
-Yes—but only when temporary staleness is acceptable.
-
-Consider a video's comment section.
-
-Comments change frequently.
-
-However, serving comments that are 30 seconds old is often perfectly acceptable.
-
-Instead of requesting comments from the origin server every time:
-
-* Cache them for 30 seconds.
-* After expiration, fetch fresh comments.
-* Cache the updated response again.
-
-This dramatically reduces origin server load while maintaining a good user experience.
+Now let's understand exactly how it works.
 
 ---
 
-# CDN Cache Invalidation
+## How a CDN Works
 
-Sometimes waiting for the TTL to expire is unacceptable.
+Suppose a user in the USA wants to visit striver.in.
 
-Imagine a critical production bug has just been fixed.
+Instead of sending the request directly to my origin server in Mumbai, the request first goes to the nearest CDN server.
 
-You want users to receive the updated files immediately.
+Initially, this CDN server has no cached copy of the website.
 
-CDN providers allow manual cache invalidation.
+Since it doesn't have the requested data, it forwards the request to the original server.
 
-From the provider's dashboard, developers can purge cached resources across all edge locations.
+The origin server sends back the required files—such as the HTML document.
 
-The next request retrieves the latest version directly from the origin server.
+The CDN forwards those files to the user.
 
----
+At the same time, it stores a copy locally.
 
-# Authentication and Protected Content
+So now the CDN has cached that content.
 
-What about premium or members-only content?
+Later, if another user from the same region visits the same website, the request again reaches the CDN server.
 
-A CDN should never blindly serve protected resources.
+This time, the CDN already has the HTML page stored.
 
-Instead, authentication is verified before delivering the content.
+Instead of contacting the origin server again, it immediately serves the cached copy to the user.
 
-The transcript describes a token-based approach:
+The first request resulted in a cache miss, because the CDN didn't have the data.
 
-1. User logs in.
-2. Origin server issues a signed authentication token.
-3. CDN validates the token.
-4. If valid, protected content can be served.
+The second request becomes a cache hit, because the content is already available in the CDN cache.
 
-This allows premium content to be distributed efficiently while ensuring that only authorized users can access it.
+This means the origin server no longer has to process every request from users in that region.
 
----
-
-# CDN Hierarchy
-
-Large CDN providers operate multiple layers of caching.
-
-A request may travel through:
-
-```
-User
-   │
-   ▼
-Edge Cache
-   │
-   ▼
-Regional Cache
-   │
-   ▼
-Origin Shield
-   │
-   ▼
-Origin Server
-```
-
-Each level reduces traffic reaching the actual application server.
-
----
-
-# Security Benefits of CDNs
-
-CDNs do more than accelerate content delivery.
-
-They also enhance security.
-
-Key advantages include:
-
-* Hiding the origin server's IP address
-* Acting as a protective layer between users and the origin
-* Filtering malicious traffic
-* Rate limiting abusive requests
-* Mitigating Distributed Denial-of-Service (DDoS) attacks
-* Functioning as an application firewall
-
-Only CDN servers communicate directly with the origin, reducing its exposure to the public internet.
-
----
-
-# Key Takeaways
-
-* A CDN reduces latency by serving content from geographically distributed edge servers.
-* The first request results in a cache miss; subsequent requests become cache hits.
-* Cache resources that are identical for most users.
-* Avoid globally caching personalized or sensitive user data.
-* Use asset versioning or hashed filenames to keep cached resources up to date.
-* Configure appropriate TTL values based on how frequently content changes.
-* Frequently changing content can still be cached for short durations when slight staleness is acceptable.
-* CDNs improve not only performance but also scalability, reliability, and security.
-
-## Conclusion
-
-Content Delivery Networks are far more than simple caching systems. They are globally distributed platforms that accelerate applications, reduce infrastructure load, improve scalability, enhance resilience, and strengthen security.
-
-Understanding **what to cache, how long to cache it, and when to invalidate cached content** is essential for designing modern, high-performance web applications. When used thoughtfully, a CDN becomes one of the most impactful components of a scalable web architecture.
+The CDN serves the content directly, making the website much faster while reducing the load on the original server.
