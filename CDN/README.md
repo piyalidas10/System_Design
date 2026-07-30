@@ -195,3 +195,274 @@ The second request becomes a cache hit, because the content is already available
 This means the origin server no longer has to process every request from users in that region.
 
 The CDN serves the content directly, making the website much faster while reducing the load on the original server.
+
+---
+
+## The CDN Stores a Copy of the Data
+
+After the CDN requests the HTML file from the origin server, it returns that file to the user.
+
+But something else happens behind the scenes.
+
+The CDN keeps a copy of that data in its own storage.
+
+In other words, it caches the data locally.
+
+Now imagine that another user from the same region wants to visit the same website.
+
+The request again goes to the CDN server.
+
+This time, however, the CDN already has the HTML file for the website.
+
+Instead of contacting the origin server again, it simply serves the cached copy directly.
+
+The first request was a cache miss because the CDN didn't have the data.
+
+The second request is a cache hit, because the required content is already available in the CDN cache.
+
+The CDN has stored that information so it can quickly serve future users without repeatedly contacting the origin server.
+
+---
+
+## Another Example: Video Delivery
+
+Let's take another example.
+
+Suppose your server hosts a video.
+
+A user named Rohit wants to watch that video.
+
+When Rohit requests it:
+1. The request reaches the CDN.
+2. The CDN doesn't have the video.
+3. It forwards the request to the origin server.
+4. The origin server sends the video.
+5. The CDN sends the video to Rohit.
+6. At the same time, it stores a copy locally.
+
+Later, another user from the same region requests the exact same video.
+
+Now the CDN already has the video.
+
+It serves the video immediately without contacting the origin server again.
+
+This is exactly what caching means.
+
+The CDN stores frequently requested content so it can serve it much faster to future users.
+
+---
+
+## CDN Servers Exist Everywhere
+
+CDN providers operate servers across the globe.
+
+Imagine they have 300–400 servers worldwide.
+
+Whenever a user makes a request, it is routed to the nearest CDN server.
+
+The process works like this:
+- The user sends a request to the nearest CDN.
+- If that CDN already has the requested content, it serves it immediately.
+- If it doesn't, it fetches the content from the origin server.
+- It stores a copy locally.
+- Then it serves the content to the user.
+
+Now, if another user from the same geographical region requests the same resource, the CDN can deliver it directly.
+
+There is no need to repeatedly contact the origin server.
+
+---
+
+## What Kind of Data Should a CDN Cache?
+
+This is one of the most important questions.
+
+I'll give you a very simple way to think about it.
+
+Suppose one million users use your website.
+
+Ask yourself:
+```
+Which data is identical for all one million users?
+```
+That is the data you should cache.
+
+---
+
+## Example: Website Homepage
+
+Suppose someone visits striver.in.
+
+Every visitor sees:
+- The website logo
+- Home button
+- Courses
+- Practice
+- Articles
+- Contest
+- Navigation bar
+- Colors
+- Background
+- Cards
+- Layout
+
+All of this is the same for every user.
+
+Since every visitor receives identical content, this is excellent cacheable content.
+
+---
+
+## What Should Not Be Cached?
+
+Now think about the profile section.
+
+Suppose the profile shows:
+
+**Aditya Tomar**
+
+Another user may see:
+
+**Mohan**
+
+Someone else may see:
+
+**Priya**
+
+This data is different for every individual user.
+
+Therefore, it is dynamic data.
+
+Dynamic, user-specific information should not be stored in a shared CDN cache.
+
+Whenever this information is needed, the application should request it directly from the origin server.
+
+---
+
+## More Examples of Dynamic Data
+
+Suppose your profile page displays:
+- Number of problems solved
+- Personal achievements
+- Progress
+- User statistics
+
+These values are different for every user.
+
+Similarly, imagine opening a coding problem where you've already written some code.
+
+That source code belongs only to you.
+
+Another user has completely different code.
+
+Again, this is user-specific information.
+
+Such content should never be cached globally.
+
+---
+
+## User-Specific Recommendations
+
+The same applies to:
+- Personalized recommendations
+- User-specific dashboards
+- Private information
+- Account settings
+
+Anything that belongs to one specific user should always be fetched from the origin server rather than being stored inside a shared CDN cache.
+
+---
+
+## What Can Be Cached?
+
+Let's look at a coding platform.
+
+Suppose thousands of users open the same programming problem.
+
+The problem statement itself is identical for everyone.
+
+Since every user receives exactly the same problem description, this is a perfect candidate for CDN caching.
+
+---
+
+## Why Not Cache Personal Information?
+
+You might ask:
+```
+"Can't a CDN cache personal data as well?"
+```
+Technically, it can.
+
+The technology is capable of storing any kind of data.
+
+But doing so creates several problems.
+
+**1. Security**
+
+Users trust your application with their personal information.
+
+If that sensitive information is copied across hundreds of CDN servers worldwide, the risk of data leakage increases significantly.
+
+That's one major reason.
+
+**2. Synchronization**
+
+Imagine a user updates their profile.
+
+If that profile were cached in hundreds of CDN servers, every cached copy would also need to be updated.
+
+Keeping all those copies synchronized would become extremely difficult and inefficient.
+
+Therefore, dynamic and frequently changing user information is usually not stored inside the CDN.
+
+---
+
+## General Rule
+
+Cache content that is:
+- Common for everyone
+- Public
+- Shared by the majority of users
+
+Examples include:
+- CSS files
+- JavaScript files
+- Images
+- Fonts
+- Videos
+
+Do not cache:
+- User details
+- Personal information
+- Sensitive data
+- Individual account information
+
+These should always come from the origin server.
+
+---
+
+## Is Static Content Really Static?
+
+When I first learned about CDNs, I was told:
+```
+"Static data means data that never changes."
+```
+But let's think carefully.
+
+Suppose you've deployed your website.
+
+Does that mean you'll never change your CSS again?
+
+Of course not.
+
+Tomorrow you might:
+- Add a new font.
+- Change the theme.
+- Change the background color.
+- Update the styling.
+
+That means even CSS files can change over time.
+
+So how does the CDN know when it should serve the updated version instead of the old cached one?
+
+That's exactly the problem we'll solve in the next section.
+
