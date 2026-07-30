@@ -1,5 +1,7 @@
 # Content Delivery Networks (CDNs)
 
+<img src="./img/CDN%20Caching%20Network%20Diagram.png" width="100%" />
+
 Today we're going to learn about CDNs—Content Delivery Networks.
 
 I hope all of you have at least heard the term before. Even if you haven't, don't worry. Today we'll cover everything from the absolute basics all the way to advanced concepts using first-principles thinking.
