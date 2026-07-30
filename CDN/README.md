@@ -1,5 +1,7 @@
 # Content Delivery Networks (CDNs)
 
+What is CDN | Content Delivery Network : https://www.youtube.com/watch?v=4pd5FgTluCM&t=2s
+
 <img src="./img/CDN%20Caching%20Network%20Diagram.png" width="100%" />
 
 Today we're going to learn about CDNs—Content Delivery Networks.
