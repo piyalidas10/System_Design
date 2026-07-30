@@ -466,3 +466,274 @@ So how does the CDN know when it should serve the updated version instead of the
 
 That's exactly the problem we'll solve in the next section.
 
+---
+
+## Static Files Can Also Change
+
+At first glance, we think of CSS, JavaScript, and images as "static" files.
+
+But are they truly permanent?
+
+Not at all.
+
+Imagine you've deployed your website today.
+
+A week later, your designer changes the UI.
+
+You modify:
+- CSS styles
+- JavaScript code
+- Images
+- Icons
+
+Now a question arises.
+
+The CDN has already cached the old CSS file.
+
+How will users receive the updated version?
+
+If the CDN keeps serving the old file forever, users will continue seeing the outdated website.
+
+Clearly, there must be a mechanism to update the cached content.
+
+---
+
+## The Problem with Cached Files
+
+Let's understand the problem.
+
+Suppose your HTML page contains:
+```
+<link rel="stylesheet" href="style.css">
+```
+The browser requests:
+```
+style.css
+```
+The CDN caches this file.
+
+Later you update your CSS and deploy the new version.
+
+However, the filename remains exactly the same:
+
+style.css
+
+The CDN cannot automatically determine that the file contents have changed.
+
+As a result, users may continue receiving the older cached version.
+
+---
+
+## The Solution: Versioning
+
+A simple solution is to change the filename whenever the content changes.
+
+Instead of:
+```
+style.css
+```
+deploy:
+```
+style-v2.css
+```
+or
+```
+style-v3.css
+```
+Now your HTML references:
+```
+<link rel="stylesheet" href="style-v2.css">
+```
+Since the CDN has never seen this filename before, it treats it as a completely new resource.
+
+The request goes to the origin server.
+
+The updated CSS is downloaded.
+
+The CDN stores the new version in its cache.
+
+Future users now receive the latest file.
+
+---
+
+## Hash-Based File Names
+
+Modern frontend frameworks automate this process.
+
+Instead of naming files:
+```
+style-v2.css
+```
+they generate filenames containing a unique hash.
+
+For example:
+```
+style.4fd9ab.css
+```
+or
+```
+main.93af21.js
+```
+Whenever the file content changes, the hash changes automatically.
+
+Since the filename changes, the CDN immediately knows it needs to fetch a fresh copy.
+
+This technique avoids cache-related problems without requiring manual intervention.
+
+---
+
+## Why Frameworks Generate Hashed Files
+
+Frameworks like Angular, React, and Vue automatically create hashed filenames during production builds.
+
+This provides several advantages:
+- Long-term browser caching
+- Efficient CDN caching
+- Automatic cache invalidation
+- Better deployment strategy
+
+Users always receive the latest version whenever the application's assets change.
+
+---
+
+## Does HTML Also Get Cached?
+
+This raises another question.
+
+What about the HTML page itself?
+
+Can HTML also be cached?
+
+The answer is:
+
+Yes.
+
+HTML can also be cached.
+
+However, unlike CSS or JavaScript, HTML tends to change more frequently.
+
+For example:
+- Home page announcements
+- New blog posts
+- Updated navigation
+- Promotional banners
+
+Because HTML changes more often, it is usually cached for a much shorter duration.
+
+---
+
+## Understanding Time-To-Live (TTL)
+
+Every cached resource has an expiration time.
+
+This is called Time-To-Live (TTL).
+
+For example:
+- CSS may be cached for one year.
+- Images may be cached for one year.
+- Fonts may be cached for several months.
+- HTML may be cached for only a few minutes or a few hours.
+
+After the TTL expires, the CDN checks with the origin server to determine whether a newer version exists.
+
+If a newer version is available, the CDN updates its cache.
+
+Otherwise, it continues serving the existing copy.
+
+---
+
+## Choosing an Appropriate TTL
+
+The TTL depends on how frequently the content changes.
+
+For example:
+
+Static Assets
+
+Resources such as:
+- Logos
+- Fonts
+- JavaScript bundles
+- CSS files
+
+rarely change after deployment.
+
+These can safely have very long TTL values.
+
+---
+
+## Frequently Updated Content
+
+Resources like:
+- Homepage HTML
+- News pages
+- Blog listings
+
+change more frequently.
+
+These should have shorter TTL values.
+
+A shorter TTL ensures that users receive updated information relatively quickly.
+
+---
+
+## Is Dynamic Content Never Cached?
+
+Many beginners believe:
+```
+"Dynamic content should never be cached."
+```
+That isn't always true.
+
+Let's consider an example.
+
+Suppose you're watching a YouTube video.
+
+Below the video is a comments section.
+
+Comments are dynamic.
+
+New comments appear regularly.
+
+Should every user request force the origin server to generate the comments again?
+
+Not necessarily.
+
+---
+
+## Short-Term Caching
+
+Imagine comments are cached for only 30 seconds.
+
+During those 30 seconds:
+- Thousands of users can receive the cached response.
+- The origin server avoids processing thousands of identical requests.
+
+After 30 seconds:
+- The cache expires.
+- The CDN requests fresh comments.
+- The updated response is cached again.
+
+Most users won't even notice a 30-second delay in newly posted comments.
+
+Yet the origin server experiences a dramatic reduction in load.
+
+---
+
+## Performance vs Freshness
+
+Caching is always a balance between two goals:
+1. Performance
+2. Freshness of data
+
+Long TTL values improve performance because fewer requests reach the origin server.
+
+Short TTL values improve freshness because updates become visible more quickly.
+
+Choosing the right TTL depends entirely on the nature of the application and how frequently its content changes.
+
+In the next section, we'll see what happens when you need users to receive updated content immediately, without waiting for the TTL to expire.
+
+
+
+
