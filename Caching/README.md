@@ -86,6 +86,350 @@ Cons:
 - **Big Key Problem:** Arises when a single cache key is associated with a large amount of data, leading to inefficiencies in cache utilization and potential performance issues.
 - **Hot Key Challenge:** Refers to a situation where a few keys are accessed much more frequently than others, causing load imbalances and potential bottlenecks in the caching system.
 
+
+### 1. Cache Consistency
+
+> Question: Is the cache showing the latest data?
+
+Example: Amazon Product Price
+
+Suppose a product costs ₹999.
+
+**Step 1: Initial Request**
+```
+           User
+             |
+             v
+      +--------------+
+      | Application  |
+      +--------------+
+             |
+      Cache Miss
+             |
+             v
+         Redis Cache
+             |
+        Not Found
+             |
+             v
+        Database
+      Price = ₹999
+             |
+             +-------->
+      Store in Cache
+             |
+             v
+          User gets ₹999
+```
+Now Redis contains
+```
+Product 1001
+Price = ₹999
+```
+
+**Step 2: Seller updates the price**
+
+Seller changes
+```
+₹999
+   ↓
+₹899
+```
+Database
+```
+Product 1001
+
+Price = ₹899
+```
+But cache still contains
+```
+Product 1001
+
+Price = ₹999
+```
+Now another user requests the product.
+```
+User
+   |
+   v
+Application
+   |
+   v
+Redis Cache
+   |
+Price = ₹999
+```
+User sees
+```
+₹999 ❌
+```
+Instead of
+```
+₹899 ✅
+```
+This is called stale cache.
+
+#### How do companies solve this?
+
+**Strategy 1 — Cache Invalidation (Most Common)**
+
+Whenever database changes
+```
+Update Database
+       |
+       v
+Delete Redis Key
+       |
+       v
+Next Request
+       |
+       v
+Database
+       |
+Store Latest Data in Cache
+```
+Example
+```
+await db.updateProduct(id);
+await redis.del(`product:${id}`);
+```
+
+**Strategy 2 — Write Through Cache**
+
+Instead of updating only DB
+```
+Application
+     |
+     +------> Database
+     |
+     +------> Cache
+```
+Both are updated together.
+
+**Strategy 3 — TTL (Time To Live)**
+```
+Redis
+product:1001
+Expires after 60 seconds
+```
+Even if nobody deletes it,
+
+Redis automatically removes it.
+
+**Real-world example**
+
+Instagram
+
+You upload a new profile picture.
+
+Old picture still appears for 5 seconds.
+
+Why?
+
+Because CDN/cache hasn't refreshed yet.
+
+### 2. Cache Coherence
+
+> Question: What if there are multiple caches?
+
+Imagine Netflix has servers worldwide.
+```
+          Users
+
+India        USA       Japan
+  |           |           |
+
+Server A   Server B   Server C
+```
+Each server has its own Redis.
+```
+India
+Redis A
+Movie Rating = 8.5
+```
+USA
+```
+Redis B
+Movie Rating = 8.3
+```
+Japan
+```
+Redis C
+Movie Rating = 8.1
+```
+Now admin updates rating
+```
+8.5
+
+↓
+
+9.0
+```
+Database
+```
+Movie Rating = 9.0
+```
+Problem
+```
+Redis A = 8.5
+Redis B = 8.3
+Redis C = 8.1
+```
+Different users see different values.
+
+This is called cache coherence.
+
+**Solution 1**
+
+Broadcast update
+```
+Update Database
+       |
+       v
+ Message Queue
+       |
+ -------------------------
+ |          |            |
+Redis A   Redis B    Redis C
+```
+Every cache updates itself.
+
+**Solution 2**
+
+Shared Redis
+
+Instead of
+```
+Server A → Redis A
+Server B → Redis B
+Server C → Redis C
+```
+Everyone uses
+```
+           Redis
+
+        Shared Cache
+      /      |      \
+ServerA ServerB ServerC
+```
+Now everyone reads identical data.
+
+**Real Example**
+
+Facebook
+
+When someone changes their profile name,
+
+every region should display the same name.
+
+Keeping caches synchronized globally is a cache coherence problem.
+
+### 3. Cache Security
+
+Many people misunderstand this one.
+
+It is NOT about storing passwords in Redis.
+
+Passwords should never be cached.
+
+Instead, applications often cache authentication state.
+
+**Example**
+
+Suppose you login.
+```
+Username
+
+john@gmail.com
+
+Password
+
+********
+```
+Server verifies.
+
+Then generates
+```
+JWT
+
+or
+
+Session ID
+```
+Now server may cache
+```
+Session ID
+abc123
+User ID
+1001
+Expires
+30 minutes
+```
+NOT
+```
+Password ❌
+```
+When the user requests
+```
+/profile
+```
+Server checks
+```
+Redis
+Session abc123
+Exists?
+```
+If yes
+```
+User authenticated
+```
+No database lookup needed.
+
+Very fast.
+
+**Problem**
+
+Suppose
+```
+Session
+Never expires
+```
+Someone steals
+```
+abc123
+```
+They can login forever.
+
+Huge security issue.
+
+**Solution**
+
+Use expiration.
+```
+Redis
+Session
+TTL = 30 minutes
+```
+After
+```
+30 minutes
+```
+Redis removes it automatically.
+
+User logs in again.
+
+**Another Example**
+
+Gmail
+
+When you click
+```
+Stay Signed In
+```
+Google doesn't cache your password.
+
+Instead, it stores a secure, time-limited authentication token (typically in an HTTP-only, secure cookie). If that token expires or is revoked, you'll be asked to sign in again.
+
 ## Types of Caching: Different Approaches for Different Needs:
 
 **1. In-Memory Caching:** In-memory caching, such as with Redis or Memcached, stores data directly in the system’s RAM. This is one of the fastest ways to retrieve data because accessing data from RAM is way quicker than querying a database.
@@ -119,7 +463,9 @@ In addition to removing infrequently accessed items, caches often contain data t
 4.**Polling:** The cache periodically checks the validity of its entries by comparing them with the source data.
 
 ## "If caching is so great, why not cache everything?"
-There are two main reasons: cost and accuracy. Since caching is meant to be fast and temporary, it is often implemented with more expensive and less resilient hardware than other types of storage. For this reason, caches are typically smaller than the primary data storage system and must selectively choose which data to keep and which to remove (or evict). This selection process, known as a caching policy, helps the cache free up space for the most relevant data that will be needed in the future. Eviction Policies. 
+There are two main reasons: cost and accuracy. 
+
+Since caching is meant to be fast and temporary, it is often implemented with more expensive and less resilient hardware than other types of storage. For this reason, caches are typically smaller than the primary data storage system and must selectively choose which data to keep and which to remove (or evict). This selection process, known as a caching policy, helps the cache free up space for the most relevant data that will be needed in the future. Eviction Policies. 
 
 - **First In, First Out (FIFO):** Evicts the oldest items in the cache first, regardless of their usage frequency.
 - **Least Recently Used (LRU):** Evicts the least recently accessed items first, assuming that items not accessed recently are less likely to be accessed in the future.
