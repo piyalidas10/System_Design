@@ -161,6 +161,8 @@ Auto Expire
 (Cache Security)
 ```
 
+<img src="Caching/Caching in System Design - 3 Key Concerns.png" width="100%" />
+
 ### 1. Cache Consistency
 
 > Question: Is the cache showing the latest data?
