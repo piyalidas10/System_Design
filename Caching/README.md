@@ -86,6 +86,80 @@ Cons:
 - **Big Key Problem:** Arises when a single cache key is associated with a large amount of data, leading to inefficiencies in cache utilization and potential performance issues.
 - **Hot Key Challenge:** Refers to a situation where a few keys are accessed much more frequently than others, causing load imbalances and potential bottlenecks in the caching system.
 
+| Concept               | Problem                                                         | Example                           | Common Solution                                                                      |
+| --------------------- | --------------------------------------------------------------- | --------------------------------- | ------------------------------------------------------------------------------------ |
+| **Cache Consistency** | Cache contains outdated data after the database changes         | Amazon product price              | Cache invalidation, write-through, TTL                                               |
+| **Cache Coherence**   | Multiple caches across servers or regions have different values | Netflix or Facebook global caches | Shared cache, pub/sub, message queues, distributed cache synchronization             |
+| **Cache Security**    | Cached authentication data is stolen or never expires           | Login sessions                    | Store only session IDs/tokens, use TTL, secure cookies, encryption where appropriate |
+
+**A useful way to remember them is:**
+- Consistency → "Is my cached data up to date?"
+- Coherence → "Do all caches agree with each other?"
+- Security → "Is the cached data safe, and does it expire appropriately?"
+
+**Putting It All Together**
+```
+                   User
+                     |
+                     v
+              Load Balancer
+                     |
+          -----------------------
+          |                     |
+          v                     v
+      App Server 1         App Server 2
+          |                     |
+          +----------+----------+
+                     |
+              Redis Cache
+                     |
+           (Fast Read/Write)
+                     |
+              Cache Miss?
+                Yes |
+                    v
+                Database
+```
+
+**When data changes:**
+```
+Update Database
+       |
+       +---------------------------+
+       |                           |
+       v                           v
+Invalidate Cache             Update Cache
+(Cache Consistency)     or (Write-Through)
+```
+
+**Across multiple regions:**
+```
+Database
+    |
+    v
+Message Queue
+    |
+ -------------------------
+ |           |           |
+Redis A   Redis B   Redis C
+(Cache Coherence)
+```
+
+**For authentication:**
+```
+User Login
+      |
+      v
+Generate Session/JWT
+      |
+      v
+Store Session Metadata in Redis
+(TTL = 30 minutes)
+      |
+      v
+Auto Expire
+(Cache Security)
+```
 
 ### 1. Cache Consistency
 
