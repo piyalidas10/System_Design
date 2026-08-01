@@ -2,10 +2,10 @@
 
 Think of a modern application as a company.
 
-✅ Database = Permanent record room
-✅ Redis = Super-fast memory desk
-✅ Kafka = Message delivery/post office
-✅ Kubernetes = Operations manager that runs everything
+✅ Database = Permanent record room  
+✅ Redis = Super-fast memory desk  
+✅ Kafka = Message delivery/post office  
+✅ Kubernetes = Operations manager that runs everything  
 
 They solve different problems and often work together.
 
