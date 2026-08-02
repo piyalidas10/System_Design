@@ -61,6 +61,14 @@ Common Uses
 - Internet caching
 - VPN
 
+Examples
+
+| Product                       | Common Use                          |
+| ----------------------------- | ----------------------------------- |
+| Zscaler Internet Access (ZIA) | Secure web gateway for employees    |
+| Broadcom (Symantec) ProxySG   | Web filtering and caching           |
+| Cisco Secure Web Appliance    | Internet security                   |
+| Squid                         | Open-source forward proxy and cache |
 
 
 ## Reverse Proxy
@@ -91,10 +99,15 @@ Responsibilities
 - Request routing
 
 Examples
-- NGINX
-- Apache
-- HAProxy
-- Traefik
+
+| Product     | Common Use                                  |
+| ----------- | ------------------------------------------- |
+| NGINX       | Reverse proxy, caching, SSL termination     |
+| HAProxy     | Reverse proxy and load balancing            |
+| Traefik     | Reverse proxy for containers and Kubernetes |
+| Cloudflare  | Reverse proxy, CDN, WAF, DDoS protection    |
+| Envoy Proxy | Service mesh and microservices ingress      |
+
 
 ## Load Balancer
 Load Balancer optimizes performance. Distributes traffic across healthy servers, health checks every five seconds, reroutes away from failed instances automatically. 
@@ -242,43 +255,5 @@ The gateway handles everything else.
 4. API Gateway authenticates the user, enforces rate limits, logs the request, and routes it to the correct microservice.
 5. The microservice processes the request and returns the response through the same path.
 
-## Is a Load Balancer a Reverse Proxy?
-Yes, in most cases.
 
-A load balancer sits in front of backend servers, receives client requests, and forwards them to one of several servers. Since clients never connect directly to the backend servers, it behaves as a reverse proxy.
-
-> A load balancer can act as a reverse proxy, but a reverse proxy is not always a load balancer because reverse proxies can route traffic to a single server, handle security, or operate at network layers that do not split workloads
-
-```
-          Client
-             │
-             ▼
-     Load Balancer
-   (Reverse Proxy)
-      │    │    │
-      ▼    ▼    ▼
-    App1 App2 App3
-```
-
-Examples:
-- NGINX ✔️ Reverse Proxy + Load Balancer
-- HAProxy ✔️ Reverse Proxy + Load Balancer
-- AWS Application Load Balancer ✔️ Reverse Proxy + Load Balancing
-- F5 BIG-IP ✔️ Reverse Proxy + Load Balancer
-
-However...
-
-A reverse proxy doesn't have to balance traffic.
-
-Example:
-```
-Client
-   │
-   ▼
-NGINX Reverse Proxy
-   │
-   ▼
-Single Web Server
-```
-Here, NGINX is acting as a reverse proxy for SSL termination, caching, compression, or security—but there is only one backend server, so no load balancing is occurring.
-
+## 

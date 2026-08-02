@@ -90,3 +90,33 @@ Nginx is a very popular reverse proxy server. When a user makes a request:
 - The response is sent back to the user
 
 We control this behavior using configuration files.
+
+## When Can You Skip NGINX?
+
+For small applications, you often can.
+```
+Internet
+    │
+    ▼
+Cloudflare
+    │
+    ▼
+Application
+```
+
+This is common for:
+- Personal websites
+- Small SaaS products
+- Blogs
+- Startup MVPs
+
+## When Is NGINX Still Valuable?
+
+As systems grow, NGINX (or alternatives like Envoy or Traefik) becomes useful for:
+- Complex application routing
+- Canary and blue-green deployments
+- Internal TLS termination
+- Fine-grained request transformations
+- Internal caching
+- Multi-service routing
+- Decoupling your application from edge-provider-specific features

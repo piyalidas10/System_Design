@@ -11,6 +11,25 @@ Some popular options are Kubernetes, Docker Swarm, and Apache Mesos.
 3. Kubernetes Architecture: The Ultimate Guide : https://devtron.ai/blog/kubernetes-architecture-the-ultimate-guide/
 4. kubernetes-architecture-explained : https://devopscube.com/kubernetes-architecture-explained/
 
+## Modern Kubernetes Architecture
+
+In Kubernetes, NGINX is often replaced by an ingress controller or service proxy:
+```
+Internet
+     │
+     ▼
+Cloudflare
+     │
+     ▼
+Kubernetes Ingress
+(NGINX / Envoy / Traefik)
+     │
+     ▼
+Services
+     │
+     ▼
+Pods
+```
 
 ## How Kubernetes helps with container orchestration
 Kubernetes orchestration allows you to build application services that span multiple containers, schedule containers across a cluster, scale those containers, and manage their health over time.
