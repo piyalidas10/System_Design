@@ -195,5 +195,90 @@ The gateway handles everything else.
 - Azure API Management
 - Spring Cloud Gateway
 
+## Comparison Table
+| Feature           | Forward Proxy | Reverse Proxy | Load Balancer      | API Gateway        |
+| ----------------- | ------------- | ------------- | ------------------ | ------------------ |
+| Represents        | Client        | Server        | Servers            | APIs/Microservices |
+| Location          | Client side   | Server side   | Server side        | Server side        |
+| Main Goal         | Hide clients  | Hide servers  | Distribute traffic | Manage APIs        |
+| SSL Termination   | No            | Yes           | Yes                | Yes                |
+| Authentication    | Rare          | Sometimes     | No                 | Yes                |
+| Rate Limiting     | No            | Sometimes     | No                 | Yes                |
+| API Routing       | No            | Basic         | No                 | Yes                |
+| Load Distribution | No            | Sometimes     | Yes                | Limited            |
+| Caching           | Yes           | Yes           | No                 | Sometimes          |
 
+## Enterprise Request Flow
+```
+                    User
+                      │
+                      ▼
+              DNS (api.company.com)
+                      │
+                      ▼
+             Reverse Proxy (NGINX)
+                      │
+                      ▼
+                Load Balancer
+                      │
+         ┌────────────┴────────────┐
+         ▼                         ▼
+      API Gateway 1           API Gateway 2
+         │                         │
+         ├──────────┬──────────────┬───────────────┐
+         ▼          ▼              ▼               ▼
+    User Service Order Service Payment Service Notification
+         │          │              │               │
+         └──────────┴──────────────┴───────────────┘
+                      │
+                      ▼
+                 Database Cluster
+```
+
+**Flow**
+1. User sends a request to api.company.com.
+2. Reverse Proxy terminates HTTPS, serves static content if applicable, and forwards dynamic requests.
+3. Load Balancer distributes requests across multiple gateway instances.
+4. API Gateway authenticates the user, enforces rate limits, logs the request, and routes it to the correct microservice.
+5. The microservice processes the request and returns the response through the same path.
+
+## Is a Load Balancer a Reverse Proxy?
+Yes, in most cases.
+
+A load balancer sits in front of backend servers, receives client requests, and forwards them to one of several servers. Since clients never connect directly to the backend servers, it behaves as a reverse proxy.
+
+> A load balancer can act as a reverse proxy, but a reverse proxy is not always a load balancer because reverse proxies can route traffic to a single server, handle security, or operate at network layers that do not split workloads
+
+```
+          Client
+             │
+             ▼
+     Load Balancer
+   (Reverse Proxy)
+      │    │    │
+      ▼    ▼    ▼
+    App1 App2 App3
+```
+
+Examples:
+- NGINX ✔️ Reverse Proxy + Load Balancer
+- HAProxy ✔️ Reverse Proxy + Load Balancer
+- AWS Application Load Balancer ✔️ Reverse Proxy + Load Balancing
+- F5 BIG-IP ✔️ Reverse Proxy + Load Balancer
+
+However...
+
+A reverse proxy doesn't have to balance traffic.
+
+Example:
+```
+Client
+   │
+   ▼
+NGINX Reverse Proxy
+   │
+   ▼
+Single Web Server
+```
+Here, NGINX is acting as a reverse proxy for SSL termination, caching, compression, or security—but there is only one backend server, so no load balancing is occurring.
 
