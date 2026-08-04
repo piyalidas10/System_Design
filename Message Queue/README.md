@@ -9,6 +9,10 @@ This decouples services, improves scalability, enables background processing, an
 Common use cases include order processing, email notifications, payment processing, and log aggregation. 
 Popular technologies include Apache Kafka, RabbitMQ, Amazon SQS, Redis Streams, and Azure Service Bus.
 
+## Tutorials
+1. System Design - Part 9 | Message Queue and CDN : https://www.youtube.com/watch?v=G2xEnPugNoo&list=PLFdAYMIVJQHOWJgRrjv_RH-ng95B2h3ON&index=9
+2. Lec-13: Message Queue System | System Design : https://www.youtube.com/watch?v=sKXCTtGdxWo
+
 ## Key Takeaways
 - Producer creates messages.
 - Message Queue stores them temporarily.
