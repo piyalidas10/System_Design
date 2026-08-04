@@ -4,9 +4,35 @@
 1. What is CDN | Content Delivery Network : https://www.youtube.com/watch?v=4pd5FgTluCM&t=2s
 2. Lec-4 : Content Delivery Network (CDN) | How it works : https://www.youtube.com/watch?v=ouqqU0FJjhQ
 
-<img src="./img/CDN%20Caching%20Network%20Diagram.png" width="100%" />
+## What is CDN ?
+
+**A Content Delivery Network (CDN) speeds up websites using three main parts.** 
+- The origin server stores the master files.
+- Edge servers sit close to users globally.
+- The cache is the temporary storage on those edge servers that holds copies of files for fast delivery.
+
+**Origin Server**
+- Acts as the primary, central source of truth for a website or app.
+- Holds original code, databases, media, and dynamic files.
+- Handles complex requests that cannot be pre-made or saved.
+
+**Edge Server**
+- Placed at the outer edge of the internet, physically close to users.
+- Intercepts user requests to cut down data travel distance and time.
+- Fetches data from the origin server only when necessary.
+
+**Cache**
+- Saved copies of static files (images, CSS, JS) kept inside edge servers.
+- Cache hit: The edge server finds the requested file in its cache and sends it instantly.
+- Cache miss: The edge server lacks the file, pulls it from the origin server, saves a copy, and hands it to the user.
+
+<img src="./img/CDN Architecture Global Edge Network.png" width="100%"/>
+
+<img src="./img/How%20CDN%20Works.png" width="50%" />
 
 ## Introduction
+
+<img src="./img/CDN%20Caching%20Network%20Diagram.png" width="100%" />
 
 Today we're going to learn about CDNs—Content Delivery Networks.
 
