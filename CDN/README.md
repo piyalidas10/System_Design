@@ -26,7 +26,7 @@
 - Cache hit: The edge server finds the requested file in its cache and sends it instantly.
 - Cache miss: The edge server lacks the file, pulls it from the origin server, saves a copy, and hands it to the user.
 
-<img src="./img/CDN Architecture Global Edge Network.png" width="45%"/><img src="./img/How%20CDN%20Works.png" width="50%" />
+<img src="./img/CDN Architecture Global Edge Network.png" width="65%"/><img src="./img/How%20CDN%20Works.png" width="35%" />
 
 ## Introduction
 
