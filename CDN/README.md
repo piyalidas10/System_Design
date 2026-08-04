@@ -1,12 +1,14 @@
 # Content Delivery Networks (CDNs)
 
-What is CDN | Content Delivery Network : https://www.youtube.com/watch?v=4pd5FgTluCM&t=2s
+## Tutorials
+1. What is CDN | Content Delivery Network : https://www.youtube.com/watch?v=4pd5FgTluCM&t=2s
+2. Lec-4 : Content Delivery Network (CDN) | How it works : https://www.youtube.com/watch?v=ouqqU0FJjhQ
 
 <img src="./img/CDN%20Caching%20Network%20Diagram.png" width="100%" />
 
-Today we're going to learn about CDNs—Content Delivery Networks.
+## Introduction
 
-I hope all of you have at least heard the term before. Even if you haven't, don't worry. Today we'll cover everything from the absolute basics all the way to advanced concepts using first-principles thinking.
+Today we're going to learn about CDNs—Content Delivery Networks.
 
 Many people who know a little about CDNs often get confused about one thing:
 - Which type of data should be cached?
