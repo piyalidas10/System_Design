@@ -9,6 +9,7 @@ Both ensure that data transmitted over the internet remains private and tamper-p
 ## Tutorials
 1. SSL / TLS Handshake Explained For DevOps Engineers in Hindi : https://www.youtube.com/watch?v=EBh6emvhUNw
 2. HTTPS, SSL, TLS & Certificate Authority Explained : https://www.youtube.com/watch?v=EnY6fSng3Ew
+3. Lec-6: What are SSL Certificates & How they work? | System Design : https://www.youtube.com/watch?v=lh2K_kDH5s0
 
 <img src="imgs/SSL_Certificate.png" width="70%" />
 
