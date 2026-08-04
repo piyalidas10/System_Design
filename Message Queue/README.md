@@ -12,6 +12,7 @@ Popular technologies include Apache Kafka, RabbitMQ, Amazon SQS, Redis Streams, 
 ## Tutorials
 1. System Design - Part 9 | Message Queue and CDN : https://www.youtube.com/watch?v=G2xEnPugNoo&list=PLFdAYMIVJQHOWJgRrjv_RH-ng95B2h3ON&index=9
 2. Lec-13: Message Queue System | System Design : https://www.youtube.com/watch?v=sKXCTtGdxWo
+3. What is a MESSAGE QUEUE and Where is it used? : https://www.youtube.com/watch?v=oUJbuFMyBDk
 
 ## Key Takeaways
 - Producer creates messages.
