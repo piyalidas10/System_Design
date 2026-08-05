@@ -58,8 +58,19 @@ Imagine you're running a website with two servers - one in the USA and one in Eu
 2. This update is replicated to the server in Europe
 3. When User B in Europe views User A's profile, they see the updated name
 
-<img src="https://www.hellointerview.com/_next/static/media/kDCiksyGIusv.1b9ceu0wl0-ni.svg?dpl=5b25195c9dfe88b0297302a89931206ea083bf65" width="100%" />
+<img src="https://www.hellointerview.com/_next/static/media/kDCiksyGIusv.1b9ceu0wl0-ni.svg?dpl=5b25195c9dfe88b0297302a89931206ea083bf65" width="70%" />
 
+Everything works smoothly until we encounter a network partition - the connection between our USA and Europe servers goes down. Now we have a critical decision to make:
+
+When User B tries to view User A's profile, should we:
+- Option A: Return an error because we can't guarantee the data is up-to-date (choosing consistency)
+- Option B: Show potentially stale data (choosing availability)
+
+<img src="https://www.hellointerview.com/_next/static/media/ui_Mdimd0FfA.29o8_fa8_bcar.svg?dpl=5b25195c9dfe88b0297302a89931206ea083bf65" width="70%" />
+
+This is where CAP theorem becomes practical - we must choose between consistency and availability.
+
+In the case, the answer is rather clear: we would rather show a user in Europe the old name of User A, rather than show an error. Seeing a stale name is better than seeing no name at all.
 
 
 ## is Ticket booking system a example of CA system (Consistency + Availability) ?
