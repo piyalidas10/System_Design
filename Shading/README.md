@@ -184,7 +184,11 @@ CPU 100%
 ```
 
 **2. Hash-Based Sharding (Most Common)**
+
+Hash-based sharding uses a math formula like hash(userId) % 4 to split data into four parts. The result tells the system which database shard to use. For example, a result of 0 goes to Shard A, while 3 goes to Shard D. This spreads data out evenly.
 ```
+hash(key) % number_of_shards
+
 hash(userId) % 4
 
 ↓
@@ -194,6 +198,15 @@ hash(userId) % 4
 2 → Shard C
 3 → Shard D
 ```
+```
+User ID = 12345
+
+hash(12345) % 4
+
+= 2
+
+→ Shard 2
+```
 Advantages
 - Excellent load distribution
 - No hotspot from sequential IDs
@@ -201,6 +214,11 @@ Advantages
 Disadvantages
 - Range queries become difficult
 - Adding shards requires rebalancing unless consistent hashing is used
+
+Used by:
+- Cassandra
+- MongoDB (hashed shard key)
+- DynamoDB (internally similar concepts)
 
 **3. Directory-Based Sharding**
 
@@ -229,19 +247,61 @@ Disadvantages
 
 **4. Consistent Hashing**
 
-Instead of:
-```
-hash(key)%N
-```
-Use a hash ring.
+Consistent hashing minimizes data movement when servers are added or removed.
 
+Normal hashing:
+```
+hash(key) % N
+```
+
+Problem:
+
+Adding one server changes almost every mapping.
+
+Example:
+```
+4 shards
+
+User 100
+↓
+
+Shard 2
+```
+Add one shard:
+```
+5 shards
+
+User 100
+
+↓
+
+Shard 4
+```
+Millions of records move.
+
+Consistent hashing places servers on a hash ring.
+```
+        S1
+
+   S4        S2
+
+        S3
+```
+Keys are placed on the ring, and each key maps to the next server clockwise.
+
+When a new server is added:
+```
+Only nearby keys move.
+```
 Benefits:
-- Adding a server moves only a small portion of data.
-- Removing a server also minimizes data movement.
+- Minimal rebalancing
+- Easier scaling
+- Better availability
 
 Used by:
 - Cassandra
 - Dynamo-style systems
+- Redis Cluster (conceptually related)
 - Distributed caches
 
 ## Benefits of Sharding
@@ -406,5 +466,129 @@ would overload one shard.
 
 **Interview one-liner:**
 > A good shard key evenly distributes both data and traffic while supporting the application's most common queries.
+
+## What are Cross-Shard Transactions?
+
+A transaction involving multiple shards.
+
+Example:
+
+Transfer ₹100
+```
+Account A
+
+Shard 1
+
+↓
+
+Account B
+
+Shard 4
+```
+Now both databases must succeed.
+
+Problems:
+- Network failures
+- Distributed locking
+- Two-Phase Commit overhead
+- Reduced performance
+
+Alternatives:
+- Saga Pattern
+- Event-driven compensation
+- Eventual consistency
+
+Interview one-liner:
+> Cross-shard transactions require coordination across multiple databases, making them slower and more complex than single-database transactions.
+
+## Why do Hotspots Occur?
+
+A hotspot happens when one shard receives significantly more traffic than others.
+
+Example:
+```
+Celebrity User
+
+↓
+
+100 Million followers
+
+↓
+
+All requests
+
+↓
+
+Shard 3
+```
+Although storage may be balanced, traffic is not.
+
+**Causes:**
+- Poor shard key
+- Sequential IDs
+- Viral content
+- Time-based keys
+
+**Solutions:**
+- Better shard key
+- Hash sharding
+- Read replicas
+- Caching
+- Load balancing
+- Dynamic re-sharding
+
+Interview one-liner:
+> A hotspot occurs when one shard receives disproportionate traffic, becoming a bottleneck.
+
+## How do you Rebalance Shards?
+
+Rebalancing means redistributing data after adding or removing shards.
+
+Example:
+
+**Before:**
+```
+Shard 1
+1 TB
+
+Shard 2
+900 GB
+
+Shard 3
+950 GB
+```
+**Add Shard 4:**
+```
+Move some data
+
+↓
+
+Shard 1
+750 GB
+
+Shard 2
+700 GB
+
+Shard 3
+700 GB
+
+Shard 4
+700 GB
+```
+
+**Techniques:**
+- Consistent hashing
+- Online data migration
+- Dual writes during migration
+- Background copy with cutover
+- Automatic balancing
+
+**Challenges:**
+- Long-running migrations
+- Increased network traffic
+- Temporary performance impact
+
+Interview one-liner:
+> Rebalancing redistributes data across shards when the cluster changes, ideally with minimal downtime and minimal data movement.
 
 
