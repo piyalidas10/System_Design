@@ -173,23 +173,26 @@ Every server has the complete dataset.
 
 Most large distributed systems use both together:
 ```
-                    Application
-                          │
-                    Shard Router
-                          │
-        ┌─────────────────┴─────────────────┐
-        │                                   │
-     Shard 1                            Shard 2
-        │                                   │
-   ┌────┴────┐                        ┌─────┴─────┐
-   │Primary  │                        │Primary    │
-   └────┬────┘                        └─────┬─────┘
-        │                                   │
-   ┌────┴─────┐                        ┌────┴─────┐
-   │Replica 1 │                        │Replica 1 │
-   ├──────────┤                        ├──────────┤
-   │Replica 2 │                        │Replica 2 │
-   └──────────┘                        └──────────┘
+                         Application
+                               │
+                        Shard Router
+                               │
+        ┌──────────────────────┴──────────────────────┐
+        │                                             │
+        ▼                                             ▼
+   Shard 1                                      Shard 2
+        │                                             │
+   ┌──────────────┐                           ┌──────────────┐
+   │ Primary DB   │                           │ Primary DB   │
+   │ (Writes)     │                           │ (Writes)     │
+   └──────┬───────┘                           └──────┬───────┘
+          │                                          │
+   Replication                                Replication
+          │                                          │
+   ┌──────┴───────┐                          ┌───────┴───────┐
+   ▼              ▼                          ▼               ▼
+Replica 1     Replica 2                 Replica 1      Replica 2
+(Read)         (Read)                   (Read)          (Read)
 ```
 - Sharding distributes different portions of the data across multiple databases to scale storage and writes.
 - Replication keeps copies of each shard to improve read performance, availability, and disaster recovery.
@@ -198,4 +201,50 @@ Memory trick:
 - Shard = Slice (split the dataset).
 - Replica = Repeat (duplicate the dataset or a shard).
 
+### Example: Amazon Orders
+
+Suppose Amazon shards its customer database.
+
+**Shard 1**
+
+Contains customers:
+```
+Customer IDs
+1 – 10 Million
+```
+
+**Within Shard 1:**
+```
+Primary
+---------
+Customers
+Orders
+Payments
+Inventory
+
+Replica 1
+---------
+Copy of Primary
+
+Replica 2
+---------
+Copy of Primary
+```
+
+**If Customer 12345 places an order:**
+```
+Customer
+    │
+Create Order
+    │
+    ▼
+Primary
+    │
+Save Order
+    │
+    ├────────► Replica 1
+    │
+    └────────► Replica 2
+```
+The order is written only to the Primary. After the write succeeds, the change is replicated to the replicas.
 
