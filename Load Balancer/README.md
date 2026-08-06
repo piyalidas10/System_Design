@@ -7,13 +7,142 @@
 <img src="./Load_Balancer.png" width="100%" />
 
 ## Introduction
+"A Load Balancer is a component that sits between clients and backend servers, distributing incoming traffic across multiple servers so that no single server becomes a bottleneck or point of failure.
 
--   What a Load Balancer is
--   Why we need it
--   Its limitations
--   What modern alternative is replacing it
+The basic flow is — Client sends a request to the Load Balancer and the Load Balancer routes it to one of the available backend servers based on a routing algorithm.
 
-------------------------------------------------------------------------
+The four common algorithms are Round Robin — requests are distributed equally across servers in rotation; Least Connections — the next request goes to the server with the fewest active connections; IP Hash — the client's IP is hashed to consistently route the same user to the same server, useful for session-based applications like shopping carts; and Weighted Load Balancing — more powerful servers receive proportionally more traffic.
+
+Load Balancers operate at two layers. L4 Load Balancers work at the transport layer — they route based on IP address and port without inspecting content, making them fast and lightweight. L7 Load Balancers work at the application layer — they can read HTTP request content and route intelligently, for example sending requests to /payments to the Payment Service and requests to /users to the User Service. Nginx primarily operates at L7 and AWS ELB supports both.
+
+Health Checks are how Load Balancers maintain reliability — they periodically ping each server's health endpoint and if a server fails to respond, it is automatically removed from rotation until it recovers.
+
+One important production consideration is that the Load Balancer itself can become a single point of failure. This is solved by deploying multiple Load Balancers in Active-Passive or Active-Active configurations. Netflix, Amazon and Instagram all use multiple layers of load balancing in production to ensure zero single points of failure in their traffic routing layer."
+
+## Problem: Load Balancer becomes a Single Point of Failure (SPOF)
+
+Without redundancy:
+```
+              Users
+                |
+                ▼
+        +----------------+
+        | Load Balancer  |   ❌ Single Point of Failure
+        +----------------+
+          /      |      \
+         ▼       ▼       ▼
+     App A    App B    App C
+```
+If the Load Balancer crashes, users cannot reach any application server.
+```
+Users
+   |
+   X  Load Balancer Down
+   |
+No request reaches servers.
+```
+Even though your application servers are healthy, your website is completely unavailable.
+
+Solution 1: Active-Passive Load Balancers
+-------------------------------------------------------------------
+```
+                    DNS
+                     |
+          -----------------------
+          |                     |
+          ▼                     ▼
+    Active LB              Passive LB
+   (Handles traffic)      (Standby)
+          |
+   -------------------
+   |        |        |
+ App A    App B    App C
+```
+
+**How it works**
+- Active LB receives all traffic.
+- Passive LB continuously monitors Active LB using health checks.
+- If Active LB fails:
+   - Passive LB automatically takes over.
+   - Virtual IP (VIP) or floating IP moves to Passive LB.
+   - Traffic resumes.
+```
+Active LB crashes
+
+      DNS
+       |
+       ▼
+ Passive LB becomes Active
+       |
+ App Servers
+```
+**Pros**
+- Simple
+- Easy to manage
+- Predictable failover
+**Cons**
+- One LB remains idle.
+- Resources are underutilized.
+
+Solution 2: Active-Active Load Balancers
+----------------------------------------------------
+```
+                   DNS
+                    |
+         -----------------------
+         |                     |
+         ▼                     ▼
+      LB-1                  LB-2
+    (Active)              (Active)
+         \                  /
+          \                /
+      -------------------------
+      |          |           |
+    App A      App B       App C
+```
+Both Load Balancers serve traffic simultaneously.
+
+Example:
+```
+50% Traffic → LB1
+
+50% Traffic → LB2
+```
+If LB1 crashes:
+```
+100% Traffic
+
+      ▼
+     LB2
+      |
+App Servers
+```
+Users usually notice no interruption.
+
+**Pros**
+- Better utilization
+- Higher throughput
+- Better scalability
+**Cons**
+- More complex synchronization
+- Session handling becomes important
+
+How DNS Helps
+-----------------------------------------------------------------
+Many companies use DNS to distribute traffic across multiple load balancers.
+```
+api.company.com
+
+      DNS
+       |
+-----------------------
+|                     |
+10.0.0.10         10.0.0.11
+ LB-1              LB-2
+```
+DNS returns multiple IPs, and clients connect to one based on DNS policies such as round-robin, latency, or geo-routing.
+
+---
 
 ## 1. Basic Client-Server Architecture
 
