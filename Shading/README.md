@@ -7,6 +7,14 @@ This is called sharding. While it is a necessity at scale, it also introduces ne
 
 Shading : https://www.hellointerview.com/learn/system-design/core-concepts/sharding
 
+## A shard is different from a replica
+| Sharding                         | Replication                            |
+| -------------------------------- | -------------------------------------- |
+| Splits the data horizontally     | Copies the same data                   |
+| Each shard has different rows    | Every replica has identical rows       |
+| Used to scale writes and storage | Used to improve reads and availability |
+| Independent datasets             | Same dataset on multiple servers       |
+
 ## What is Sharding?
 
 Sharding is the process of splitting one large database into multiple smaller databases (called shards) that run on different machines.
