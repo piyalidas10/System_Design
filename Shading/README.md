@@ -34,13 +34,13 @@ What "fully independent" means
 
 Each shard has its own:
 
-✅ Tables – stores only its assigned records.
-✅ Indexes – indexes are built only for that shard's data.
-✅ RAM (Memory) – buffer cache and query cache are local.
-✅ CPU – queries execute on that shard's server.
-✅ Storage (Disk/SSD) – data files are physically separate.
-✅ Transaction log – maintains its own write-ahead log or redo log.
-✅ Connections – applications connect to the appropriate shard.
+✅ Tables – stores only its assigned records.  
+✅ Indexes – indexes are built only for that shard's data.  
+✅ RAM (Memory) – buffer cache and query cache are local.  
+✅ CPU – queries execute on that shard's server.  
+✅ Storage (Disk/SSD) – data files are physically separate.  
+✅ Transaction log – maintains its own write-ahead log or redo log.  
+✅ Connections – applications connect to the appropriate shard.  
 
 **Example**
 
