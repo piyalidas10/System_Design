@@ -11,6 +11,67 @@ Shading : https://www.hellointerview.com/learn/system-design/core-concepts/shard
 
 Sharding is the process of splitting one large database into multiple smaller databases (called shards) that run on different machines.
 
+> Shard is fully independent — its own tables, indexes, RAM, CPU, and storage
+> A database shard is a fully independent partition of the database. Each shard stores only a subset of the data and has its own database resources.
+
+```
+                 Database Cluster
+                        │
+        ┌───────────────┼───────────────┐
+        │               │               │
+   ┌──────────┐    ┌──────────┐    ┌──────────┐
+   │ Shard 1  │    │ Shard 2  │    │ Shard 3  │
+   ├──────────┤    ├──────────┤    ├──────────┤
+   │ Tables   │    │ Tables   │    │ Tables   │
+   │ Indexes  │    │ Indexes  │    │ Indexes  │
+   │ RAM      │    │ RAM      │    │ RAM      │
+   │ CPU      │    │ CPU      │    │ CPU      │
+   │ Storage  │    │ Storage  │    │ Storage  │
+   └──────────┘    └──────────┘    └──────────┘
+```
+
+What "fully independent" means
+
+Each shard has its own:
+
+✅ Tables – stores only its assigned records.
+✅ Indexes – indexes are built only for that shard's data.
+✅ RAM (Memory) – buffer cache and query cache are local.
+✅ CPU – queries execute on that shard's server.
+✅ Storage (Disk/SSD) – data files are physically separate.
+✅ Transaction log – maintains its own write-ahead log or redo log.
+✅ Connections – applications connect to the appropriate shard.
+
+**Example**
+
+Suppose you have 90 million users.
+
+Instead of storing all users in one database:
+```
+Shard 1 : User IDs      1 – 30,000,000
+Shard 2 : User IDs 30,000,001 – 60,000,000
+Shard 3 : User IDs 60,000,001 – 90,000,000
+```
+If user 45,123,456 logs in:
+```
+Application
+      │
+      ▼
+Shard Router
+      │
+      ▼
+Shard 2
+      │
+      ├── users table
+      ├── orders table
+      ├── indexes
+      ├── CPU
+      ├── RAM
+      └── Storage
+```
+Only Shard 2 processes the request. The other shards remain unaffected.
+
+
 Instead of one server storing all the data,
 
 **Before**
