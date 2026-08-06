@@ -6,7 +6,14 @@
 
 **👉 It stores data in RAM (memory) → extremely fast ⚡**
 
-Key Concepts:
+Redis is an in-memory key-value data store, so you should store data that is:
+- Frequently accessed
+- Temporary or can be regenerated
+- Needed for very fast reads/writes (microseconds to milliseconds)
+
+Think of Redis as your application's high-speed memory, while your database is the permanent storage.
+
+**Key Concepts:**
 - Key-Value Store
 ```
     user:1 → {name: "Piyali", age: 25}
@@ -25,7 +32,7 @@ Key Concepts:
 
 <img src="imgs/redis_data_structure.jpg" width="90%">
 
-👉 Examples:
+**👉 Examples:**
 - String → caching API response
 - List → queue (FIFO)
 - Set → unique users
