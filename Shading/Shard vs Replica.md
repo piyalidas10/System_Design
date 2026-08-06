@@ -248,3 +248,82 @@ Save Order
 ```
 The order is written only to the Primary. After the write succeeds, the change is replicated to the replicas.
 
+## Why can't replicas accept writes?
+
+**Imagine two replicas both accepting updates at the same time:**
+```
+Replica 1
+Price = $100
+
+Replica 2
+Price = $120
+```
+Now the system has conflicting data. Resolving these conflicts is complex.
+
+**Instead, distributed databases typically enforce:**
+```
+            Writes
+              │
+              ▼
+          Primary
+              │
+      Replicate Changes
+       ┌──────┴──────┐
+       ▼             ▼
+   Replica 1     Replica 2
+```
+Having a single primary per shard ensures a consistent order of writes.
+
+## Read and Write Flow
+```
+                    Client
+                      │
+          ┌───────────┴───────────┐
+          │                       │
+      READ Request           WRITE Request
+          │                       │
+          ▼                       ▼
+     Replica (usually)        Primary
+          ▲                       │
+          └───────────────┬───────┘
+                          │
+                    Replicate Changes
+```
+Reads are often served by replicas to distribute load.
+Writes go to the primary to maintain consistency.
+
+## Is there one Primary for the whole database?
+
+No. There is one primary per shard.
+
+For example:
+
+**Database Cluster**
+```
+Shard 1
+---------
+Primary
+Replica 1
+Replica 2
+
+Shard 2
+---------
+Primary
+Replica 1
+Replica 2
+
+Shard 3
+---------
+Primary
+Replica 1
+Replica 2
+```
+If you have 10 shards, you typically have 10 primaries—one for each shard—along with their replicas.
+
+**Key takeaway**
+- Shard = a partition containing part of the overall data.
+- Primary = the writable database instance for that shard.
+- Replica = a copy of that shard's primary, mainly used for reads and failover.
+
+
+
