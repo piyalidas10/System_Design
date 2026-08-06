@@ -150,3 +150,44 @@ Payment Service
 Notification Service
 ```
 Updating the Payment Service only requires deploying that service.
+
+## When to Choose Each
+**Choose a Monolith if:**
+- You're building an MVP or startup product.
+- The application is relatively small.
+- A small team (1–10 developers) maintains it.
+- You want rapid development and lower operational complexity.
+
+**Choose Microservices if:**
+- The application is large and continuously growing.
+- Multiple teams need independent ownership.
+- Services have different scaling requirements.
+- Independent deployments are essential.
+- High availability and fault isolation are priorities.
+
+## Why don't companies start with microservices?
+
+Because microservices introduce significant operational complexity from day one, including service discovery, API communication, monitoring, distributed tracing, data consistency, and deployment orchestration. Most startups don't need that complexity early on.
+
+## What do many companies do instead?
+
+Many successful companies begin with a modular monolith:
+```
++--------------------------------------+
+|          Modular Monolith            |
+|--------------------------------------|
+| Authentication Module                |
+| Product Module                       |
+| Order Module                         |
+| Payment Module                       |
+| Notification Module                  |
++--------------------------------------+
+
+Single Deployment
+Clear Module Boundaries
+```
+As the application and team grow, individual modules can be extracted into microservices with much less risk.
+
+> A monolithic architecture packages all business modules into a single deployable application. It's simple to build, test, and deploy, making it ideal for small teams and new products. Microservices split the application into independently deployable services, enabling better scalability, fault isolation, and team autonomy, but they introduce distributed-system challenges such as network communication, monitoring, and data consistency. In practice, many organizations start with a modular monolith and evolve to microservices only when scale and organizational needs justify the additional complexity.
+
+
