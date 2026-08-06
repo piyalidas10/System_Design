@@ -13,20 +13,6 @@ In this video we break down Monolith and Microservices Architecture completely �
 using the restaurant chef analogy that makes the transition click instantly, the exact trade-offs of each approach, 
 the biggest misconception in the industry and the exact interview answer that shows you think like a senior architect.
 
-**What we cover:**
-🔹 The restaurant analogy — one chef doing everything vs specialised chefs for each station  
-🔹 What Monolith Architecture is — entire application in one codebase, one deployment unit  
-🔹 Why Monolith is the right starting point — simple to build, simple to debug, fast to iterate  
-🔹 The Monolith scaling problem — why one small change requires redeploying the entire application  
-🔹 What Microservices Architecture is — splitting the application into independent, separately deployable services  
-🔹 How Login Service, Payment Service and Order Service each have their own code, deployment and database  
-🔹 Why in Microservices one service going down does not take the whole system with it  
-🔹 Independent scaling — why you can scale only the Payment Service during a flash sale without touching anything else  
-🔹 The biggest Microservices misconception — why Microservices are not always better  
-🔹 When Monolith is the correct choice — startups, small teams, early-stage products  
-🔹 When Microservices make sense — large systems, multiple teams, independent scaling requirements  
-🔹 The Netflix, Amazon and Uber progression — all started Monolith, migrated to Microservices as scale demanded  
-🔹 The exact interview answer that gets you selected  
 
 Monolith and Microservices represent two fundamentally different approaches to application architecture and the right choice depends on the scale and stage of the system.
 
