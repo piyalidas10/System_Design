@@ -1,3 +1,19 @@
+# Data That Should NOT Be Stored Only in Redis
+
+Because Redis is primarily an in-memory store, data that must never be lost should have a permanent copy elsewhere.
+
+Examples include:
+
+❌ Bank transactions  
+❌ Orders (source of truth)  
+❌ Customer records  
+❌ Payment history  
+❌ Medical records  
+❌ Employee payroll  
+❌ Permanent audit logs  
+
+These belong in a durable database such as PostgreSQL, MySQL, SQL Server, or MongoDB. Redis can cache them for performance, but it should not be the only place they exist.
+
 # What data we can store inside Redis ?
 Redis is an in-memory key-value data store, so you should store data that is:
 
