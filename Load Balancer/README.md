@@ -490,5 +490,79 @@ Horizontal scaling creates multiple servers, and a Load Balancer acts as a singl
 
 ------------------------------------------------------------------------
 
+## Multi-Layer Load Balancing (Used by Large Companies)
+
+Large-scale systems don't rely on a single layer of load balancing. Instead, traffic passes through several stages.
+```
+                 Users Worldwide
+                        |
+                    Geo DNS
+                        |
+      ---------------------------------
+      |                               |
+      ▼                               ▼
+   US Region                     India Region
+      |                               |
+   Edge Load Balancer             Edge Load Balancer
+      |                               |
+   Regional Load Balancer        Regional Load Balancer
+      |                               |
+   Internal Load Balancer        Internal Load Balancer
+      |                               |
+   App Servers                   App Servers
+```
+
+Each layer has a specific responsibility:
+- DNS/GSLB → Sends users to the nearest healthy region.
+- Edge Load Balancer → Handles SSL termination, DDoS protection, and routing into the region.
+- Regional Load Balancer → Distributes traffic across availability zones.
+- Internal Load Balancer → Routes requests to the appropriate microservice instances.
+
+This layered approach removes single points of failure and improves scalability.
+
+## Real-World Examples
+**Netflix**
+```
+Users
+   ↓
+DNS (Geo Routing)
+   ↓
+AWS Region
+   ↓
+Elastic Load Balancer
+   ↓
+Microservices
+```
+Netflix uses multiple AWS regions, DNS-based traffic management, and multiple layers of load balancing to provide high availability.
+
+**Amazon**
+```
+Users
+   ↓
+Route 53
+   ↓
+Regional Load Balancer
+   ↓
+Application Load Balancer
+   ↓
+Services
+```
+Traffic is distributed across multiple Availability Zones and regions, with health checks automatically routing around failures.
+
+**Instagram (Meta)**
+```
+Users
+   ↓
+Global Traffic Manager
+   ↓
+Edge Proxy
+   ↓
+Regional Load Balancers
+   ↓
+Application Servers
+```
+Meta's infrastructure uses multiple proxy and load-balancing layers to keep services available even when individual components fail.
+
+
 
 
