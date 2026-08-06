@@ -14,6 +14,22 @@ Examples include:
 
 These belong in a durable database such as PostgreSQL, MySQL, SQL Server, or MongoDB. Redis can cache them for performance, but it should not be the only place they exist.
 
+## Example: E-Commerce Application
+| Data                    | Redis                           | Database                       |
+| ----------------------- | ------------------------------- | ------------------------------ |
+| Product cache           | ✅                               | ✅ (master copy)                |
+| Shopping cart           | ✅                               | Optional (persist at checkout) |
+| User session            | ✅                               | ❌                              |
+| OTP                     | ✅                               | ❌                              |
+| API rate limit counters | ✅                               | ❌                              |
+| JWT blacklist           | ✅                               | ❌                              |
+| Inventory cache         | ✅                               | ✅                              |
+| Product catalog         | Cached copy                     | ✅                              |
+| Orders                  | ❌ (except temporary processing) | ✅                              |
+| Payments                | ❌                               | ✅                              |
+| User profile cache      | ✅                               | ✅                              |
+| Search suggestions      | ✅                               | Generated from DB              |
+
 # What data we can store inside Redis ?
 Redis is an in-memory key-value data store, so you should store data that is:
 
