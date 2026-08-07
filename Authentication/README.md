@@ -4,6 +4,18 @@ Session vs Token Based Authentication — SYSTEM DESIGN FOUNDATION | Interview Q
 
 Every application needs authentication. 
 
+| Feature            | SESSION             | TOKEN (JWT)                 |
+| ------------------ | ------------------- | --------------------------- |
+| **Where is Data?** | Server              | Client (inside token)       |
+| **Server Memory?** | YES (Required) ❌    | NO (Stateless) ✅            |
+| **Scalability**    | Medium (Bottleneck) | High (Distributed)          |
+| **Auth Type**      | Stateful            | Stateless                   |
+| **Best For**       | Trad Websites (SSR) | APIs, Mobile, Microservices |
+
+**Bottom illustrations**
+- 🖥️ Remembers User
+- 🎟️ Carries Identity
+
 **But should you use Session-Based or Token-Based?** 
 
 Most developers implement one without clearly understanding why — and that lack of clarity shows up immediately in interviews. 
