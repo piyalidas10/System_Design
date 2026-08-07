@@ -601,7 +601,34 @@ It should therefore be:
 - never exposed to frontend JavaScript unnecessarily
 - carefully handled during enrollment/recovery
 
-## 19. TOTP vs SMS OTP
+## 17. Why the 30-second window?
+
+The purpose is to limit the lifetime of the code.
+
+Imagine a code stayed valid for 24 hours:
+```
+637901
+   │
+   ├───────────────┐
+   │               │
+   │     24 hours  │
+   │               │
+   └───────────────┘
+```
+A stolen code could remain useful for a long time.
+
+With TOTP:
+```
+637901
+   │
+   └────── ~30 sec ──────┐
+                         │
+                         ▼
+                       EXPIRE
+```
+This reduces the useful lifetime of a captured OTP.
+
+## 18. TOTP vs SMS OTP
 
 These are often confused.
 
@@ -641,7 +668,7 @@ The server needs some way to associate the pending OTP with the authentication a
 ```
 No SMS provider is required.
 
-## 20. TOTP vs random OTP
+## 19. TOTP vs random OTP
 | Feature                      | Random OTP                   | TOTP                   |
 | ---------------------------- | ---------------------------- | ---------------------- |
 | Example                      | SMS `637901`                 | Authenticator `637901` |
@@ -654,7 +681,7 @@ No SMS provider is required.
 | SMS required                 | Often                        | No                     |
 | Google Authenticator         | No                           | **Yes**                |
 
-## 21. Complete real-world login flow
+## 20. Complete real-world login flow
 
 Imagine you're logging into an e-commerce/admin application.
 ```
@@ -711,7 +738,7 @@ Imagine you're logging into an e-commerce/admin application.
              LOGIN      REJECT
 ```
 
-## 22. The most important conceptual difference
+## 21. The most important conceptual difference
 
 Think about these two systems:
 
@@ -752,12 +779,52 @@ you get the same:
 OTP
 ```
 
-## 23. Interview answer 🎯
+## 22. Interview answer 🎯
 
 "How does TOTP work without storing the OTP?"
 
 "TOTP doesn't store the generated OTP. During enrollment, the server and authenticator share a secret key. 
 Every 30 seconds, both independently combine that secret with the current time using HMAC to derive the same 6-digit code. 
 When the user submits the code, the server calculates the expected TOTP again and compares it with the submitted value, so it only needs the secret—not a stored OTP."
+
+## TOTP AUTHENTICATION
+```
+
+              ENROLLMENT
+                  │
+                  ▼
+          Generate Secret
+                  │
+          ┌───────┴────────┐
+          ▼                ▼
+       Server             Phone
+          │                │
+       stores            stores
+       SECRET             SECRET
+          │                │
+          └───────┬────────┘
+                  │
+                  │
+            EVERY 30 SECONDS
+                  │
+          ┌───────┴────────┐
+          ▼                ▼
+    Secret + Time      Secret + Time
+          │                │
+          ▼                ▼
+       HMAC/TOTP         HMAC/TOTP
+          │                │
+          ▼                ▼
+        637901           637901
+          │                │
+          └───────┬────────┘
+                  ▼
+                MATCH
+                  │
+                  ▼
+              AUTHENTICATED
+```
+
+
 
 
