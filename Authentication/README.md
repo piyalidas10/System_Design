@@ -25,7 +25,7 @@ The hotel analogy in this video makes the distinction permanently clear, and the
 
 > "Session-Based and Token-Based Authentication differ fundamentally in where user state is maintained after login.
 
-## In Session-Based Authentication
+## In Session-Based (Stateful) Authentication
 
 after a user logs in successfully, the server creates a session record — typically stored in memory or a database — and sends the client a Session ID via a cookie.
 On every subsequent request, the browser automatically sends that Session ID, and the server looks it up in its session store to identify the user.
@@ -36,8 +36,24 @@ or a shared session store like Redis must be used so all servers can access the 
 
 <img src="./Session_Based_Authentication.png" width="100%" />
 
+**✅ The Pros**
+- **Instant Invalidation:** Destroying a session on the server logs the user out instantly everywhere.
+- **Tight Security Control:** Sessions can be revoked immediately if suspicious activity or a data breach is detected.
+- **Smaller Payload:** Cookies only carry a short ID string, minimizing network data overhead per request.
+- **Up-to-Date State:** User privilege changes take effect immediately because the server checks the database on every request.
+- **Built-in Browser Protection:** Browsers can secure session cookies automatically using HttpOnly and SameSite flags to block cross-site scripting (XSS) and cross-site request forgery (CSRF).
 
-## In Token-Based Authentication
+**❌ The Cons**
+- **Scalability Bottlenecks:** Storing sessions in server memory makes it difficult to scale horizontally across multiple servers.
+- **Infrastructure Overhead:** Scaling requires setting up sticky sessions or a shared centralized cache like Redis.
+- **Server Memory Cost:** High traffic volumes require significant server RAM or database resources just to track active users.
+- **Mobile Limitations:** Native mobile applications do not manage cookies out-of-the-box as seamlessly as web browsers do.
+- **Cross-Domain Issues:** Sharing sessions across different domains or microservices requires complex configuration.
+
+If you are weighing these tradeoffs for a specific project, let me know if you are building a traditional web app or a decoupled API backend so we can look at the best fit!
+
+
+## In Token-Based Stateless Authentication
 commonly implemented with JWT — after successful login, the server generates a signed token containing the user's identity and claims, and sends it to the client. 
 The client stores this token and includes it in the Authorization header of every subsequent request. 
 The server does not store any session data. On each request, it simply verifies the token's cryptographic signature and extracts user information directly from the token. 
@@ -46,3 +62,22 @@ This is Stateless Authentication — the server is completely memory-free betwee
 Session-Based authentication is commonly used in traditional web applications and banking systems where server-side session control is important. 
 Token-Based authentication is preferred for modern REST APIs, mobile applications, and microservices architectures 
 because it scales horizontally without any shared state between servers."
+
+**✅ The Pros**
+- **High Scalability:** Works perfectly across distributed systems and microservices.
+- **Decoupled Architecture:** Separate auth servers can issue tokens independently.
+- **Mobile Friendly:** Cookies often fail on mobile; tokens work everywhere.
+- **Performance:** Reduces database overhead by avoiding session lookups.
+
+**❌ The Cons**
+- **Size Overhead:** Tokens carry data and grow with every claim.
+- **Security Risk:** Leaked tokens grant access until expiration.
+- **Stale Data:** Client data updates won't reflect until renewal.
+- **Invalidation Complexity:** Requires blacklist strategies to revoke early.
+
+If you are building an application right now, let me know your tech stack (e.g., Node.js, Next.js) or architecture type (monolith vs microservices) so we can pick the best approach!
+
+
+
+
+
