@@ -1,5 +1,7 @@
 # Session vs Token Based Authentication
 
+Session vs Token Based Authentication — SYSTEM DESIGN FOUNDATION | Interview Question  : https://www.youtube.com/shorts/grzSAdf4-Z4
+
 Every application needs authentication. 
 
 **But should you use Session-Based or Token-Based?** 
@@ -31,6 +33,8 @@ This is Stateful Authentication — the server must maintain and remember sessio
 The challenge with Session-Based authentication at scale is that if there are multiple servers behind a load balancer,
 every request from the same user must reach the same server — called sticky sessions —
 or a shared session store like Redis must be used so all servers can access the same session data.
+
+<img src="./Session_Based_Authentication.png" width="100%" />
 
 
 ## In Token-Based Authentication
