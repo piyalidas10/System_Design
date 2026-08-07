@@ -3,6 +3,8 @@ Exactly — your understanding is correct.
 
 If the phone and server use different time values, they can calculate different OTPs. The important detail is that TOTP doesn't require their clocks to be perfectly synchronized because the server can allow a small time window.
 
+<img src="./What if the phone and server clocks aren't exactly synchronized.png" width="90%" />
+
 **Example**
 
 TOTP usually uses a 30-second time step:
