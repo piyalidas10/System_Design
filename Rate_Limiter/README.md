@@ -336,6 +336,94 @@ No artificial reset.
           ALLOW         DENY
 ```
 
+## Real-world example
+
+Imagine an API:
+```
+POST /orders
+
+Limit:
+10 requests/sec
+```
+
+**Fixed Window**
+```
+12:00:00 → 10 requests
+12:00:01 → reset
+12:00:01 → 10 requests
+```
+Potentially:
+```
+20 requests
+within ~1 second
+```
+❌ Not ideal for sensitive APIs.
+
+**Sliding Window**
+
+At every request:
+```
+Look at previous 1 second
+        │
+        ▼
+Count requests
+        │
+        ▼
+< 10 ? ── YES → ALLOW
+        │
+        NO
+        │
+        ▼
+      DENY
+```
+Very accurate.
+
+But maintaining every timestamp can become expensive at huge scale.
+
+**Token Bucket**
+```
+capacity = 10
+refill   = 10/sec
+```
+A sudden burst of:
+```
+10 requests
+```
+is allowed.
+
+After the bucket empties:
+```
+~10 requests/sec
+```
+can continue.
+
+This is usually the most practical choice for a production distributed API rate limiter.
+
+## Why I would choose Token Bucket
+
+For the production architecture we discussed earlier:
+```
+                    API Gateway
+                         │
+                         ▼
+                  Rate Limiter
+                         │
+                         ▼
+                    Redis
+                         │
+                         ▼
+                   Token Bucket
+```
+I would choose:
+```
+Token Bucket + Redis + atomic Lua script
+```
+
+because it gives a strong combination of:
+- Low memory + controlled bursts + high throughput + distributed consistency.
+- The source itself concludes that there isn't one universally best algorithm; the choice depends on the system's requirements.
+
+
 ## Production-Grade Distributed Rate Limiter
 ```
                          ┌──────────────────────┐
