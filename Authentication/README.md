@@ -75,6 +75,8 @@ Session-Based authentication is commonly used in traditional web applications an
 Token-Based authentication is preferred for modern REST APIs, mobile applications, and microservices architectures 
 because it scales horizontally without any shared state between servers."
 
+<img src="./Token_Based_Authentication.png" width="100%" />
+
 **✅ The Pros**
 - **High Scalability:** Works perfectly across distributed systems and microservices.
 - **Decoupled Architecture:** Separate auth servers can issue tokens independently.
