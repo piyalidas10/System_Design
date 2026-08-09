@@ -3,6 +3,8 @@
 ## Tutorials
 1. Design Rate Limiter (LLD) - Token Bucket, Fixed & Sliding Window with Thread Safety : https://www.youtube.com/watch?v=7y0KWxaUn-E
 
+<img src="./Rate_Limiter.jpg" width="100%" />
+
 ## Request flow
 ```
 Client
