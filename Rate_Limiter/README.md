@@ -1,6 +1,52 @@
 # Rate Limiter
 
+## Tutorials
+1. Design Rate Limiter (LLD) - Token Bucket, Fixed & Sliding Window with Thread Safety : https://www.youtube.com/watch?v=7y0KWxaUn-E
 
+## Request flow
+```
+Client
+   │
+   │ API Request
+   ▼
+┌───────────────────────┐
+│ RateLimiterService    │
+│ allowRequest(userId)  │
+└───────────┬───────────┘
+            │
+            │ Get User
+            ▼
+      ┌─────────────┐
+      │    User     │
+      │ tier=FREE   │
+      └──────┬──────┘
+             │
+             │ tier
+             ▼
+      ┌───────────────┐
+      │ RateLimiter   │
+      │ Map<Tier,...> │
+      └───────┬───────┘
+              │
+       ┌──────┴──────┐
+       │             │
+     FREE         PREMIUM
+       │             │
+       ▼             ▼
+ Fixed Window    Token Bucket
+       │             │
+       └──────┬──────┘
+              │
+        allowRequest()
+              │
+       ┌──────┴───────┐
+       │              │
+     ALLOW           DENY
+       │              │
+       ▼              ▼
+   API Server       HTTP 429
+```
+   
 ## Algorithms for implementing a Rate Limiter
 These are the three most common algorithms for implementing a Rate Limiter. Your uploaded material covers all three: Token Bucket, Fixed Window Counter, and Sliding Window Log.
 
