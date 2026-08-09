@@ -1,6 +1,7 @@
 # ⭐ Indexing in Database
 
 1. How do indexes make databases read faster? : https://www.youtube.com/watch?v=3G293is403I
+2. How does indexing work in Databases in Hindi ( How to optimize SQL Queries in Hindi ) : https://www.youtube.com/watch?v=xXtig5uLQS4
 
 A database index is a separate, optimized data structure—often a B-tree—that stores searchable column values along with references to the corresponding rows. 
 Instead of scanning every row, the database searches the index to quickly locate the matching records, significantly reducing disk I/O and improving query performance. 
