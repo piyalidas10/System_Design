@@ -1,4 +1,7 @@
 # CI/CD
+
+What is a CI/CD Pipeline — Explained in 60 Seconds | System Design Foundation : https://www.youtube.com/shorts/iWhvj9X2M7k
+
 CI/CD is an automated software delivery pipeline where code changes are continuously integrated, tested, packaged, and safely promoted through environments until production.
 
 "CI/CD stands for Continuous Integration and Continuous Delivery or Continuous Deployment — it is a software delivery practice that automates the process of building, testing and deploying applications so developers can ship code reliably and frequently without manual intervention.
