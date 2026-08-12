@@ -1,9 +1,22 @@
 # CI/CD
 CI/CD is an automated software delivery pipeline where code changes are continuously integrated, tested, packaged, and safely promoted through environments until production.
 
+"CI/CD stands for Continuous Integration and Continuous Delivery or Continuous Deployment — it is a software delivery practice that automates the process of building, testing and deploying applications so developers can ship code reliably and frequently without manual intervention.
+
+Continuous Integration is the first phase. Every time a developer pushes code to the repository, the pipeline automatically triggers — it builds the code, runs unit and integration tests and performs code quality and security scans. If any step fails, the pipeline stops immediately and the developer is notified. This ensures bugs are caught at the earliest possible stage before they can reach production. If everything passes, the code is safely merged.
+
+Continuous Delivery and Continuous Deployment are where many candidates confuse themselves. Continuous Delivery means the application is always in a deployable state after CI passes — the code is prepared and ready to go to production, but an explicit manual approval step is required before it actually deploys. This gives teams control over release timing and is common in regulated environments like banking or healthcare. Continuous Deployment goes one step further — there is no manual approval at all. Every change that passes the full pipeline automatically goes live to production. This is used by companies like Netflix and Amazon that deploy hundreds of times per day.
+
+A typical production CI/CD pipeline looks like this — developer pushes code to GitHub, CI triggers and runs build and tests, security scanning runs, a Docker image is created, it deploys to a staging environment for final verification and then either automatically or after approval it promotes to production.
+
+Common tools include GitHub Actions, GitLab CI/CD and Jenkins for pipeline orchestration and ArgoCD for Kubernetes-based continuous deployment. CI/CD improves software quality, reduces deployment risk, enables faster release cycles and makes deployments consistent and repeatable."
+
+## Restaurant Analogy
 This image explains CI/CD using a restaurant analogy. The key idea is:
 
 A developer writes code; automation takes care of building, testing, and deploying it.
+
+<img src="./Restaurant%20Analogy.png" width="100%" />
 
 **🍽️ Restaurant → CI/CD analogy**
 | Restaurant                       | CI/CD                        |
