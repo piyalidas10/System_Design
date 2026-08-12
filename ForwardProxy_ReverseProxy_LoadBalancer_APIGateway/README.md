@@ -4,7 +4,7 @@ Each solves a different problem, sits in a different position, and fails differe
 
 Lec-5: Forward proxy vs Reverse proxy | System Design : https://www.youtube.com/watch?v=fe3TP8Momzw
 
-<img src="./ForwardProxy_ReverseProxy_LoadBalancer_APIGateway.jpg" width="100%" />
+<img src="./ForwardProxy_ReverseProxy_LoadBalancer_APIGateway.png" width="100%" />
 
 1. Forward Proxy → Protects and represents clients.
 2. Reverse Proxy → Protects and represents servers.
