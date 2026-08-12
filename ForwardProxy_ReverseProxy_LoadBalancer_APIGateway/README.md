@@ -2,7 +2,9 @@
 Most engineers use Forward Proxy, Reverse Proxy, Load Balancer, and API Gateway interchangeably. They're not interchangeable. 
 Each solves a different problem, sits in a different position, and fails differently when misapplied.
 
-<img src="imgs/ForwardProxy_ReverseProxy_LoadBalancer_APIGateway.jpg" width="100%" />
+Lec-5: Forward proxy vs Reverse proxy | System Design : https://www.youtube.com/watch?v=fe3TP8Momzw
+
+<img src="./ForwardProxy_ReverseProxy_LoadBalancer_APIGateway.jpg" width="100%" />
 
 1. Forward Proxy → Protects and represents clients.
 2. Reverse Proxy → Protects and represents servers.
