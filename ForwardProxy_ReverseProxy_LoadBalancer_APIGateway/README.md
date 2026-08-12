@@ -92,7 +92,7 @@ Users only know the proxy.
 ```
 Backend servers remain hidden.
 
-Responsibilities
+**Responsibilities**
 - SSL termination
 - Compression
 - Caching
@@ -100,7 +100,12 @@ Responsibilities
 - Static files
 - Request routing
 
-Examples
+**Key Benefits in Production**
+- **Security**: Backend server IP addresses and internal ports stay completely hidden from public hackers.
+- **Traffic Control**: Spikes in live visitors get split evenly across server clusters.
+- **Caching**: Static assets like images and CSS styles are served directly from the proxy memory without waking up the database.
+
+**Examples**
 
 | Product     | Common Use                                  |
 | ----------- | ------------------------------------------- |
@@ -109,7 +114,6 @@ Examples
 | Traefik     | Reverse proxy for containers and Kubernetes |
 | Cloudflare  | Reverse proxy, CDN, WAF, DDoS protection    |
 | Envoy Proxy | Service mesh and microservices ingress      |
-
 
 ## Load Balancer
 Load Balancer optimizes performance. Distributes traffic across healthy servers, health checks every five seconds, reroutes away from failed instances automatically. 
