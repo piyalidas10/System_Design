@@ -84,6 +84,8 @@ Client → API → Redis → Database
 - Live dashboards
 7. Queue System
 - Background jobs (emails, payments)
+8. URL shortener
+- For a URL shortener, this can dramatically reduce database traffic. Otherwise millions of redirects will hit the database.
 
 ## 🏢 Real Companies Using Redis
 - Netflix → caching & personalization
