@@ -12,6 +12,30 @@ https://short.ly/aB92xK
 ```
 When someone opens the short URL, the system finds the original URL and redirects the user.
 
+## The critical data structure
+
+**At its core, the system maintains:**
+```
+Short ID                 Long URL
+────────                 ──────────────────────────────
+Ab12X       →            https://example.com/products/123
+K9pLm       →            https://google.com/search?q=...
+7Xq2A       →            https://youtube.com/watch?v=...
+```
+**Conceptually:**
+```
+
+                 URL Shortener Database
+
+
+        ┌────────────┬──────────────────────────────┐
+        │ short_id   │ long_url                     │
+        ├────────────┼──────────────────────────────┤
+        │ Ab12X      │ https://example.com/...      │
+        │ K9pLm      │ https://google.com/...       │
+        │ 7Xq2A      │ https://youtube.com/...      │
+        └────────────┴──────────────────────────────┘
+```
 ## "How would you design a URL shortener that handles billions of URLs and millions/billions of redirects?"
 
 A strong answer is:
@@ -590,6 +614,71 @@ Temporary Redirect
 Often preferable when you want more control over redirects and analytics.
 
 For an interview system design, mention that the choice depends on product requirements.
+
+| Redirect | Meaning            | Client behavior                                    | Typical use                              |
+| -------- | ------------------ | -------------------------------------------------- | ---------------------------------------- |
+| **301**  | Permanent redirect | Browser/CDN may cache the redirect                 | Maximum performance, stable URL          |
+| **302**  | Temporary redirect | Browser generally makes the redirect request again | Analytics, tracking, dynamic destination |
+
+**Example:**
+```
+https://tiny.app/Ab12X
+          │
+          ▼
+     URL Shortener
+          │
+          │ 301 / 302
+          ▼
+https://example.com/very/long/url
+```
+
+**Why 301 can reduce load**
+
+With a 301, the client can cache the redirect:
+```
+First request
+
+
+Browser ───────► URL Shortener
+                    │
+                    │ 301
+                    ▼
+                 Long URL
+                    │
+                    ▼
+                 Browser
+
+
+Future requests
+
+
+Browser ─────────────────────► Long URL
+          cached redirect
+```
+So the URL-shortener service may not receive every subsequent request.
+
+**With 302, you can intentionally keep the shortener in the request path:**
+```
+Request 1
+Browser → Shortener → 302 → Long URL
+
+
+Request 2
+Browser → Shortener → 302 → Long URL
+
+
+Request 3
+Browser → Shortener → 302 → Long URL
+```
+
+**That makes it useful when you want to perform things such as:**
+- Click counting
+- Geographic analytics
+- Device/browser analytics
+- A/B testing
+- Fraud detection
+- Dynamic destination selection
+- Link expiration checks
 
 ## 14. Analytics should NOT slow down redirects
 
