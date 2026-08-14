@@ -15,9 +15,8 @@ When someone opens the short URL, the system finds the original URL and redirect
 ## "How would you design a URL shortener that handles billions of URLs and millions/billions of redirects?"
 
 A strong answer is:
-```
+
 Use a distributed ID generator to create globally unique numeric IDs, encode them using Base62 to produce compact short codes, store the mapping in a horizontally scalable distributed database, use Redis as a cache for hot URLs, put stateless API servers behind load balancers, partition/shard the database for massive storage, and publish click analytics asynchronously through Kafka so analytics never blocks redirects.
-```
 
 ## Why do we need URL shortening?
 
