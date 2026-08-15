@@ -4,6 +4,7 @@
 1. Design Rate Limiter (LLD) - Token Bucket, Fixed & Sliding Window with Thread Safety : https://www.youtube.com/watch?v=7y0KWxaUn-E
 2. Master Rate Limiting - System Design : https://www.youtube.com/watch?v=CVItTb_jdkE
 3. Design Rate Limiter (LLD) - Token Bucket, Fixed & Sliding Window with Thread Safety : https://www.youtube.com/watch?v=7y0KWxaUn-E&list=PLYPO3T7Sl63u7uLLpiKCMXnRjeFIhUAvk
+4. Website Reference : https://smudge.ai/blog/ratelimit-algorithms
 
 <img src="./Rate_Limiter.jpg" width="100%" />
 
