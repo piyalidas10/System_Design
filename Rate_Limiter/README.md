@@ -1,4 +1,7 @@
 # Rate Limiter
+A rate limiter lets you control the rate of traffic that your service processes by blocking requests that exceed a set limit during a period of time. This is useful beyond just throttling spam in a chat. For instance, rate limiting a login form can deter brute force attacks while still allowing a small burst of incorrect guesses.
+
+API endpoints are also frequently rate-limited to prevent any single user from monopolizing resources. Imagine that you want users to only be able to hit an expensive endpoint 100 times per minute. You could track hits with a counter that resets every minute. Any request after the 100th within that minute gets blocked. This is one of the simplest rate-limiting algorithms, called a fixed window limiter, and is a common way to control traffic to a service.
 
 ## Tutorials
 1. Design Rate Limiter (LLD) - Token Bucket, Fixed & Sliding Window with Thread Safety : https://www.youtube.com/watch?v=7y0KWxaUn-E
