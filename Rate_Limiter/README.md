@@ -55,7 +55,7 @@ These are the three most common algorithms for implementing a Rate Limiter. Your
 
 The easiest way to understand them is to imagine a user is allowed 10 requests per minute.
 
-**1. Fixed Window Counter**
+### 1. Fixed Window Counter
 
 The simplest approach.
 
@@ -122,7 +122,7 @@ Disadvantages
 - Traffic isn't evenly distributed
 - Less precise
 
-**2. Sliding Window Log**
+### 2. Sliding Window Log
 
 Instead of storing only a counter, store the timestamp of every request.
 
@@ -216,7 +216,7 @@ the memory requirement can become significant.
 
 Your source specifically identifies the Sliding Window Log as accurate but potentially memory-intensive because it stores timestamps for requests.
 
-**3. Token Bucket**
+### 3. Token Bucket
 
 This is fundamentally different.
 
