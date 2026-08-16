@@ -35,6 +35,48 @@ Instead:
 NGINX can be used as a Load Balancer.
 ```
 
+**NGINX forwards requests to backend servers using algorithms such as:**
+- Round Robin (default)
+- Least Connections
+- IP Hash
+- Weighted Round Robin
+
+## When to use Load Balancer vs NGINX?
+
+**Use a dedicated cloud or hardware load balancer when:**
+- You need highly available infrastructure.
+- You want managed scaling and health checks.
+- You're deploying in cloud environments (AWS, Azure, GCP).
+
+**Use NGINX when:**
+- You need a reverse proxy.
+- You want SSL termination.
+- You need URL routing or request rewriting.
+- You want caching and compression.
+- You need load balancing for your application servers.
+
+## Can they be used together?
+
+Yes. This is a very common architecture:
+```
+Client
+   |
+Cloud Load Balancer (AWS ALB)
+   |
+NGINX
+   |
+Application Servers
+```
+Here:
+- The cloud load balancer handles internet traffic and high availability.
+- NGINX performs reverse proxying, URL routing, authentication, caching, and forwards requests to application servers.
+
+**Summary**
+- Load balancer is a role or function: distributing traffic across multiple servers.
+- NGINX is a software product that can perform that role and much more, including serving web content, acting as a reverse proxy, terminating SSL, caching responses, and routing requests.
+
+**So asking "Load balancer vs NGINX" is a bit like asking "Vehicle vs Truck"—a load balancer is a category of functionality, and NGINX is one tool that can provide it along with many additional capabilities.**
+
 ## NGINX as a Reverse Proxy
 
 This is probably the most important concept for a fresher.
