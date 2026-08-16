@@ -120,6 +120,16 @@ NGINX
 | Examples: AWS ALB, NLB, F5, HAProxy, NGINX    | NGINX Open Source / NGINX Plus                                            |
 | Doesn't necessarily mean a specific product   | Is a specific product                                                     |
 
+| Feature         | Load Balancer                                                         | NGINX                                                                                    |
+| --------------- | --------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| What it is      | A function/component that distributes traffic across multiple servers | A web server, reverse proxy, and application server that can also perform load balancing |
+| Primary purpose | Improve scalability, availability, and reliability                    | Serve web content, reverse proxy requests, cache content, and optionally load balance    |
+| Vendor          | Generic concept (e.g., AWS ELB, F5, HAProxy, NGINX, Citrix)           | Specific software developed by NGINX, Inc. (now part of F5)                              |
+| Layer           | Can operate at Layer 4 (TCP/UDP) or Layer 7 (HTTP/HTTPS)              | Supports both Layer 4 (with Stream module) and Layer 7                                   |
+| SSL termination | Usually supported                                                     | Supported                                                                                |
+| Health checks   | Yes                                                                   | Yes (basic in open source, advanced in NGINX Plus)                                       |
+| Reverse proxy   | Some load balancers do                                                | Yes (one of its main features)                                                           |
+
 ## Load Balancer vs NGINX with analogy
 **Think about a restaurant 🍽️.**
 
