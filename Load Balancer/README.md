@@ -19,6 +19,40 @@ Health Checks are how Load Balancers maintain reliability — they periodically 
 
 One important production consideration is that the Load Balancer itself can become a single point of failure. This is solved by deploying multiple Load Balancers in Active-Passive or Active-Active configurations. Netflix, Amazon and Instagram all use multiple layers of load balancing in production to ensure zero single points of failure in their traffic routing layer."
 
+**The most important thing to understand is:**
+> Load Balancer is a concept/role. NGINX is a software/tool that can perform that role.
+
+## First understand the problem
+
+**Imagine you have an application:**
+```
+Users
+  |
+  v
+Your Application
+  |
+  v
+One Server
+```
+Suppose your server can handle 1,000 requests/second.
+
+**But suddenly you have:**
+```
+10,000 requests/second
+```
+One server may become overloaded.
+
+**So we add multiple servers:**
+```
+             ┌──> Server A
+Users ──> ? ─┼──> Server B
+             └──> Server C
+```
+Now the question is:
+> **Who decides which request goes to which server?**
+
+That's where a Load Balancer comes in.
+
 ## Problem: Load Balancer becomes a Single Point of Failure (SPOF)
 
 Without redundancy:
@@ -563,6 +597,16 @@ Application Servers
 ```
 Meta's infrastructure uses multiple proxy and load-balancing layers to keep services available even when individual components fail.
 
+## Load Balancer vs NGINX
+| Feature         | Load Balancer                                                         | NGINX                                                                                    |
+| --------------- | --------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| What it is      | A function/component that distributes traffic across multiple servers | A web server, reverse proxy, and application server that can also perform load balancing |
+| Primary purpose | Improve scalability, availability, and reliability                    | Serve web content, reverse proxy requests, cache content, and optionally load balance    |
+| Vendor          | Generic concept (e.g., AWS ELB, F5, HAProxy, NGINX, Citrix)           | Specific software developed by NGINX, Inc. (now part of F5)                              |
+| Layer           | Can operate at Layer 4 (TCP/UDP) or Layer 7 (HTTP/HTTPS)              | Supports both Layer 4 (with Stream module) and Layer 7                                   |
+| SSL termination | Usually supported                                                     | Supported                                                                                |
+| Health checks   | Yes                                                                   | Yes (basic in open source, advanced in NGINX Plus)                                       |
+| Reverse proxy   | Some load balancers do                                                | Yes (one of its main features)                                                           |
 
 
 
