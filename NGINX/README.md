@@ -1,6 +1,6 @@
-# NGINX
+# 🔥 NGINX
 
-# 🔥 Nginx itself is a self-contained software that can fully fit into a local development environment (e.g. a Mac or a Linux computer) for testing, no Internet is needed and no cloud dependency, which is very different from other cloud based solutions that has feature parity - because those cloud based solutions requires $$$ to run and an Internet connection to work.
+**Nginx itself is a self-contained software that can fully fit into a local development environment (e.g. a Mac or a Linux computer) for testing, no Internet is needed and no cloud dependency, which is very different from other cloud based solutions that has feature parity - because those cloud based solutions requires $$$ to run and an Internet connection to work.**
 
 NGINX is a fundamental component in system design, acting as an intermediary between clients and backend services. 
 It is primarily used for reverse proxying, load balancing, SSL/TLS termination, and caching to ensure high performance, stability, and security.  
