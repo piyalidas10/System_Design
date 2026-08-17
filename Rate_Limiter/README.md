@@ -359,6 +359,197 @@ Your uploaded source specifically highlights this burst-handling behavior and To
 | Large-scale systems | Good                  | Expensive          | Excellent        |
 | Typical use         | Simple APIs           | Strict throttling  | Production APIs  |
 
+## 4. Leaking bucket algorithm
+
+The leaking bucket algorithm is similar to the token bucket except that requests are processed at a fixed rate. It is usually implemented with a first-in-first-out (FIFO) queue. 
+
+**The algorithm works as follows:**
+- When a request arrives, the system checks if the queue is full. If it is not full, the request is added to the queue.
+- Otherwise, the request is dropped.
+- Requests are pulled from the queue and processed at regular intervals.
+
+<img src="https://bytebytego.com/images/courses/system-design-interview/design-a-rate-limiter/figure-4-7-AI26NI2Y.svg?dpl=dpl_4tmpnhzxDygmfg9hq5M876xw4kUD" width="100%" />
+
+**Leaking bucket algorithm takes the following two parameters:**
+- Bucket size: it is equal to the queue size. The queue holds the requests to be processed at a fixed rate.
+- Outflow rate: it defines how many requests can be processed at a fixed rate, usually in seconds.
+
+Shopify, an ecommerce company, uses leaky buckets for rate-limiting.
+
+Pros:
+- Memory efficient given the limited queue size.
+- Requests are processed at a fixed rate therefore it is suitable for use cases that a stable outflow rate is needed.
+
+Cons:
+- A burst of traffic fills up the queue with old requests, and if they are not processed in time, recent requests will be rate limited.
+- There are two parameters in the algorithm. It might not be easy to tune them properly.
+
+**Think of requests entering a queue and leaking out at a fixed rate.**
+```
+             Requests
+          ↓    ↓    ↓
+        ┌─────────────┐
+        │   Request   │
+        │   Queue     │
+        │             │
+        │  R R R R R  │
+        └──────┬──────┘
+               │
+               │ Fixed rate
+               │ 2 req/sec
+               ▼
+             Server
+```
+
+Suppose:
+```
+Queue capacity = 10 requests
+Processing rate = 2 requests/sec
+```
+
+Five requests arrive immediately:
+```
+R1 R2 R3 R4 R5
+│
+▼
+Queue
+```
+They don't all go to the server immediately.
+
+Instead:
+```
+t=0 → R1
+t=1 → R2
+t=2 → R3
+t=3 → R4
+t=4 → R5
+```
+The output rate is controlled.
+
+### Token Bucket vs Leaky Bucket
+```
+             TOKEN BUCKET
+                 
+ Requests ───────────────► Server
+                ↑
+          Tokens control
+          whether request
+          can pass
+
+
+             LEAKY BUCKET
+
+ Requests ───► Queue ───► Server
+                  │
+                  ▼
+             Fixed output
+                rate
+```
+Token Bucket : Controls whether a request is allowed.   
+Leaky Bucket : Controls how quickly requests leave the queue.   
+
+| Feature                    | Token Bucket | Leaky Bucket              |
+| -------------------------- | ------------ | ------------------------- |
+| Main concept               | Tokens       | Queue                     |
+| Allows bursts              | ✅ Yes        | ❌ Usually no              |
+| Output rate                | Variable     | Fixed                     |
+| Queue required             | ❌ No         | ✅ Typically               |
+| Good for API rate limiting | ⭐⭐⭐⭐⭐        | ⭐⭐⭐                       |
+| Good for traffic shaping   | ⭐⭐⭐⭐         | ⭐⭐⭐⭐⭐                     |
+| Handles sudden bursts      | Excellent    | Can queue/reject          |
+| Latency                    | Lower        | Can increase due to queue |
+| Memory                     | Low          | Higher                    |
+| Typical result             | Allow / 429  | Queue / process / reject  |
+
+### 🚨 What happens when traffic is too high?
+
+**Token Bucket**
+```
+Bucket empty
+     │
+     ▼
+New request
+     │
+     ▼
+   429
+
+The request isn't normally stored.
+```
+
+**Leaky Bucket**
+```
+Queue full
+    │
+    ▼
+New request
+    │
+    ▼
+Reject / 429
+```
+So both can eventually reject traffic, but their behavior before rejection is different.
+
+### 📌 Real-world example
+
+**Imagine an API:**
+```
+POST /payment
+```
+You want:
+```
+10 requests/sec
+Burst capacity = 20
+```
+
+**Token Bucket**
+
+Configure:
+```
+Capacity = 20
+Refill = 10 tokens/sec
+```
+Suppose the bucket is full.
+
+A client suddenly sends:
+```
+20 requests
+```
+All 20 can potentially be accepted because there are 20 tokens.
+```
+20 requests
+     ↓
+┌─────────────────┐
+│ Token Bucket    │
+│ 20 → 19 → ...   │
+│       → 0       │
+└────────┬────────┘
+         │
+         ▼
+       Server
+```
+This is excellent for APIs where short bursts are legitimate.
+
+**Leaky Bucket**
+
+Configure:
+```
+Queue capacity = 20
+Output = 10 requests/sec
+```
+If 20 requests arrive instantly:
+```
+20 requests
+     ↓
+┌─────────────────┐
+│ Queue           │
+│ R R R R R R ... │
+└────────┬────────┘
+         │
+       10/sec
+         ▼
+       Server
+```
+The server sees a much smoother stream.
+
 ## Fixed Window vs Sliding Window Log vs Token Bucket (Visual comparison)
 **Fixed Window**
 
