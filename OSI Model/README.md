@@ -156,4 +156,139 @@ Examples:
 - Wi-Fi radio
 - Network interface hardware
 
+## 📦 Encapsulation
+
+This is one of the most important OSI concepts for interviews.
+
+When sending data, each layer adds its own information.
+```
+Application
+    │
+    ▼
+   DATA
+    │
+    ▼
+Transport
+    │
+    ▼
+[TCP HEADER][DATA]
+    │
+    ▼
+Network
+    │
+    ▼
+[IP HEADER][TCP HEADER][DATA]
+    │
+    ▼
+Data Link
+    │
+    ▼
+[ETHERNET HEADER][IP HEADER][TCP HEADER][DATA][TRAILER]
+    │
+    ▼
+Physical
+    │
+    ▼
+0101010101010101
+```
+This process is called encapsulation.
+
+**At the receiving machine, the reverse happens:**
+```
+Physical
+    ↓
+Data Link
+    ↓
+Network
+    ↓
+Transport
+    ↓
+Session
+    ↓
+Presentation
+    ↓
+Application
+```
+This is decapsulation.
+
+## 🔥 OSI Layers and Devices
+
+A useful interview mapping:
+```
+Layer 7 ───────── Application
+Layer 6 ───────── Presentation
+Layer 5 ───────── Session
+Layer 4 ───────── Transport       → TCP / UDP
+Layer 3 ───────── Network         → Router
+Layer 2 ───────── Data Link       → Switch
+Layer 1 ───────── Physical        → Cable / Hub
+```
+
+**Common devices**
+
+| Device                    | Primary Layer |
+| ------------------------- | ------------: |
+| Hub                       |            L1 |
+| Switch                    |            L2 |
+| Router                    |            L3 |
+| L4 Load Balancer          |            L4 |
+| Application/Reverse Proxy |            L7 |
+| API Gateway               |    Usually L7 |
+
+## 🧠 OSI vs TCP/IP
+
+In actual modern networking, the TCP/IP model is more directly representative of the Internet.
+
+| OSI          | TCP/IP         |
+| ------------ | -------------- |
+| Application  | Application    |
+| Presentation | Application    |
+| Session      | Application    |
+| Transport    | Transport      |
+| Network      | Internet       |
+| Data Link    | Network Access |
+| Physical     | Network Access |
+
+So:
+```
+OSI                         TCP/IP
+
+
+┌───────────────┐
+│ Application   │
+├───────────────┤
+│ Presentation  │ ────────┐
+├───────────────┤         │
+│ Session       │         ├── Application
+├───────────────┤         │
+│ Transport     │ ────────┤── Transport
+├───────────────┤         │
+│ Network       │ ─────────── Internet
+├───────────────┤         │
+│ Data Link     │ ────────┐
+├───────────────┤         ├── Network Access
+│ Physical      │ ────────┘
+└───────────────┘
+```
+
+## 🎯 Interview shortcut
+
+Remember these four mappings particularly well:
+```
+Layer 7 → HTTP/HTTPS → Application
+
+Layer 4 → TCP/UDP → Transport
+
+Layer 3 → IP → Routing
+
+Layer 2 → MAC → Switching
+```
+
+**And the key distinction:**
+> IP tells you where the packet needs to go.
+> MAC tells you which device/interface to deliver it to on the local network.
+> TCP ensures reliable end-to-end delivery.
+> HTTP defines what the application is asking for.
+
+
 
