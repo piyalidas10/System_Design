@@ -54,6 +54,41 @@ Client
        ▼              ▼
    API Server       HTTP 429
 ```
+
+## 🏆 Which one should you use?
+
+For the production-grade API rate limiter we've been designing, I'd generally choose:
+
+**Token Bucket**
+```
+Client
+   │
+   ▼
+API Gateway
+   │
+   ▼
+Token Bucket
+   │
+   ├── Token available → ALLOW
+   │
+   └── No token → 429
+          │
+          ▼
+        Redis
+```
+
+**Why?**
+- Supports legitimate bursts
+- Very fast
+- Doesn't require maintaining a request queue
+- Works well with Redis
+- Easy to apply per user/API key/tenant/IP
+- Works well with distributed API gateways
+
+Use Leaky Bucket when your primary concern is smooth, predictable downstream traffic, such as protecting a backend that must receive requests at a controlled fixed rate.
+
+**One-line interview answer**
+> **Token Bucket controls how much traffic a client is allowed to send and permits bursts; Leaky Bucket controls how fast traffic is released and smooths bursts into a relatively constant output rate.**
    
 ## Algorithms for implementing a Rate Limiter
 These are the three most common algorithms for implementing a Rate Limiter. Your uploaded material covers all three: Token Bucket, Fixed Window Counter, and Sliding Window Log.
