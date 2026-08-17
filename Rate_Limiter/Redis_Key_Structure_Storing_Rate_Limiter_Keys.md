@@ -76,16 +76,18 @@ Use an atomic Lua script or an equivalent atomic Redis operation.
 
 For a production system, you may prefer a token bucket.
 
-Instead of just:
+**Instead of just:**
 ```
 counter = 13
 ```
-you need state such as:
+
+**you need state such as:**
 ```
 tokens
 last_refill
-``
-Example:
+```
+
+**Example:**
 ```
 KEY:
 rl:user:12345:POST:/payments
@@ -103,7 +105,7 @@ TTL:
 ```
 However, for maximum performance, you generally don't need JSON.
 
-A Redis Hash can represent it:
+**A Redis Hash can represent it:**
 ```
 HGETALL rl:user:12345:POST:/payments
 
@@ -112,7 +114,7 @@ tokens       → 7
 last_refill  → 1723812345
 ```
 
-So:
+**So:**
 ```
 Redis
  │
