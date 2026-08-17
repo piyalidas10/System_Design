@@ -1,6 +1,7 @@
 # CAP Theorem
-The CAP Theorem in DBMS : https://www.geeksforgeeks.org/dbms/the-cap-theorem-in-dbms/
-CAP theorem : https://bytebytego.com/courses/system-design-interview/design-a-key-value-store
+
+1. The CAP Theorem in DBMS : https://www.geeksforgeeks.org/dbms/the-cap-theorem-in-dbms/
+2. CAP theorem : https://bytebytego.com/courses/system-design-interview/design-a-key-value-store
 
 The CAP Theorem states that a distributed data store can simultaneously provide at most two out of three guarantees: 
 Consistency, Availability, and Partition Tolerance. 
