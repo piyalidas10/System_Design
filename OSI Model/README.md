@@ -37,7 +37,18 @@ Or from Layer 1 → 7:
 | **WebRTC**    | L7    |    Usually UDP | Depends on media/data channel | Calls, P2P media         |
 | **gRPC**      | L7    | Via HTTP/2/TCP |                    Via HTTP/2 | Microservices            |
 
-
+**System-design shortcut:**
+```
+REST → public APIs
+gRPC → internal service-to-service
+WebSocket → bidirectional realtime
+WebRTC → realtime media/P2P
+TCP → reliable transport
+UDP → lightweight/loss-tolerant transport
+QUIC → modern reliable encrypted transport over UDP
+HTTP/3 → HTTP over QUIC
+IPv4/IPv6 → addressing and routing
+```
 
 ## 🌐 Real-Life Example: Opening https://example.com
 
