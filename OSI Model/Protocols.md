@@ -1,6 +1,114 @@
 # Protocols
 
-## WebSocket — Persistent two-way channel
+**Application Layer — Where Your APIs Live**
+
+Layer 7 is where actual application data lives. HTTP requests, WebSocket messages, gRPC calls — all of these are application-layer protocols. This is the layer most system design discussions happen at. API gateways, reverse proxies, and most authentication logic operate here.
+
+## HTTPS — HTTP over TLS (Encrypted, TLS 1.3, Mandatory in 2024)
+HTTPS is HTTP wrapped inside a TLS (Transport Layer Security) tunnel. TLS does three things: verifies identity (server is who it claims), negotiates keys, and encrypts everything. Modern web requires it — browsers mark plain HTTP as "Not Secure".
+
+> **Analogy: Imagine sending a postcard (HTTP) — anyone delivering it can read it. HTTPS is like putting that postcard in a tamper-proof sealed envelope. Before sealing, both sender and receiver verify each other's identity (certificate) and agree on a secret code (encryption key) only they know.**
+
+**🔐 TLS 1.3 Handshake Flow**
+
+TLS 1.3 reduced the handshake to just 1 round-trip (down from 2 in TLS 1.2). Combined with QUIC, can even be 0-RTT for returning clients.
+```
+💻 CLIENT                                      🔐 SERVER
+    │                                               │
+    │  ClientHello                                 │
+    │──────────────────────────────────────────────>│
+    │                                               │
+    │  • Supported cipher suites                   │
+    │  • Random                                    │
+    │  • Key share (ECDHE)                         │
+    │  • Supported TLS versions                    │
+    │                                               │
+    │                                               │
+    │                       ServerHello             │
+    │<──────────────────────────────────────────────│
+    │                                               │
+    │                       • Selected cipher       │
+    │                       • Server key share      │
+    │                       • Certificate           │
+    │                       • CertificateVerify     │
+    │                       • Finished              │
+    │                                               │
+    │                                               │
+    │  Verify certificate                           │
+    │  + calculate shared secret                    │
+    │                                               │
+    │  Finished                                    │
+    │──────────────────────────────────────────────>│
+    │                                               │
+    │        🔐 HANDSHAKE COMPLETE                  │
+    │                                               │
+    │═══════════════════════════════════════════════│
+    │          🔒 ENCRYPTED APPLICATION DATA       │
+    │                                               │
+    │  HTTPS Request                                │
+    │──────────────────────────────────────────────>│
+    │                                               │
+    │  HTTPS Response                               │
+    │<──────────────────────────────────────────────│
+    │                                               │
+```
+
+**🧠 What's actually happening?**
+```
+Client Private Key Material
+          +
+Server Private Key Material
+          │
+          ▼
+       ECDHE
+          │
+          ▼
+   Shared Secret
+          │
+          ▼
+   TLS Key Derivation
+          │
+     ┌────┴────┐
+     ▼         ▼
+Client Key   Server Key
+     │         │
+     └────┬────┘
+          ▼
+   🔒 Symmetric Encryption
+          │
+          ▼
+     HTTPS Traffic
+```
+The server's certificate doesn't directly encrypt the HTTP data. Its primary role is to authenticate the server's identity. The actual application traffic is encrypted using symmetric keys derived during the handshake.
+
+**🔥 TLS 1.3 vs HTTP**
+
+The complete stack looks like:
+```
+┌─────────────────────────────┐
+│       HTTP / HTTPS          │  ← Application
+├─────────────────────────────┤
+│       TLS 1.3               │  ← Encryption + authentication
+├─────────────────────────────┤
+│       TCP                   │  ← Reliable transport
+├─────────────────────────────┤
+│       IPv4 / IPv6           │  ← Network
+└─────────────────────────────┘
+```
+For HTTP/3, the lower layers change:
+```
+┌─────────────────────────────┐
+│       HTTP/3                │
+├─────────────────────────────┤
+│       QUIC + TLS 1.3        │
+├─────────────────────────────┤
+│       UDP                   │
+├─────────────────────────────┤
+│       IPv4 / IPv6           │
+└─────────────────────────────┘
+```
+
+## WebSocket — Persistent two-way channel (Persistent, Bidirectional, Real-time)
 A protocol that upgrades from HTTP to a persistent, full-duplex connection. After the upgrade, both client and server can send messages anytime — no polling, no new requests. Perfect for real-time apps.
 
 > **Analogy: HTTP is like exchanging letters — you write, mail, wait for reply, then write again. WebSocket is like picking up the phone and keeping the line open. Both sides can talk anytime without redialing.**
@@ -118,7 +226,7 @@ Client ──────── event ───────► Server
 The server doesn't have to wait for the client to ask for new data.
 
 
-## 🚀 gRPC — High-performance service-to-service RPC
+## 🚀 gRPC — High-performance service-to-service RPC (HTTP/2, Binary (Protobuf), RPC)
 
 A modern Remote Procedure Call framework built by Google. 
 Runs over HTTP/2 with binary Protocol Buffers for serialization. 
