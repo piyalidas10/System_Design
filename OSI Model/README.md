@@ -23,6 +23,22 @@ A P S T N D P
 Or from Layer 1 → 7:
 > Please Do Not Throw Sausage Pizza Away
 
+## 🔥 The most important distinction
+
+| Protocol      | Layer |      Reliable? |                      Ordered? | Typical use              |
+| ------------- | ----- | -------------: | ----------------------------: | ------------------------ |
+| **TCP**       | L4    |              ✅ |                             ✅ | HTTP/1.1, HTTP/2         |
+| **UDP**       | L4    |              ❌ |                             ❌ | DNS, gaming, voice/video |
+| **QUIC**      | L4    |              ✅ |                            ✅* | HTTP/3                   |
+| **HTTP/1.1**  | L7    |        Via TCP |                       Via TCP | REST APIs                |
+| **HTTP/2**    | L7    |        Via TCP |                       Via TCP | gRPC                     |
+| **HTTP/3**    | L7    |       Via QUIC |              Via QUIC streams | Modern web               |
+| **WebSocket** | L7    |        Via TCP |                       Via TCP | Chat, realtime           |
+| **WebRTC**    | L7    |    Usually UDP | Depends on media/data channel | Calls, P2P media         |
+| **gRPC**      | L7    | Via HTTP/2/TCP |                    Via HTTP/2 | Microservices            |
+
+
+
 ## 🌐 Real-Life Example: Opening https://example.com
 
 Suppose you enter a URL in your browser.
