@@ -1,4 +1,5 @@
 # Protocols
+System Design Fundamentals : https://www.interviewwithbunny.com/systemdesignfundamentals/05
 
 **Transport Layer — Ports & Reliability**
 
@@ -8,7 +9,7 @@ Layer 4 sits on top of IP and provides end-to-end communication between applicat
 
 Layer 7 is where actual application data lives. HTTP requests, WebSocket messages, gRPC calls — all of these are application-layer protocols. This is the layer most system design discussions happen at. API gateways, reverse proxies, and most authentication logic operate here.
 
-## TCP — Transmission Control Protocol
+## TCP — Transmission Control Protocol (Connection-oriented, Reliable, Ordered)
 A reliable, connection-oriented protocol. Before sending data, both sides perform a 3-way handshake. Every packet is acknowledged. Lost packets are retransmitted. Data arrives in order. This reliability comes at the cost of higher latency and overhead.
 
 > **Analogy: Like a formal phone call. You dial, the other person picks up and says "hello?" (SYN-ACK), you respond "hi!" (ACK) — only then does the real conversation start. After every sentence, you wait for acknowledgement before continuing.**
@@ -104,6 +105,152 @@ TCP HEADER
 - Database connections (Postgres, MySQL)
 - WebSocket (built on TCP)
 
+## UDP — User Datagram Protocol (Connectionless, Best-effort, Fast)
+A connectionless, unreliable, "fire-and-forget" protocol. No handshake, no acknowledgements, no retransmissions, no ordering. Just shoot the packet and hope it arrives. The trade-off: massively lower latency and overhead compared to TCP.
+
+> **Why this matters : Best-effort delivery — app must handle reliability.**
+
+> **Analogy: Like shouting a message across a crowded room. You don't wait for a "got it!" — you just shout and move on. Some words might get lost in the noise. If the listener missed something, too bad. Use this when speed matters more than perfection.**
+
+**UDP header — only 64 bits / 8 bytes!**
+
+Compare this to TCP's 20+ bytes. UDP is intentionally minimal — that's why it's so fast.
+
+| Field                |    Size | Purpose                                          |
+| -------------------- | ------: | ------------------------------------------------ |
+| **Source Port**      | 16 bits | Identifies the sender application/process        |
+| **Destination Port** | 16 bits | Identifies the receiver application/process      |
+| **Length**           | 16 bits | Total length of the **UDP header + UDP payload** |
+| **Checksum**         | 16 bits | Detects errors/corruption in the UDP datagram    |
+
+```
+UDP HEADER
+┌─────────────────────────────────────────────┐
+│ Source Port        │ Destination Port       │
+│     16 bits        │      16 bits           │
+├────────────────────┼────────────────────────┤
+│ Length             │ Checksum               │
+│     16 bits        │      16 bits           │
+└─────────────────────────────────────────────┘
+                  8 bytes
+                     ↓
+              Application Data
+```
+
+> **TCP carries more control information to provide reliability; UDP keeps the header minimal for speed and low latency.**
+> **UDP checksum is optional in IPv4, but mandatory in IPv6.**
+
+**✅ Why use UDP**
+- Extremely low latency (no handshake)
+- Small header — 8 bytes only
+- No connection state to manage
+- Better for many small messages
+
+**⚠️ Trade-offs**
+- No delivery guarantee
+- Packets may arrive out of order
+- No flow/congestion control
+- App must handle reliability if needed
+
+**📍 Where it's used**
+- DNS queries (small, fast)
+- Video/voice calls (loss is OK)
+- Online gaming (latency critical)
+- Live streaming
+- QUIC / HTTP/3 (built on UDP)
+
+## QUIC — Quick UDP Internet Connections (Built on UDP, HTTP/3, Modern)
+A modern transport protocol built on top of UDP that gives you all the benefits of TCP (reliability, ordering, congestion control) plus encryption and multiplexing — without TCP's head-of-line blocking. Used by HTTP/3, Google services, and YouTube.
+
+> **HTTP/2 solves application-level multiplexing, but TCP can still cause transport-level Head-of-Line blocking. HTTP/3 uses QUIC over UDP, providing independent streams, faster connection establishment, and connection migration.**
+
+> **Analogy: If TCP is a single-lane road where one stalled car blocks everyone, QUIC is a multi-lane highway. Each "stream" has its own lane — if one packet is lost on stream A, stream B keeps flowing. Plus, the security barrier is built-in (encryption), not a separate toll booth (TLS).**
+
+**Why QUIC exists**
+- **Problem with TCP+TLS:** Setting up a secure HTTPS connection takes 2–3 round-trips (TCP handshake + TLS handshake). On a slow mobile network, that's hundreds of milliseconds wasted before any data flows.
+- **QUIC's solution:** Combines transport + encryption in a single handshake. Often achieves 0-RTT connection resumption — meaning a returning client can send data with the very first packet.
+- **Bonus:** Each stream is independent, so losing one packet doesn't block others. And because QUIC runs in user-space (not kernel), it can be updated without OS upgrades.
+
+**TCP + TLS vs QUIC**
+
+| Feature                  | **TCP + TLS**                                                                                          | **QUIC**                                                                       |
+| ------------------------ | ------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------ |
+| **Connection setup**     | **2–3 RTTs** depending on TLS/session state                                                            | **1 RTT** for a new connection; **0-RTT** can be possible on reconnect         |
+| **Encryption**           | TLS layered on top of TCP                                                                              | **Built into QUIC; TLS 1.3 is mandatory**                                      |
+| **Multiplexing**         | HTTP/2 supports multiplexing, but TCP-level HoL blocking can affect all streams                        | **Independent streams; packet loss on one stream doesn't block other streams** |
+| **Connection migration** | TCP connection is tied to the connection's IP/port tuple; IP changes normally require a new connection | **Connection ID allows migration**, e.g. Wi-Fi → 4G                            |
+| **Implementation**       | TCP is traditionally implemented in the **OS kernel**; TLS may be in user space                        | **Typically implemented in user space**                                        |
+| **Transport**            | TCP                                                                                                    | **UDP-based**                                                                  |
+| **Reliability**          | ✅ Reliable, ordered byte stream                                                                        | ✅ Reliable, ordered **per stream**                                             |
+| **Protocol**             | HTTP/1.1, HTTP/2 commonly use TCP                                                                      | **HTTP/3 uses QUIC**                                                           |
+
+**🔥 The key difference**
+```
+TCP + TLS + HTTP/2
+────────────────────────────────────
+
+
+HTTP/2
+ ├── Stream 1 ─┐
+ ├── Stream 2 ─┤
+ └── Stream 3 ─┘
+       ↓
+      TLS
+       ↓
+      TCP
+       ↓
+     Internet
+
+
+Problem:
+TCP sees ONE ordered byte stream.
+If packet #5 is lost,
+TCP waits for #5 before delivering later bytes.
+             ↓
+       Head-of-Line Blocking
+```
+```
+QUIC + HTTP/3
+────────────────────────────────────
+
+
+HTTP/3
+ ├── Stream 1 ────────────────┐
+ ├── Stream 2 ── X packet lost│
+ └── Stream 3 ────────────────┘
+                              ↓
+                            QUIC
+                              ↓
+                             UDP
+                              ↓
+                           Internet
+
+
+Stream 2 waits for retransmission,
+but Stream 1 and Stream 3 can continue.
+```
+
+### TCP vs UDP — choosing the right one
+This is the most important Layer 4 trade-off in system design. The decision depends entirely on whether you need reliability or speed.
+| Feature                | **TCP**                                                                 | **UDP**                                                  |
+| ---------------------- | ----------------------------------------------------------------------- | -------------------------------------------------------- |
+| **Connection**         | Connection-oriented; uses a handshake                                   | Connectionless                                           |
+| **Reliability**        | **Reliable delivery** using ACKs and retransmissions                    | **Best-effort; packets may be lost**                     |
+| **Ordering**           | **Ordered byte stream**                                                 | No ordering guarantee                                    |
+| **Speed**              | Generally higher overhead due to handshake, ACKs, retransmissions, etc. | **Lower protocol overhead; often lower latency**         |
+| **Header size**        | **20+ bytes**                                                           | **8 bytes**                                              |
+| **Flow control**       | **Built-in**                                                            | ❌ Not provided by UDP itself                             |
+| **Congestion control** | **Built-in TCP mechanisms**                                             | ❌ Not provided by UDP itself                             |
+| **Use cases**          | HTTP/1.1, HTTP/2, email, file transfer, database connections            | DNS, VoIP, real-time gaming, streaming, QUIC/HTTP/3      |
+| **Mental model**       | 📞 **Phone call** — establish communication and confirm delivery        | 📨 **Postcard** — send without establishing a connection |
+
+**🧠 Interview shortcut**
+```
+TCP = reliable + ordered + flow/congestion controlled.
+UDP = connectionless + minimal overhead + best effort.
+```
+And an important modern connection:
+> **HTTP/3 → QUIC → UDP, but QUIC itself adds reliability, congestion control, encryption, multiplexed streams, and connection migration on top of UDP.**
 
 ## HTTP — HyperText Transfer Protocol (Request-Response, Stateless, Text-based)
 The foundation of the web. A simple request-response protocol where a client sends a request and the server returns a response. Stateless by default — each request is independent. Runs over TCP (HTTP/1.1, HTTP/2) or QUIC (HTTP/3).
