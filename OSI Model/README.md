@@ -325,7 +325,7 @@ And when receiving the data, the journey happens in reverse:
 L1 → L7
 ```
 ⚡ Physical → 🛵 Data Link → 📍 Network → 🚚 Transport → 📞 Session → 📦 Presentation → 🎯 Application
-``
+```
 
 When you send data, it travels down the OSI stack on the sender, across the wire, then up the stack on the receiver. At each layer going down, headers are added (encapsulation). Going up, headers are stripped (decapsulation).
 ```
