@@ -158,6 +158,56 @@ Use horizontal scaling when:
 9. Data volume becomes too large for one database, requiring partitioning or sharding.
 10. You need zero/low-downtime deployments by gradually replacing or draining instances.
 
+## Common Interview Questions
+
+> [!CAUTION]
+> Q What is vertical scaling?
+> A Vertical scaling means increasing the capacity of a single machine by adding more CPU, memory, storage, IOPS, or network bandwidth.
+
+> [!CAUTION]
+> Q What is horizontal scaling?
+> A Horizontal scaling means adding more machines or instances and distributing traffic, data, or jobs across them.
+
+> [!CAUTION]
+> Q Which is better: vertical or horizontal scaling?
+> A Neither is universally better. Vertical scaling is simpler and useful early, but has hard limits. Horizontal scaling supports larger scale and availability, but adds distributed-system complexity.
+
+> [!CAUTION]
+> Q Why are stateless servers easier to scale horizontally?
+> A Because any server can handle any request. The load balancer does not need to route a user to the same server, and failed instances can be replaced more easily.
+
+> [!CAUTION]
+> Q What problem does a load balancer solve?
+> A It distributes incoming traffic across multiple healthy backend servers and stops routing traffic to unhealthy instances.
+
+> [!CAUTION]
+> Q How do you scale a read-heavy database?
+> A Use query optimization, indexes, caching, and read replicas. Read replicas distribute read traffic, but replication lag can cause stale reads.
+
+> [!CAUTION]
+> Q How do you scale a write-heavy database?
+> A First optimize schema, indexes, and queries. Then consider batching, queues, partitioning, and sharding. Sharding increases write capacity but complicates transactions and queries.
+
+> [!CAUTION]
+> Q What is the biggest risk of horizontal scaling?
+> A Distributed-system complexity: state management, consistency, network failures, partial failures, retries, monitoring, and debugging all become harder.
+
+> [!CAUTION]
+> Q When should you use queues for scaling?
+> A Use queues when work is slow, bursty, retryable, or does not need to complete inside the user-facing request path.
+
+> [!CAUTION]
+> Q What is auto scaling?
+> A Auto scaling automatically adds or removes capacity based on demand, such as CPU, memory, request rate, latency, or queue length.
+
+> [!CAUTION]
+> Q Why can retries make scaling problems worse?
+> A Aggressive retries increase traffic during failure or overload, creating retry storms. Use timeouts, exponential backoff, jitter, and idempotency.
+
+> [!CAUTION]
+> Q What should you check before scaling?
+> A Measure the real bottleneck. Check CPU, memory, disk, network, database queries, locks, connection pools, latency percentiles, errors, and queue lengths.
+
 ## Key Interview Tips
 
 > [!CAUTION]
