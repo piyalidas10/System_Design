@@ -314,6 +314,19 @@ This is you opening Chrome and typing youtube.com. Pure user intent — what the
 | **L2** | **Data Link**    | 🛵 Local delivery from **Mumbai hub → Sunshine Apartments**                          | **Ethernet, Wi-Fi, MAC**      | **Local network delivery**            |
 | **L1** | **Physical**     | ⚡ Actual **flight, truck, scooter** physically carrying the package                  | Fiber, copper, radio waves    | **Bits/signals over physical medium** |
 
+**🧠 Remember it as a journey**
+
+L7 → L1
+```
+🎯 What → 📦 Format → 📞 Conversation → 🚚 Deliver → 📍 Route → 🛵 Local → ⚡ Physical
+```
+And when receiving the data, the journey happens in reverse:
+
+L1 → L7
+```
+⚡ Physical → 🛵 Data Link → 📍 Network → 🚚 Transport → 📞 Session → 📦 Presentation → 🎯 Application
+``
+
 When you send data, it travels down the OSI stack on the sender, across the wire, then up the stack on the receiver. At each layer going down, headers are added (encapsulation). Going up, headers are stripped (decapsulation).
 ```
 L7 (HTTP) → [HTTP request: GET /users]
