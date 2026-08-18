@@ -1,7 +1,8 @@
 # 📚 OSI Model
 The OSI (Open Systems Interconnection) Model is a 7-layer conceptual model that explains how data travels from one application on one device to an application on another device over a network.
 
-🧠 System Design Fundamentals 4: ✅ OSI Model Explained for System Design | Networking Made Easy : https://www.youtube.com/watch?v=66RgQUTekfs
+- 🧠 System Design Fundamentals 4: ✅ OSI Model Explained for System Design | Networking Made Easy : https://www.youtube.com/watch?v=66RgQUTekfs
+- 🧠 System Design Fundamentals 5: ✅ TCP, UPD, TLS, HTTP, HTTPS, WebSocket, gRPC | OSI Layers Explained : https://www.youtube.com/watch?v=VtbyAw4SslI
 
 ## 🧱 The 7 Layers
 | Layer | Name             | Main Responsibility                               | Examples                      |
