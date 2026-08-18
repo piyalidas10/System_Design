@@ -4,6 +4,55 @@
 
 Layer 7 is where actual application data lives. HTTP requests, WebSocket messages, gRPC calls — all of these are application-layer protocols. This is the layer most system design discussions happen at. API gateways, reverse proxies, and most authentication logic operate here.
 
+## HTTP — HyperText Transfer Protocol (Request-Response, Stateless, Text-based)
+The foundation of the web. A simple request-response protocol where a client sends a request and the server returns a response. Stateless by default — each request is independent. Runs over TCP (HTTP/1.1, HTTP/2) or QUIC (HTTP/3).
+
+> Analogy: Like ordering at a counter. You walk up (request), say what you want (method + URL + headers + body), the staff fetches it and hands it over (response). Then you walk away. No memory of you for next time — each visit is fresh.
+
+**HTTP methods**
+- GET : Read data. Safe & idempotent.
+- POST : Create new resource. Not idempotent.
+- PUT : Replace resource entirely. Idempotent.
+- PATCH : Update parts of a resource.
+- DELETE : Remove a resource. Idempotent.
+- HEAD : Like GET but only returns headers.
+
+**Status code families**
+- 1xx : Informational
+- 2xx : Success
+- 3xx : Redirect
+- 4xx : Client Error
+- 5xx : Server Error
+
+**HTTP versions evolution**
+
+| Version      | Year | Transport  | Key Feature                                           |
+| ------------ | ---: | ---------- | ----------------------------------------------------- |
+| **HTTP/1.0** | 1996 | TCP        | One request per connection                            |
+| **HTTP/1.1** | 1997 | TCP        | Keep-alive, pipelining                                |
+| **HTTP/2**   | 2015 | TCP        | Multiplexing, header compression, binary framing      |
+| **HTTP/3**   | 2022 | QUIC (UDP) | No TCP head-of-line blocking, faster connection setup |
+
+**✅ Why HTTP wins**
+- Universally supported
+- Simple request-response model
+- Easy to debug & cache
+- Works through firewalls & proxies
+- Stateless = horizontally scalable
+
+**⚠️ Limitations**
+- Plain HTTP is not encrypted
+- Not ideal for real-time push from server
+- Polling is wasteful
+- Stateless = need sessions/tokens
+
+**📍 Where it's used**
+- Every website you visit
+- REST APIs
+- Webhooks
+- Static content delivery
+- Server-to-server APIs
+
 ## HTTPS — HTTP over TLS (Encrypted, TLS 1.3, Mandatory in 2024)
 HTTPS is HTTP wrapped inside a TLS (Transport Layer Security) tunnel. TLS does three things: verifies identity (server is who it claims), negotiates keys, and encrypts everything. Modern web requires it — browsers mark plain HTTP as "Not Secure".
 
@@ -107,6 +156,33 @@ For HTTP/3, the lower layers change:
 │       IPv4 / IPv6           │
 └─────────────────────────────┘
 ```
+
+**The 3 pillars of TLS**
+
+**🔐 Encryption**
+- Symmetric AES after handshake
+- Eavesdroppers see only random bytes
+- Forward secrecy — past sessions stay safe even if keys leak
+
+**✅ Authentication**
+- Server proves identity via certificate
+- Certificate signed by trusted CA
+- Prevents impersonation / MITM
+
+**📋 Integrity**
+- MAC (Message Auth Code) on every message
+- Tampering is detected immediately
+- Connection drops if integrity fails
+
+**Certificate chain**
+```
+🏛️ Root CA (DigiCert, Let's Encrypt, etc — trusted by your browser)
+↓ signs
+🏢 Intermediate CA (issued by the root)
+↓ signs
+🌐 Server Certificate (your website's cert)
+```
+Browser walks this chain up to a root it trusts → connection allowed.
 
 ## WebSocket — Persistent two-way channel (Persistent, Bidirectional, Real-time)
 A protocol that upgrades from HTTP to a persistent, full-duplex connection. After the upgrade, both client and server can send messages anytime — no polling, no new requests. Perfect for real-time apps.
