@@ -1,4 +1,4 @@
-# Protocols
+# 💻 Protocols
 System Design Fundamentals : https://www.interviewwithbunny.com/systemdesignfundamentals/05
 
 **Transport Layer — Ports & Reliability**
@@ -9,7 +9,7 @@ Layer 4 sits on top of IP and provides end-to-end communication between applicat
 
 Layer 7 is where actual application data lives. HTTP requests, WebSocket messages, gRPC calls — all of these are application-layer protocols. This is the layer most system design discussions happen at. API gateways, reverse proxies, and most authentication logic operate here.
 
-## TCP — Transmission Control Protocol (Connection-oriented, Reliable, Ordered)
+## 🌐 TCP — Transmission Control Protocol (Connection-oriented, Reliable, Ordered)
 A reliable, connection-oriented protocol. Before sending data, both sides perform a 3-way handshake. Every packet is acknowledged. Lost packets are retransmitted. Data arrives in order. This reliability comes at the cost of higher latency and overhead.
 
 > **Analogy: Like a formal phone call. You dial, the other person picks up and says "hello?" (SYN-ACK), you respond "hi!" (ACK) — only then does the real conversation start. After every sentence, you wait for acknowledgement before continuing.**
@@ -105,7 +105,7 @@ TCP HEADER
 - Database connections (Postgres, MySQL)
 - WebSocket (built on TCP)
 
-## UDP — User Datagram Protocol (Connectionless, Best-effort, Fast)
+## 🌐 UDP — User Datagram Protocol (Connectionless, Best-effort, Fast)
 A connectionless, unreliable, "fire-and-forget" protocol. No handshake, no acknowledgements, no retransmissions, no ordering. Just shoot the packet and hope it arrives. The trade-off: massively lower latency and overhead compared to TCP.
 
 > **Why this matters : Best-effort delivery — app must handle reliability.**
@@ -159,7 +159,7 @@ UDP HEADER
 - Live streaming
 - QUIC / HTTP/3 (built on UDP)
 
-## QUIC — Quick UDP Internet Connections (Built on UDP, HTTP/3, Modern)
+## 🌐 QUIC — Quick UDP Internet Connections (Built on UDP, HTTP/3, Modern)
 A modern transport protocol built on top of UDP that gives you all the benefits of TCP (reliability, ordering, congestion control) plus encryption and multiplexing — without TCP's head-of-line blocking. Used by HTTP/3, Google services, and YouTube.
 
 > **HTTP/2 solves application-level multiplexing, but TCP can still cause transport-level Head-of-Line blocking. HTTP/3 uses QUIC over UDP, providing independent streams, faster connection establishment, and connection migration.**
@@ -252,7 +252,7 @@ UDP = connectionless + minimal overhead + best effort.
 And an important modern connection:
 > **HTTP/3 → QUIC → UDP, but QUIC itself adds reliability, congestion control, encryption, multiplexed streams, and connection migration on top of UDP.**
 
-## HTTP — HyperText Transfer Protocol (Request-Response, Stateless, Text-based)
+## 🌐 HTTP — HyperText Transfer Protocol (Request-Response, Stateless, Text-based)
 The foundation of the web. A simple request-response protocol where a client sends a request and the server returns a response. Stateless by default — each request is independent. Runs over TCP (HTTP/1.1, HTTP/2) or QUIC (HTTP/3).
 
 > Analogy: Like ordering at a counter. You walk up (request), say what you want (method + URL + headers + body), the staff fetches it and hands it over (response). Then you walk away. No memory of you for next time — each visit is fresh.
@@ -301,7 +301,7 @@ The foundation of the web. A simple request-response protocol where a client sen
 - Static content delivery
 - Server-to-server APIs
 
-## HTTPS — HTTP over TLS (Encrypted, TLS 1.3, Mandatory in 2024)
+## 🌐 HTTPS — HTTP over TLS (Encrypted, TLS 1.3, Mandatory in 2024)
 HTTPS is HTTP wrapped inside a TLS (Transport Layer Security) tunnel. TLS does three things: verifies identity (server is who it claims), negotiates keys, and encrypts everything. Modern web requires it — browsers mark plain HTTP as "Not Secure".
 
 > **Analogy: Imagine sending a postcard (HTTP) — anyone delivering it can read it. HTTPS is like putting that postcard in a tamper-proof sealed envelope. Before sealing, both sender and receiver verify each other's identity (certificate) and agree on a secret code (encryption key) only they know.**
@@ -432,7 +432,7 @@ For HTTP/3, the lower layers change:
 ```
 Browser walks this chain up to a root it trusts → connection allowed.
 
-## WebSocket — Persistent two-way channel (Persistent, Bidirectional, Real-time)
+## 🌐 WebSocket — Persistent two-way channel (Persistent, Bidirectional, Real-time)
 A protocol that upgrades from HTTP to a persistent, full-duplex connection. After the upgrade, both client and server can send messages anytime — no polling, no new requests. Perfect for real-time apps.
 
 > **Analogy: HTTP is like exchanging letters — you write, mail, wait for reply, then write again. WebSocket is like picking up the phone and keeping the line open. Both sides can talk anytime without redialing.**
@@ -550,7 +550,7 @@ Client ──────── event ───────► Server
 The server doesn't have to wait for the client to ask for new data.
 
 
-## 🚀 gRPC — High-performance service-to-service RPC (HTTP/2, Binary (Protobuf), RPC)
+## 🌐 gRPC — High-performance service-to-service RPC (HTTP/2, Binary (Protobuf), RPC)
 
 A modern Remote Procedure Call framework built by Google. 
 Runs over HTTP/2 with binary Protocol Buffers for serialization. 
