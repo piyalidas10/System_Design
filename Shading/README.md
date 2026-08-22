@@ -20,18 +20,21 @@ Shading : https://www.hellointerview.com/learn/system-design/core-concepts/shard
 - 🟩 Copies the same data across multiple nodes
 - 🟩 Improves availability and read scalability
 - 🟩 Common patterns: leader–follower, multi-leader, synchronous/asynchronous
+
 📘 Example: One primary database with several read replicas behind a load balancer
 
 **🟢 𝐏𝐚𝐫𝐭𝐢𝐭𝐢𝐨𝐧𝐢𝐧𝐠**   
 - 🟩 Splits a large table into smaller, more manageable parts (partitions)
 - 🟩 Happens within a single database server
 - 🟩 Enhances performance and simplifies maintenance
+
 📘 Example: Partitioning a logs table by month in one database instance
 
 **🟢 𝐒𝐡𝐚𝐫𝐝𝐢𝐧𝐠**  
 - 🟩 Distributes portions of the dataset across multiple database servers
 - 🟩 Each shard stores a subset of the total data
 - 🟩 Enables horizontal scaling beyond a single machine
+
 📘 Example: Users are routed to a shard by user_id % N, where N is the number of shards
 
 **💭 In short:**    
