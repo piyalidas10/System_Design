@@ -15,6 +15,32 @@ Shading : https://www.hellointerview.com/learn/system-design/core-concepts/shard
 | Used to scale writes and storage | Used to improve reads and availability |
 | Independent datasets             | Same dataset on multiple servers       |
 
+## 💡 𝐑𝐞𝐩𝐥𝐢𝐜𝐚𝐭𝐢𝐨𝐧 𝐯𝐬. 𝐏𝐚𝐫𝐭𝐢𝐭𝐢𝐨𝐧𝐢𝐧𝐠 𝐯𝐬. 𝐒𝐡𝐚𝐫𝐝𝐢𝐧𝐠
+**🟢 𝐑𝐞𝐩𝐥𝐢𝐜𝐚𝐭𝐢𝐨𝐧**   
+- 🟩 Copies the same data across multiple nodes
+- 🟩 Improves availability and read scalability
+- 🟩 Common patterns: leader–follower, multi-leader, synchronous/asynchronous
+📘 Example: One primary database with several read replicas behind a load balancer
+
+**🟢 𝐏𝐚𝐫𝐭𝐢𝐭𝐢𝐨𝐧𝐢𝐧𝐠**   
+- 🟩 Splits a large table into smaller, more manageable parts (partitions)
+- 🟩 Happens within a single database server
+- 🟩 Enhances performance and simplifies maintenance
+📘 Example: Partitioning a logs table by month in one database instance
+
+**🟢 𝐒𝐡𝐚𝐫𝐝𝐢𝐧𝐠**  
+- 🟩 Distributes portions of the dataset across multiple database servers
+- 🟩 Each shard stores a subset of the total data
+- 🟩 Enables horizontal scaling beyond a single machine
+📘 Example: Users are routed to a shard by user_id % N, where N is the number of shards
+
+**💭 In short:**    
+ ✅ Replicate → to boost availability and scale reads    
+ ✅ Partition → to optimize within one server    
+ ✅ Shard → when you must scale out horizontally for both reads and writes    
+
+<img src="./𝐑𝐞𝐩𝐥𝐢𝐜𝐚𝐭𝐢𝐨𝐧 𝐯𝐬. 𝐏𝐚𝐫𝐭𝐢𝐭𝐢𝐨𝐧𝐢𝐧𝐠 𝐯𝐬. 𝐒𝐡𝐚𝐫𝐝𝐢𝐧𝐠.jpg" width="70%" />
+
 ## What is Sharding?
 
 Sharding is the process of splitting one large database into multiple smaller databases (called shards) that run on different machines.
