@@ -11,6 +11,54 @@ Some popular options are Kubernetes, Docker Swarm, and Apache Mesos.
 3. Kubernetes Architecture: The Ultimate Guide : https://devtron.ai/blog/kubernetes-architecture-the-ultimate-guide/
 4. kubernetes-architecture-explained : https://devopscube.com/kubernetes-architecture-explained/
 
+## Kubernetes Components
+𝗜𝗳 𝘆𝗼𝘂 𝗰𝗮𝗻 𝗲𝘅𝗽𝗹𝗮𝗶𝗻 𝘁𝗵𝗲𝘀𝗲 𝟮𝟱 𝗞𝘂𝗯𝗲𝗿𝗻𝗲𝘁𝗲𝘀 𝗰𝗼𝗺𝗽𝗼𝗻𝗲𝗻𝘁𝘀 𝘄𝗶𝘁𝗵𝗼𝘂𝘁 𝗹𝗼𝗼𝗸𝗶𝗻𝗴 𝘁𝗵𝗲𝗺 𝘂𝗽, 𝘆𝗼𝘂'𝗿𝗲 𝗮𝗹𝗿𝗲𝗮𝗱𝘆 𝗮𝗵𝗲𝗮𝗱 𝗼𝗳 𝗺𝗼𝘀𝘁 𝗗𝗲𝘃𝗢𝗽𝘀 𝗲𝗻𝗴𝗶𝗻𝗲𝗲𝗿𝘀.
+
+Many people can deploy a Pod.
+
+Far fewer understand what happens behind the scenes after running:
+```
+𝗸𝘂𝗯𝗲𝗰𝘁𝗹 𝗮𝗽𝗽𝗹𝘆 -𝗳 𝗱𝗲𝗽𝗹𝗼𝘆𝗺𝗲𝗻𝘁.𝘆𝗮𝗺𝗹
+```
+That's why I created this Kubernetes Components Explained cheat sheet—a quick reference covering the building blocks you'll encounter in real-world clusters and technical interviews.
+
+**𝗪𝗵𝗮𝘁'𝘀 𝗶𝗻𝘀𝗶𝗱𝗲?**
+
+**📦 Workloads**
+- Pod
+- Deployment
+- ReplicaSet
+- StatefulSet
+- DaemonSet
+- Job
+- CronJob
+
+**🌐 Networking**
+- Service
+- ClusterIP
+- NodePort
+- LoadBalancer
+- Ingress
+
+**💾 Storage**
+- Volume
+- PersistentVolume (PV)
+- PersistentVolumeClaim (PVC)
+
+**⚙️ Configuration**
+- ConfigMap
+- Secret
+- Namespace
+
+**🏗️ Cluster Architecture**
+- Node
+- Cluster
+- Kubelet
+- Kube-Proxy
+- API Server
+- Controller Manager
+- Scheduler
+
 ## Modern Kubernetes Architecture
 
 In Kubernetes, NGINX is often replaced by an ingress controller or service proxy:
