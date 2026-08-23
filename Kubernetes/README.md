@@ -10,6 +10,7 @@ Some popular options are Kubernetes, Docker Swarm, and Apache Mesos.
 2. Kubernetes Services : https://www.kerno.io/blog/kubernetes-services
 3. Kubernetes Architecture: The Ultimate Guide : https://devtron.ai/blog/kubernetes-architecture-the-ultimate-guide/
 4. kubernetes-architecture-explained : https://devopscube.com/kubernetes-architecture-explained/
+5. Kubernetes Tutorials (Playlists) : https://www.youtube.com/playlist?list=PLiMWaCMwGJXnHmccp2xlBENZ1xr4FpjXF
 
 ## Kubernetes Components
 𝗜𝗳 𝘆𝗼𝘂 𝗰𝗮𝗻 𝗲𝘅𝗽𝗹𝗮𝗶𝗻 𝘁𝗵𝗲𝘀𝗲 𝟮𝟱 𝗞𝘂𝗯𝗲𝗿𝗻𝗲𝘁𝗲𝘀 𝗰𝗼𝗺𝗽𝗼𝗻𝗲𝗻𝘁𝘀 𝘄𝗶𝘁𝗵𝗼𝘂𝘁 𝗹𝗼𝗼𝗸𝗶𝗻𝗴 𝘁𝗵𝗲𝗺 𝘂𝗽, 𝘆𝗼𝘂'𝗿𝗲 𝗮𝗹𝗿𝗲𝗮𝗱𝘆 𝗮𝗵𝗲𝗮𝗱 𝗼𝗳 𝗺𝗼𝘀𝘁 𝗗𝗲𝘃𝗢𝗽𝘀 𝗲𝗻𝗴𝗶𝗻𝗲𝗲𝗿𝘀.

@@ -5,7 +5,9 @@ When a single database can’t keep up anymore, you have only one real option:
 Split your data across multiple machines.
 This is called sharding. While it is a necessity at scale, it also introduces new challenges.
 
-Shading : https://www.hellointerview.com/learn/system-design/core-concepts/sharding
+1. AWS Database Sharding : https://aws.amazon.com/what-is/database-sharding/
+2. Shading : https://www.hellointerview.com/learn/system-design/core-concepts/sharding
+3. What is Database Sharding? : https://www.youtube.com/watch?v=XP98YCr-iXQ&list=PLiMWaCMwGJXnjNhBQF-vR2Xqal0hN9U2-
 
 ## A shard is different from a replica
 | Sharding                         | Replication                            |
@@ -139,35 +141,219 @@ Each shard stores only part of the data, allowing the system to scale horizontal
 
 ## Why do we need sharding?
 
-A single database eventually reaches limits in:
+Database sharding is simply splitting a large database into smaller pieces, which we call shards. If you get lucky and attract more and more customers, the amount of data also increases over time. Now, the database becomes a bottleneck if too many users attempt to use the application to read or save data simultaneously. The application slows down, negatively affecting the user experience. So, sharding not only allows you to store more data but also improves performance by reducing latency for each query. This is because you can now push down the query to each individual shard, which has a smaller dataset.
 
-Storage
-CPU
-RAM
-Write throughput
-Read throughput
+**1. The basic problem**
 
-Example
+Imagine your application initially has one database server:
 ```
-Instagram
-
-1 Billion Users
-↓
-
-One PostgreSQL server
-
-❌ Disk Full
-❌ CPU 100%
-❌ Slow Writes
-❌ Slow Queries
+Users
+  |
+  v
+Application
+  |
+  v
++----------------------+
+|     Database         |
+|  100 million rows    |
++----------------------+
 ```
-Instead
+As the application becomes popular:
+- More users → more data
+- More users → more read queries
+- More users → more write queries
+- Database CPU increases
+- Memory usage increases
+- Disk I/O increases
+- Queries take longer
+
+Eventually, the database becomes the bottleneck.
+
+**2. What does sharding do?**
+
+Instead of keeping everything in one database, we split the data into multiple smaller databases.
+
+For example, suppose we shard users based on user_id:
 ```
-Shard 1 → 300M users
-Shard 2 → 300M users
-Shard 3 → 400M users
+                 Application
+                      |
+              Sharding Router
+                      |
+        +-------------+-------------+
+        |             |             |
+        v             v             v
+    Shard 1       Shard 2       Shard 3
+   user_id       user_id       user_id
+   1 - 1M        1M - 2M       2M - 3M
 ```
-Now each server handles only a fraction of the workload.
+Each shard contains only a portion of the data.
+
+This is called horizontal partitioning.
+
+**3. Why does performance improve?**
+
+Suppose you have 300 million users.
+
+Without sharding:
+```
+Single Database
+-------------------------
+300 million users
+-------------------------
+Query:
+Find user_id = 250M
+
+Database searches/indexes
+through one huge dataset
+```
+With sharding:
+```
+              user_id = 250M
+                     |
+                     v
+               Sharding Router
+                     |
+                     v
+                  Shard 3
+             200M - 300M users
+```
+The query is routed directly to Shard 3.
+
+So each database handles a smaller dataset and less traffic.
+
+**4. Sharding also distributes traffic**
+
+This is one of the most important benefits.
+
+Without sharding:
+```
+100,000 requests/sec
+         |
+         v
+   +-------------+
+   |   Database  |
+   |  overloaded |
+   +-------------+
+```
+With sharding:
+```
+                 100,000 requests/sec
+                         |
+                    Sharding Layer
+                         |
+          +--------------+--------------+
+          |              |              |
+          v              v              v
+      Shard 1        Shard 2        Shard 3
+      33K/sec        33K/sec        34K/sec
+```
+The workload is distributed across multiple database servers.
+
+**5. Sharding improves scalability**
+
+This is probably the most important reason to use sharding.
+
+Suppose one database can comfortably handle:
+```
+10 TB data
+50,000 requests/sec
+```
+You eventually need:
+```
+30 TB data
+150,000 requests/sec
+```
+Instead of trying to create one extremely powerful machine:
+```
+              HUGE DATABASE
+                   |
+          30 TB + 150K req/sec
+```
+you can distribute the workload:
+```
+              Sharding Layer
+                    |
+       +------------+------------+
+       |            |            |
+       v            v            v
+    Shard 1      Shard 2      Shard 3
+     10 TB        10 TB        10 TB
+    50K req/s    50K req/s    50K req/s
+```
+You can then add more shards as the system grows.
+
+This is called horizontal scaling.
+
+**6. One important clarification**
+
+The statement:
+```
+"push down the query to each individual shard"
+```
+needs a little clarification.
+
+If the application knows which shard contains the required data, the query can be sent only to that shard.
+
+For example:
+```
+Get user 2500000
+
+        |
+        v
+Sharding Key = user_id
+        |
+        v
+    Shard 3
+        |
+        v
+SELECT * FROM users
+WHERE user_id = 2500000;
+```
+That's very efficient.
+
+But if the query doesn't contain the sharding key, the system may have to query multiple shards:
+```
+SELECT * FROM users
+WHERE email = 'abc@example.com';
+
+              |
+       +------+------+ 
+       |      |      |
+       v      v      v
+    Shard1 Shard2 Shard3
+       |      |      |
+       +------+------+ 
+              |
+          Merge results
+```
+This is called a scatter-gather query, and it can be expensive.
+
+That's why choosing the right shard key is extremely important.
+
+**The key takeaway**
+
+Think of sharding like dividing a huge library into multiple smaller libraries:
+```
+             HUGE LIBRARY
+                  |
+             SHARDING
+                  |
+       +----------+----------+
+       |          |          |
+       v          v          v
+   Library A  Library B  Library C
+```
+Instead of making one library infinitely bigger, you distribute the books across multiple libraries.
+
+| Problem                    | Sharding solution               |
+| -------------------------- | ------------------------------- |
+| Too much data              | Distribute data across shards   |
+| Too many requests          | Distribute traffic              |
+| Database CPU bottleneck    | Multiple database servers       |
+| Large dataset              | Smaller datasets per shard      |
+| Query latency              | Route queries to relevant shard |
+| Growing application        | Add more shards                 |
+| Single database limitation | Horizontal scaling              |
 
 ## Partitioning vs Sharding
 
@@ -252,7 +438,10 @@ The shard key determines how data is distributed.
 - Avoid hotspots
 
 ## Sharding Strategies
-**1. Range-Based Sharding**
+### 1. Range-Based Sharding
+
+<img src="./Rang_Based_Sharding.png"  width="75%" />
+
 ```
 Shard 1
 1-1M Users
@@ -281,7 +470,10 @@ Shard 3
 CPU 100%
 ```
 
-**2. Hash-Based Sharding (Most Common)**
+### 2. Hash-Based Sharding (Most Common)
+
+<img src="./Hashed_Based_Sharding_1.png"  width="49%" />
+<img src="./Hashed_Based_Sharding_1.png"  width="49%" />
 
 Hash-based sharding uses a math formula like hash(userId) % 4 to split data into four parts. The result tells the system which database shard to use. For example, a result of 0 goes to Shard A, while 3 goes to Shard D. This spreads data out evenly.
 ```
@@ -318,7 +510,9 @@ Used by:
 - MongoDB (hashed shard key)
 - DynamoDB (internally similar concepts)
 
-**3. Directory-Based Sharding**
+### 3. Directory-Based Sharding
+
+<img src="./Directory_Sharding.png"  width="75%" />
 
 Maintain a lookup table.
 ```
@@ -343,7 +537,91 @@ Disadvantages
 - Extra lookup
 - Lookup table can become a bottleneck
 
-**4. Consistent Hashing**
+### 4. 🌍 Geo Sharding
+
+<img src="./Geo_Sharding.png"  width="75%" />
+
+Geo sharding is a database sharding strategy where data is distributed based on the geographical location of the user or business.
+
+Instead of deciding the shard using something like user_id, we use a geographic attribute such as:
+- Country
+- Region
+- State
+- City
+- Continent
+- Example
+
+Suppose we have a global application with users from India, Europe, and the USA.
+
+Instead of one huge database:
+```
+                  Application
+                       |
+                       v
+                Single Database
+        +---------------------------+
+        | India                     |
+        | Europe                    |
+        | USA                       |
+        | Australia                 |
+        | ...                       |
+        +---------------------------+
+```
+
+We can use Geo Sharding:
+```
+                       Application
+                            |
+                       Geo Router
+                            |
+          +-----------------+-----------------+
+          |                 |                 |
+          v                 v                 v
+     India Shard       Europe Shard        USA Shard
+     PostgreSQL        PostgreSQL          PostgreSQL
+How does it decide the shard?
+```
+
+For example:
+```
+user.country = "IN"
+        |
+        v
+   India Shard
+
+user.country = "US"
+        |
+        v
+   USA Shard
+
+user.country = "DE"
+        |
+        v
+   Europe Shard
+```
+So a user from India primarily interacts with the India shard.
+
+Geo Sharding in one picture
+```
+                         GLOBAL APPLICATION
+                                |
+                           Geo Router
+                                |
+        +-----------------------+-----------------------+
+        |                       |                       |
+        v                       v                       v
+   🇮🇳 INDIA                🇪🇺 EUROPE               🇺🇸 USA
+        |                       |                       |
+        v                       v                       v
+   India DB                Europe DB                USA DB
+        |                       |                       |
+   Indian Users            EU Users              US Users
+```
+
+Important: Geo sharding is still database sharding. The difference is simply that the shard key is geographic rather than something like user_id or a hash value.
+
+
+### 5. Consistent Hashing
 
 Consistent hashing minimizes data movement when servers are added or removed.
 
