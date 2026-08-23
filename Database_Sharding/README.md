@@ -472,8 +472,7 @@ CPU 100%
 
 ### 2. Hash-Based Sharding (Most Common)
 
-<img src="./Hashed_Based_Sharding_1.png"  width="49%" />
-<img src="./Hashed_Based_Sharding_1.png"  width="49%" />
+<img src="./Hashed_Based_Sharding_1.png"  width="49%" /> <img src="./Hashed_Based_Sharding_1.png"  width="49%" />
 
 Hash-based sharding uses a math formula like hash(userId) % 4 to split data into four parts. The result tells the system which database shard to use. For example, a result of 0 goes to Shard A, while 3 goes to Shard D. This spreads data out evenly.
 ```
