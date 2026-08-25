@@ -6,11 +6,12 @@ There are many container orchestration tools that can be used for container life
 Some popular options are Kubernetes, Docker Swarm, and Apache Mesos.
 
 ## Tutorials
-1. What is Kubernetes? : https://www.youtube.com/watch?v=a-nWPre5QYI&t=2s
-2. Kubernetes Services : https://www.kerno.io/blog/kubernetes-services
-3. Kubernetes Architecture: The Ultimate Guide : https://devtron.ai/blog/kubernetes-architecture-the-ultimate-guide/
-4. kubernetes-architecture-explained : https://devopscube.com/kubernetes-architecture-explained/
-5. Kubernetes Tutorials (Playlists) : https://www.youtube.com/playlist?list=PLiMWaCMwGJXnHmccp2xlBENZ1xr4FpjXF
+1. Docker and Kubernetes Explained in 4 minutes : https://www.youtube.com/watch?v=nwDGURcwSNw
+2. What is Kubernetes? : https://www.youtube.com/watch?v=a-nWPre5QYI&t=2s
+3. Kubernetes Services : https://www.kerno.io/blog/kubernetes-services
+4. Kubernetes Architecture: The Ultimate Guide : https://devtron.ai/blog/kubernetes-architecture-the-ultimate-guide/
+5. kubernetes-architecture-explained : https://devopscube.com/kubernetes-architecture-explained/
+6. Kubernetes Tutorials (Playlists) : https://www.youtube.com/playlist?list=PLiMWaCMwGJXnHmccp2xlBENZ1xr4FpjXF
 
 ## Kubernetes Components
 𝗜𝗳 𝘆𝗼𝘂 𝗰𝗮𝗻 𝗲𝘅𝗽𝗹𝗮𝗶𝗻 𝘁𝗵𝗲𝘀𝗲 𝟮𝟱 𝗞𝘂𝗯𝗲𝗿𝗻𝗲𝘁𝗲𝘀 𝗰𝗼𝗺𝗽𝗼𝗻𝗲𝗻𝘁𝘀 𝘄𝗶𝘁𝗵𝗼𝘂𝘁 𝗹𝗼𝗼𝗸𝗶𝗻𝗴 𝘁𝗵𝗲𝗺 𝘂𝗽, 𝘆𝗼𝘂'𝗿𝗲 𝗮𝗹𝗿𝗲𝗮𝗱𝘆 𝗮𝗵𝗲𝗮𝗱 𝗼𝗳 𝗺𝗼𝘀𝘁 𝗗𝗲𝘃𝗢𝗽𝘀 𝗲𝗻𝗴𝗶𝗻𝗲𝗲𝗿𝘀.
@@ -94,6 +95,43 @@ Kubernetes also assists with workload portability and load balancing by letting 
 - Control plane: The collection of processes that control Kubernetes nodes. This is where all task assignments originate.
 - Kubelet: This service runs on nodes and reads the container manifests and ensures the defined containers are started and running.
 - Pod: A group of one or more containers deployed to a single node. All containers in a pod share an IP address, IPC, hostname, and other resources.
+
+## Does Kubernetes use Docker ?
+- Yes, Kubernetes can run Docker-built images — but modern Kubernetes does not normally use Docker Engine itself to run containers.
+- No, Kubernetes no longer uses Docker as its internal container runtime, but it fully supports running Docker-built images.
+
+✅ **Docker Engine** → runtime/tooling for building and running containers     
+✅ **Docker image** → packaged application artifact     
+✅ **containerd / CRI-O** → container runtimes commonly used by Kubernetes     
+✅ **Kubernetes** → orchestrates containers across a cluster     
+
+**The old model**
+
+Historically:
+```
+Kubernetes
+     ↓
+Docker Engine
+     ↓
+Container
+```
+Kubernetes used a component called DockerShim to communicate with Docker Engine.
+
+**The modern model**
+
+Today, Kubernetes generally uses a CRI-compatible container runtime, such as containerd or CRI-O:
+```
+Kubernetes
+     ↓
+kubelet
+     ↓
+CRI
+     ↓
+containerd / CRI-O
+     ↓
+Container
+```
+So: Kubernetes doesn't need Docker Engine to run containers.
 
 ## 🚀 Understanding Kubernetes Architecture — Simplified!!!
 
