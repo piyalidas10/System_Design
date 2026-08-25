@@ -1,9 +1,5 @@
 # Kubernetes
-Kubernetes is an open source container orchestration tool that was originally developed and designed by engineers at Google. 
-Google donated the Kubernetes project to the newly formed Cloud Native Computing Foundation in 2015.
-Container orchestration tools provide a framework for managing containers and microservices architecture at scale. 
-There are many container orchestration tools that can be used for container lifecycle management. 
-Some popular options are Kubernetes, Docker Swarm, and Apache Mesos.
+Kubernetes is an open-source platform designed to automate the deployment, scaling, and management of containerized applications, eliminating the need for manual operational management. It solves the nightmare of manual scaling and monitoring by providing automated health checks, rapid auto-scaling, and built-in load balancing. You can find detailed, official documentation and tutorials on the Kubernetes website.
 
 ## Tutorials
 1. Docker and Kubernetes Explained in 4 minutes : https://www.youtube.com/watch?v=nwDGURcwSNw
