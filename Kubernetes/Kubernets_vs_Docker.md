@@ -1,4 +1,7 @@
 # Docker vs Kubernetes
+
+<img src="./Docker vs Kubernetes.png" width="90%" />
+
 ✅ We need Kubernetes because Docker packages and runs containers on a single machine, while Kubernetes manages and scales those containers across a whole cluster of machines.  
 ✅ Think of Docker as a single delivery truck and Kubernetes as the entire logistics dispatcher managing a fleet of hundreds of trucks. While Docker excels at local development and creating isolated environments, running a massive, production-grade application with just Docker quickly creates an operational nightmare.  
 
