@@ -2,6 +2,8 @@
 
 <img src="./Docker vs Kubernetes.png" width="100%" />
 
+✅ Docker solves containerization; Kubernetes solves container orchestration. Docker tells us how to package and run an application, while Kubernetes manages where containers run, how many should run, how they communicate, how they recover from failures, and how they are deployed and scaled across a cluster.
+
 ✅ We need Kubernetes because Docker packages and runs containers on a single machine, while Kubernetes manages and scales those containers across a whole cluster of machines.  
 ✅ Think of Docker as a single delivery truck and Kubernetes as the entire logistics dispatcher managing a fleet of hundreds of trucks. While Docker excels at local development and creating isolated environments, running a massive, production-grade application with just Docker quickly creates an operational nightmare.  
 
