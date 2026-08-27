@@ -702,6 +702,303 @@ avoids TCP's connection-wide ordered byte-stream limitation
 ```
 This distinction is very useful in interviews.
 
+## What about WebSockets?
+
+This is an important distinction for you as an Angular developer.
+
+**Don't think:**
+```
+HTTP/3 = WebSocket
+```
+They are different concepts.
+
+**For example, a chat application might use:**
+```
+Angular
+   |
+   | WebSocket
+   ↓
+Chat Server
+```
+
+**HTTP is generally request/response:**
+```
+Client → Request
+Server → Response
+```
+
+**WebSocket provides persistent two-way communication:**
+```
+Client ←────────────→ Server
+```
+
+**So:**
+```
+HTTP/1.1 / HTTP/2 / HTTP/3
+        ≠
+     WebSocket
+```
+Though modern protocols also have mechanisms for bidirectional streaming.
+
+## HTTP/3 — "One QUIC connection, independent streams"
+
+Now let's say you're using your mobile phone.
+
+**You open:**
+```
+https://shop.com
+```
+You're on Wi-Fi.
+
+**Then you move outside:**
+```
+Wi-Fi
+  ↓
+4G/5G
+
+HTTP/3 uses:
+
+HTTP/3
+   ↓
+QUIC
+   ↓
+UDP
+```
+QUIC supports connection migration, so the connection can potentially survive network changes more gracefully.
+
+## Real-world HTTP/3 scenario: Mobile shopping
+
+Imagine you're buying something while traveling.
+```
+Wi-Fi
+  |
+  | HTTP/3 + QUIC
+  |
+Website
+```
+You walk outside:
+```
+Wi-Fi ❌
+   ↓
+5G
+```
+With QUIC, the connection can migrate to the new network path using the connection identity rather than treating the change simply as a completely new TCP connection.
+
+This can improve the experience on mobile networks.
+
+## HTTP/3 and packet loss
+
+Here's another very important real-world scenario.
+
+You're on a poor mobile network.
+
+Suppose you're downloading:
+```
+HTML
+CSS
+JS
+Images
+```
+
+### With HTTP/2:
+```
+             TCP connection
+                  |
+       ┌──────────┼──────────┐
+       ↓          ↓          ↓
+     HTML        CSS         JS
+                  ↓
+              Packet lost ❌
+                  ↓
+             TCP recovery
+```
+TCP provides one ordered byte stream, so packet loss can cause delivery to stall behind the missing data.
+
+### With HTTP/3:
+```
+              QUIC connection
+                    |
+        ┌───────────┼───────────┐
+        ↓           ↓           ↓
+      HTML         CSS         JS
+        ✅          ❌           ✅
+```
+A loss affecting one QUIC stream doesn't create the same connection-wide head-of-line blocking behavior as TCP.
+
+That's one of HTTP/3's biggest advantages.
+
+## Real-world comparison: Online shopping
+
+Let's make it very practical.
+
+You open:
+
+Amazon-like website
+
+**The browser needs:**
+```
+HTML
+CSS
+JS
+Logo
+20 product images
+User profile
+Cart information
+Recommendations
+```
+
+### HTTP/1.0
+```
+Connect
+ ↓
+HTML
+ ↓
+Close
+
+Connect
+ ↓
+CSS
+ ↓
+Close
+
+Connect
+ ↓
+JS
+ ↓
+Close
+
+...
+```
+🐌 Very inefficient
+
+## HTTP/1.1
+```
+Connection
+   ↓
+HTML
+   ↓
+CSS
+   ↓
+JS
+   ↓
+Images
+   ↓
+...
+```
+Better because the connection can be reused.
+
+But parallelism is still limited compared with HTTP/2.
+
+🚗 Better
+
+### HTTP/2
+```
+               One TCP connection
+                      |
+     ┌────────────────┼────────────────┐
+     ↓                ↓                ↓
+    HTML              CSS              JS
+     ↓                ↓                ↓
+   Image 1          Image 2          Image 3
+```
+🚀 Much better
+
+Multiple streams can be multiplexed.
+
+### HTTP/3
+```
+               One QUIC connection
+                       |
+     ┌─────────────────┼─────────────────┐
+     ↓                 ↓                 ↓
+   HTML               CSS                JS
+     ↓                 ↓                 ↓
+  Image 1           Image 2            Image 3
+     ✅                ❌                 ✅
+```
+And if:
+```
+Wi-Fi → 5G
+```
+QUIC can support connection migration.
+
+🚀🚀 Better for modern/mobile/unreliable networks
+
+## Another real-world scenario: REST API
+
+**Suppose your Angular application calls:**
+```
+GET /api/products
+GET /api/categories
+GET /api/users/me
+GET /api/cart
+```
+
+### HTTP/1.1
+```
+You have HTTP requests over TCP connections.
+```
+Angular
+   |
+   ├── GET /products
+   ├── GET /categories
+   ├── GET /users/me
+   └── GET /cart
+```
+Browsers can use multiple connections, but there's overhead.
+
+### HTTP/2
+
+You can have:
+```
+              One TCP connection
+                     |
+       ┌─────────────┼─────────────┐
+       ↓             ↓             ↓
+ /products       /categories    /cart
+       ↓             ↓             ↓
+                  /users/me
+```
+Multiple requests can be multiplexed.
+
+### HTTP/3
+
+Same application-level idea:
+```
+              One QUIC connection
+                     |
+       ┌─────────────┼─────────────┐
+       ↓             ↓             ↓
+ /products       /categories    /cart
+       ↓             ↓             ↓
+                  /users/me
+```
+But the underlying transport is QUIC instead of TCP.
+
+## Real-world scenario: Online gaming
+
+Imagine:
+```
+Mobile game
+```
+Network changes frequently:
+```
+Wi-Fi
+ ↓
+5G
+ ↓
+Wi-Fi
+```
+Low latency matters.
+
+HTTP/3/QUIC's design is particularly useful for modern applications where:
+- latency matters
+- packet loss occurs
+- networks change
+- many streams are needed
+
+However, specialized real-time game networking may use other protocols rather than ordinary HTTP requests.
+
 # 🚗 The easiest way to remember
 Think about roads.
 
