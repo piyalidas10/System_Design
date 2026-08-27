@@ -11,6 +11,8 @@ HLD = What + Where
 LLD = How
 ```
 
+<img src="./HLD_vs_LLD.jpg" width="100%" />
+
 ## High-Level Design (HLD) vs Low-Level Design (LLD)
 Think of HLD and LLD as building a house 🏠.
 
