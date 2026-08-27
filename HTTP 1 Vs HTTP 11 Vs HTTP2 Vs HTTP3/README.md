@@ -935,7 +935,7 @@ GET /api/cart
 ```
 
 ### HTTP/1.1
-```
+
 You have HTTP requests over TCP connections.
 ```
 Angular
