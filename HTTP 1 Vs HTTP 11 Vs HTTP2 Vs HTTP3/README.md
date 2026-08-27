@@ -3,6 +3,51 @@
 1. **HTTP/1.1 vs HTTP/2 vs HTTP/3 What’s Changed? (Hindi)** : https://www.youtube.com/shorts/Mw8VUthLj5c
 2. **HTTP/2 vs HTTP/3: The End of Head-of-Line Blocking** : https://www.youtube.com/watch?v=ruAtoV3mPfQ
 
+HTTP/1.1 uses persistent TCP connections but has limitations with parallel request processing. HTTP/2 improves performance through binary framing, multiplexing multiple streams over a single TCP connection, and header compression. However, HTTP/2 still suffers from TCP-level head-of-line blocking when packets are lost. HTTP/3 uses QUIC over UDP, providing multiplexed independent streams, integrated TLS, faster connection establishment, and avoiding TCP's connection-level head-of-line blocking.
+
+```
+                 HTTP EVOLUTION
+
+HTTP/1.0
+   │
+   ├── TCP
+   ├── Short-lived connections
+   └── Expensive
+        │
+        ▼
+HTTP/1.1
+   │
+   ├── TCP
+   ├── Keep-Alive
+   ├── Persistent connection
+   └── Still limited parallelism
+        │
+        ▼
+HTTP/2
+   │
+   ├── TCP
+   ├── Binary framing
+   ├── Multiplexing ⭐
+   ├── Header compression
+   └── TCP HOL blocking remains
+        │
+        ▼
+HTTP/3
+   │
+   ├── QUIC
+   ├── UDP
+   ├── Multiplexing ⭐
+   ├── Independent streams ⭐
+   ├── TLS integrated
+   ├── Faster connection establishment
+   └── Connection migration
+```
+
+**✅ HTTP/1.0 = new connections**   
+**✅ HTTP/1.1 = keep connections alive**   
+**✅ HTTP/2 = multiple streams over one TCP connection**   
+**✅ HTTP/3 = multiple streams over QUIC/UDP**   
+
 **HTTP is the language/rules used by a browser and a web server to communicate.**
 
 For example, when you open:
@@ -610,5 +655,34 @@ the burger and Coke don't necessarily have to wait for that same transport-level
 
 That's the basic idea behind QUIC's independent streams.
 
+## One very important correction
 
+**You may hear people say:**
+> "HTTP/2 solved Head-of-Line Blocking."
+
+That's only partially true.
+
+HTTP/2 solved a major HTTP-level/request-level limitation by allowing multiplexing.
+
+But because HTTP/2 runs over TCP, TCP-level head-of-line blocking remains.
+
+**So:**
+```
+HTTP/1.1
+   ↓
+HTTP-level HOL problem
+
+HTTP/2
+   ↓
+HTTP-level multiplexing improves this
+   ↓
+BUT TCP-level HOL remains
+
+HTTP/3
+   ↓
+QUIC streams
+   ↓
+avoids TCP's connection-wide ordered byte-stream limitation
+```
+This distinction is very useful in interviews.
 
