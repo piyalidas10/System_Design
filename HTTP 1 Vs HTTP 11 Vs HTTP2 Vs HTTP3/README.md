@@ -2,6 +2,9 @@
 
 1. **HTTP/1.1 vs HTTP/2 vs HTTP/3 What’s Changed? (Hindi)** : https://www.youtube.com/shorts/Mw8VUthLj5c
 2. **HTTP/2 vs HTTP/3: The End of Head-of-Line Blocking** : https://www.youtube.com/watch?v=ruAtoV3mPfQ
+3. **HTTP/1.1 vs HTTP/2 vs HTTP/3 | System Design (English)** : https://www.youtube.com/watch?v=ocGtt0IX0Js
+4. **HTTP/1.1 vs HTTP/2 vs HTTP/3 Visually Explained | System Design Tutorial #7 (English)** : https://www.youtube.com/watch?v=qDLDy3f8d1s
+5. **HTTP/1 vs HTTP/2 vs HTTP/3 — What Actually Changed?** : https://www.youtube.com/watch?v=ezzbimokH08
 
 HTTP/1.1 uses persistent TCP connections but has limitations with parallel request processing. HTTP/2 improves performance through binary framing, multiplexing multiple streams over a single TCP connection, and header compression. However, HTTP/2 still suffers from TCP-level head-of-line blocking when packets are lost. HTTP/3 uses QUIC over UDP, providing multiplexed independent streams, integrated TLS, faster connection establishment, and avoiding TCP's connection-level head-of-line blocking.
 
