@@ -1,4 +1,4 @@
-# HTTP 1 Vs HTTP 11 Vs HTTP2 Vs HTTP3
+# 🔥HTTP 1 Vs HTTP 11 Vs HTTP2 Vs HTTP3
 
 1. **HTTP/1.1 vs HTTP/2 vs HTTP/3 What’s Changed? (Hindi)** : https://www.youtube.com/shorts/Mw8VUthLj5c
 2. **HTTP/2 vs HTTP/3: The End of Head-of-Line Blocking** : https://www.youtube.com/watch?v=ruAtoV3mPfQ
@@ -47,6 +47,22 @@ HTTP/3
 **✅ HTTP/1.1 = keep connections alive**   
 **✅ HTTP/2 = multiple streams over one TCP connection**   
 **✅ HTTP/3 = multiple streams over QUIC/UDP**   
+
+| Scenario               | HTTP/1.0              | HTTP/1.1        | HTTP/2          | HTTP/3                        |
+| ---------------------- | --------------------- | --------------- | --------------- | ----------------------------- |
+| Simple website         | Works                 | Better          | Better          | Better                        |
+| Many resources         | ❌ Poor                | ⚠️ Okay         | ✅ Excellent     | ✅ Excellent                   |
+| Connection reuse       | ❌ Limited/traditional | ✅ Yes           | ✅ Yes           | ✅ Yes                         |
+| Multiplexing           | ❌                     | ❌               | ✅               | ✅                             |
+| Binary framing         | ❌                     | ❌               | ✅               | ✅                             |
+| Header compression     | ❌                     | ❌               | ✅ HPACK         | ✅ QPACK                       |
+| Transport              | TCP                   | TCP             | TCP             | QUIC/UDP                      |
+| TCP-level HOL blocking | N/A                   | Yes             | **Yes**         | **No**                        |
+| Mobile network changes | Poor                  | Poor            | Limited by TCP  | **Excellent design for this** |
+| Packet loss handling   | TCP                   | TCP             | TCP             | QUIC                          |
+| Modern web apps        | Rare                  | Still supported | **Very common** | **Increasingly common**       |
+
+## Intro
 
 **HTTP is the language/rules used by a browser and a web server to communicate.**
 
@@ -685,4 +701,76 @@ QUIC streams
 avoids TCP's connection-wide ordered byte-stream limitation
 ```
 This distinction is very useful in interviews.
+
+# 🚗 The easiest way to remember
+Think about roads.
+
+## HTTP/1.0
+```
+🚗 → Road → Destination
+🚗 → Road → Destination
+🚗 → Road → Destination
+```
+New trip every time.
+
+## HTTP/1.1
+```
+🚗═══════════════════════🚗
+       Same road
+```
+Keep the connection alive.
+
+## HTTP/2
+```
+              Highway
+══════════════════════════════
+  🚗 HTML
+  🚗 CSS
+  🚗 JS
+  🚗 Image
+  🚗 API
+══════════════════════════════
+```
+Multiple streams on one connection.
+
+## HTTP/3
+```
+              QUIC highway
+══════════════════════════════
+  🚗 HTML       ✅
+  🚗 CSS        ❌
+  🚗 JS         ✅
+  🚗 API        ✅
+══════════════════════════════
+
+      ↓
+   Network changes
+ Wi-Fi → 5G
+      ↓
+ Connection can migrate
+```
+
+```
+HTTP/1.0
+"Every trip is separate."
+
+        ↓
+
+HTTP/1.1
+"Let's keep the road open."
+
+        ↓
+
+HTTP/2
+"Let's put many streams on one road."
+
+        ↓
+
+HTTP/3
+"Let's build a better transport
+(QUIC) so one stream's problems
+don't block everything else."
+```
+
+
 
