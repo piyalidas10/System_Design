@@ -1,9 +1,8 @@
 # Load Balancer
 
 ## Tutorials
-1. What is Load Balancer | Load Balancer from Basic to Advance in 2026 : https://www.youtube.com/watch?v=88vl3BfLqUY
+1. What is Load Balancer | Load Balancer from Basic to Advance in 2026 (HINDI) : https://www.youtube.com/watch?v=88vl3BfLqUY
 2. Types of Load Balancing Algorithms (Animated + Code Examples) : https://www.youtube.com/watch?v=gqb7LmmXuyw
-3. What is Load Balancer | Load Balancer from Basic to Advance in 2026 (HINDI) : https://www.youtube.com/watch?v=88vl3BfLqUY&list=PLd7PleJR_EFf4WljrxcmHZaw2LhMhhuCG&index=9
 
 <img src="./Load_Balancer.png" width="100%" />
 
