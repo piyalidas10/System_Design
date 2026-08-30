@@ -1,6 +1,8 @@
 # 🛒 Complete E-Commerce Flow - A Complete Real-World E-Commerce flow with Failure Scenarios and Retries
 Let’s design a production-grade e-commerce flow the way you would explain it in a system-design interview, including normal flow, failures, retries, idempotency, events, eventual consistency, and compensation.
 
+<img src="./E-Commerce Architecture Success, Failures and Retries.png" width="100%" />
+
 **Imagine a customer buying:**
 ```
 1 × iPhone — ₹80,000
@@ -1206,7 +1208,9 @@ If the interviewer asks:
 
 Answer:
 ```
-"Because Order, Inventory, Payment, and Shipping are independent services and may have different databases and external systems. A distributed ACID transaction across all of them would introduce significant coupling and availability problems. Instead, I would use local transactions, an event-driven workflow, idempotency, and the Saga pattern with compensating actions."
+"Because Order, Inventory, Payment, and Shipping are independent services and may have different databases and external systems.
+A distributed ACID transaction across all of them would introduce significant coupling and availability problems.
+Instead, I would use local transactions, an event-driven workflow, idempotency, and the Saga pattern with compensating actions."
 ```
 That's a strong system-design answer.
 
