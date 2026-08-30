@@ -3,6 +3,8 @@ Let’s understand Event-Driven Architecture (EDA) from a beginner/system-design
 
 **Event-Driven Architecture is a design pattern where components communicate by publishing and consuming events. An event represents something that has happened, such as OrderCreated or PaymentCompleted. Instead of services directly calling each other, they can communicate through a message broker such as Kafka or RabbitMQ. This provides loose coupling, asynchronous processing, independent scalability, better resilience, and allows multiple consumers to react to the same event. It is especially useful for large-scale distributed and real-time systems.**
 
+<img src="./Event-Driven Architecture Redesign.png" width="100%" />
+
 ## What is Event-Driven Architecture?
 
 In simple words:
