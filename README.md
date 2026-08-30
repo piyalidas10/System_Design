@@ -1,8 +1,9 @@
 ## System Design Tutorials
-1. System Design : https://www.youtube.com/playlist?list=PLFdAYMIVJQHOWJgRrjv_RH-ng95B2h3ON
-2. System Design was HARD until I Learned these 30 Concepts : https://www.youtube.com/watch?v=s9Qh9fWeOAk
-3. System Design for Beginners : https://www.youtube.com/watch?v=lFeYU31TnQ8
-4. System Design Explained: APIs, Databases, Caching, CDNs, Load Balancing & Production Infra : https://www.youtube.com/watch?v=oYxTTirKY8M
+1. System Design for Beginners (2026) : https://www.youtube.com/watch?v=SE2KF-vxvS0
+2. System Design : https://www.youtube.com/playlist?list=PLFdAYMIVJQHOWJgRrjv_RH-ng95B2h3ON
+3. System Design was HARD until I Learned these 30 Concepts : https://www.youtube.com/watch?v=s9Qh9fWeOAk
+4. System Design for Beginners : https://www.youtube.com/watch?v=lFeYU31TnQ8
+5. System Design Explained: APIs, Databases, Caching, CDNs, Load Balancing & Production Infra : https://www.youtube.com/watch?v=oYxTTirKY8M
 
 ## Main topics covered
 1. Client–Server Architecture
