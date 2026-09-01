@@ -38,10 +38,18 @@ Scaling monolithic systems can be challenging due to their inherent design, but 
 4. **Load Balancing:** Use load balancing to distribute incoming traffic across multiple instances of a monolithic application. This can help divide the work more evenly and improve scalability.
 5. **Database sharding:** If the database is a bottleneck, consider sharding the database to share data across multiple database instances. Each shard stores a small portion of the data, allowing for horizontal scaling of the database.
 
-## when is a monolith actually the right choice?
+## When is a Monolith actually the right choice?
 
 1. **Startup and MVP's:** The truth is, monoliths are still a great fit for many real world situations, especially in the early stage of product, for example startup and MVP's. When you are trying to validate an idea quickly, you want to move fast. A monolith gives you speed, focus, and simplicity. You don't need the complexity of microservices just to test your product market fit.
 2. **Internal Tools:** Then you have your internal tools. Many dashboards, reporting systems, or admin panels used by a single team works perfectly well as monolith. There is no need to introduce service boundaries when everything is managed and used in-house.
 3. **Single team projects:** Then we have single team projects. When your team is small and communication is easy, a monolith helps keep your code centralized and collaborative. You avoid the overhead of service ownership and enter team contracts.
 4. **Early stage products:** Then early stage products you are still figuring out your core features. Requirements change rapidly. Starting with a monolith in this scenario lets you iterate without the friction of coordinating multiple services.
 
+## When to move beyond the Monolith ?
+1. **Product is scaling fast:** First, your product is scaling fast and different modules are growing at very different rate. Maybe the checkout system is under heavy load, but the search module is barely used. Scaling the whole application uniformly becomes wasteful here.
+2. **Frequent team conflicts on codebase:** Second, multiple teams are constantly stepping on each other's toes. There are merge conflicts, accidental breakages, and unclear ownership. A single shared code base becomes a bottleneck in this case.
+3. **Long release cycles:** Then third release cycles get longer because you can't ship small changes quickly. Even a minor fix needs full regression testing and full redeployment.
+4. **Scaling & availability issues:** Next, you are hitting availability or scaling limit, and you cannot isolate the failure of one part without risking the whole application.
+5. **Need for independent deployments:** And next, you need independent deployments so that teams can iterate and release features without being blocked by unrelated Changes. 
+
+So this is the crossroad that many teams reach, and choosing the right path forward depends on your team size, complexity, and products maturity. The key here is that don't break the monolith too early, but don't wait until it breaks you either.
