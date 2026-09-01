@@ -1,5 +1,17 @@
 # Monolithic Architecture
 
+At this point, it is very important to clear up a common confusion.
+
+People often mix up monolithic architecture with layered architecture as if they are the same thing, but actually they refer to two completely different aspects of your system.
+
+**A monolith is a deployment strategy. It means your entire application, regardless of how it is structured internally, is packaged and deployed as a single unit.**
+
+**On the other hand, a layered architecture is a design strategy. It is about how you organize code within your application, usually into logical layers like UI, business logic and data access.**
+
+So yes, you can absolutely have both of them in one application. They too can co-exist together. In fact, many well structured monoliths are layered internally.
+
+So when someone says we are stuck with a monolith, remember the design quality inside that monolith still matters a lot. It could be layered or it could not be layered.
+
 ## Characteristics
 Monolithic architecture exhibits several defining characteristics:
 - Single Codebase: All components are developed and maintained in one codebase, simplifying management.
@@ -26,6 +38,10 @@ Scaling monolithic systems can be challenging due to their inherent design, but 
 4. **Load Balancing:** Use load balancing to distribute incoming traffic across multiple instances of a monolithic application. This can help divide the work more evenly and improve scalability.
 5. **Database sharding:** If the database is a bottleneck, consider sharding the database to share data across multiple database instances. Each shard stores a small portion of the data, allowing for horizontal scaling of the database.
 
+## when is a monolith actually the right choice?
 
-
+1. **Startup and MVP's:** The truth is, monoliths are still a great fit for many real world situations, especially in the early stage of product, for example startup and MVP's. When you are trying to validate an idea quickly, you want to move fast. A monolith gives you speed, focus, and simplicity. You don't need the complexity of microservices just to test your product market fit.
+2. **Internal Tools:** Then you have your internal tools. Many dashboards, reporting systems, or admin panels used by a single team works perfectly well as monolith. There is no need to introduce service boundaries when everything is managed and used in-house.
+3. **Single team projects:** Then we have single team projects. When your team is small and communication is easy, a monolith helps keep your code centralized and collaborative. You avoid the overhead of service ownership and enter team contracts.
+4. **Early stage products:** Then early stage products you are still figuring out your core features. Requirements change rapidly. Starting with a monolith in this scenario lets you iterate without the friction of coordinating multiple services.
 
