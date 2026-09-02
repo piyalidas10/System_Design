@@ -1,6 +1,8 @@
 # Application security
 Application security (AppSec) protects software and APIs from external threats and vulnerabilities throughout their entire lifecycle, from initial design to active maintenance.
 
+**Your Guide to AppSec Tools: SAST vs SCA vs DAST** ---- https://www.sonatype.com/blog/your-guide-to-appsec-tools-sast-or-sca
+
 **✅ SAST: Is there a security problem in my code? or Is there something wrong in the code I wrote?**  
 **✅ DAST: Can I actually attack the running application? or Can an attacker exploit my running application?**  
 **✅ SCA: Are my third-party libraries vulnerable? or Is there something vulnerable in the library I imported?**  
