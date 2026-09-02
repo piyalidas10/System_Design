@@ -207,10 +207,6 @@ resources:
 
 ---
 
-*Related: Docker, Kubernetes, Hypervisor, Linux cgroups, Namespaces, Micro-Frontend Architecture*
-
----
-
 ## Is allocation static or dynamic?
 
 This is the most important interview distinction.
