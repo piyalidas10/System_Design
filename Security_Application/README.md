@@ -714,3 +714,46 @@ OSS Compliance
 
 Total Open Findings: 53
 ```
+
+## The easiest mental model
+
+**Remember this diagram for interviews:**
+```
+                    APPLICATION
+                         │
+          ┌──────────────┼───────────────┐
+          │              │               │
+          ↓              ↓               ↓
+      MY CODE       THIRD-PARTY       RUNNING APP
+          │          LIBRARIES             │
+          ↓              ↓                 ↓
+        SAST            SCA              DAST
+          │              │                 │
+          ↓              ↓                 ↓
+     SonarQube          Mend          DAST Scanner
+     Snyk Code          Snyk          OWASP ZAP
+          │              │                 │
+          └──────────────┼─────────────────┘
+                         ↓
+                  SECURITY REPORT
+                         ↓
+                 Vulnerability Mgmt
+                         ↓
+                   Fix / Accept Risk
+```
+
+**And then OSSC sits around the open-source side:**
+```
+                  Open Source
+                      │
+             ┌────────┴────────┐
+             ↓                 ↓
+            SCA             OSSC
+             │                 │
+       Security risk       License /
+       CVE / exploit       compliance
+             │                 │
+             └────────┬────────┘
+                      ↓
+                    Mend
+```
