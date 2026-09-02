@@ -202,11 +202,385 @@ There are several types of application security testing tools, but the most comm
 
 Together, these tools provide coverage across different stages of the software development lifecycle (SDLC), helping teams shift security left while maintaining continuous protection.
 
+## SAST — Static Application Security Testing
 
+SAST scans your source code without running the application.
 
+**For example, suppose you write:**
+```
+String query =
+    "SELECT * FROM users WHERE username='" + username + "'";
 
+statement.executeQuery(query);
+```
+**A SAST tool can identify:**
+```
+⚠️ Potential SQL Injection
+```
+because it sees that untrusted input is being concatenated into a SQL query.
 
+**Typical SAST vulnerabilities**
 
+| Vulnerability            | Example                               |
+| ------------------------ | ------------------------------------- |
+| SQL Injection            | User input concatenated into SQL      |
+| XSS                      | User input rendered without encoding  |
+| Command Injection        | User input passed to OS command       |
+| Hardcoded Secret         | API key/password inside source        |
+| Path Traversal           | `"/files/" + userInput`               |
+| Weak Cryptography        | MD5/SHA-1 used for passwords          |
+| Insecure Deserialization | Unsafe object deserialization         |
+| SSRF                     | User-controlled URL fetched by server |
+| Weak Authentication      | Security-sensitive code patterns      |
+| Insecure randomness      | `Math.random()` for security token    |
 
+**Tools**
 
+Common SAST tools include:
+- SonarQube
+- Snyk Code
+- Mend SAST
+- Checkmarx
+- Fortify
+- Veracode
+- Semgrep
+
+OWASP specifically describes source-code analysis tools as SAST tools and notes that they can be integrated into development/IDE workflows.
+
+### SonarQube for SAST
+
+SonarQube is commonly used in CI/CD to analyze source code for bugs, code smells and security vulnerabilities.
+
+For example:
+```
+app.get('/user', (req, res) => {
+    const sql = "SELECT * FROM users WHERE id=" + req.query.id;
+    db.query(sql);
+});
+```
+SonarQube could flag the unsafe SQL construction.
+
+You might get a finding such as:
+```
+Security Issue
+--------------
+Type: SQL Injection
+Severity: High
+File: user.service.ts
+Line: 42
+
+Problem:
+User-controlled data is directly used in SQL query.
+
+Recommendation:
+Use parameterized queries.
+```
+
+**Secure version**
+```
+const sql = "SELECT * FROM users WHERE id = ?";
+db.query(sql, [req.query.id]);
+```
+
+**Important distinction**
+
+SonarQube isn't simply a "security scanner."
+
+**It can provide:**
+```
+                SonarQube
+                    │
+       ┌────────────┼────────────┐
+       ↓            ↓            ↓
+     Bugs      Code Smells    Security
+                              Vulnerabilities
+                              Hotspots
+```
+So in an enterprise pipeline, SonarQube is often used as the SAST/code-quality gate.
+
+## DAST — Dynamic Application Security Testing
+
+DAST is completely different.
+
+**Instead of looking at your source code:**
+```
+Source Code
+    ↓
+    X
+```
+
+**DAST looks at the running application:**
+```
+Browser / Scanner
+       ↓
+   HTTP/HTTPS
+       ↓
+Running Application
+       ↓
+Database
+```
+The scanner behaves somewhat like an attacker.
+
+OWASP describes DAST as testing a web application through its web interface and performing attacks without access to the source code.
+
+#### DAST example — XSS
+
+Suppose your application has:
+```
+GET /search?q=hello
+```
+and the application reflects the value directly into HTML.
+
+A DAST scanner can send a test payload and observe the response.
+
+It might report:
+```
+Vulnerability: Reflected XSS
+Severity: High
+
+URL:
+https://example.com/search?q=...
+
+Parameter:
+q
+
+Evidence:
+User-controlled input reflected without proper encoding.
+```
+
+**DAST can find things like:**
+- XSS
+- SQL injection
+- Command injection
+- Authentication problems
+- Authorization issues
+- Security misconfiguration
+- Missing security headers
+- TLS/HTTPS problems
+- Path traversal
+- Exposed endpoints
+- Some API vulnerabilities
+
+OWASP lists XSS, SQL injection, command injection, path traversal and insecure configuration among typical DAST targets.
+
+## SAST vs DAST — very important interview concept
+
+Imagine this code:
+```
+String query =
+    "SELECT * FROM users WHERE id=" + request.getParameter("id");
+```
+
+### SAST
+
+SAST sees:
+```
+Source Code
+    ↓
+Unsafe SQL construction
+    ↓
+Potential SQL Injection
+```
+It can find the coding weakness before deployment.
+
+### DAST
+
+DAST sees:
+```
+Running Application
+       ↓
+GET /users?id=123
+       ↓
+Scanner manipulates id
+       ↓
+Application behaves unsafely
+       ↓
+SQL Injection detected
+```
+
+So:
+
+|                        | SAST              | DAST                         |
+| ---------------------- | ----------------- | ---------------------------- |
+| Testing                | Source code       | Running application          |
+| Approach               | White-box         | Black-box                    |
+| When                   | Development/build | Test/staging/deployment      |
+| Source required?       | Yes               | No                           |
+| Finds coding flaws     | Excellent         | Limited                      |
+| Finds runtime behavior | Limited           | Excellent                    |
+| Typical example        | SonarQube         | OWASP ZAP/Burp-type scanners |
+
+## SCA — Software Composition Analysis
+
+This one is not primarily about your code.
+
+It asks:
+> **"Which third-party libraries are we using, and do any of them have known vulnerabilities?"**
+
+**Suppose your Node.js application has:**
+```
+{
+  "dependencies": {
+    "express": "4.x",
+    "lodash": "4.x",
+    "axios": "1.x"
+  }
+}
+```
+Your own code might be perfectly secure.
+
+But:
+```
+Your Application
+       │
+       ├── express
+       ├── lodash
+       ├── axios
+       └── jsonwebtoken
+```
+One dependency may contain a known CVE.
+
+**SCA identifies that dependency and tells you:**
+```
+Dependency: example-library
+Installed: 1.2.3
+Fixed version: 1.2.8
+
+Vulnerability:
+CVE-XXXX-XXXXX
+
+Severity:
+High
+
+Recommended action:
+Upgrade to 1.2.8
+```
+OWASP describes SCA/component analysis as inventorying third-party/open-source components and identifying supply-chain risks.
+
+### Realistic SCA example
+
+**Imagine:**
+```
+{
+  "dependencies": {
+    "some-library": "1.4.0"
+  }
+}
+```
+
+**Your application code:**
+```
+import { something } from "some-library";
+```
+Your code might contain zero security vulnerabilities.
+
+**But SCA discovers:**
+```
+some-library@1.4.0
+       ↓
+Known CVE
+       ↓
+Severity: Critical
+       ↓
+Fixed in: 1.4.5
+```
+
+**So the developer needs to upgrade:**
+```
+1.4.0 → 1.4.5
+```
+This is why SAST and SCA are not the same thing.
+
+## OSSC — Open Source Software Compliance
+
+If by OSSC you mean Open Source Software Compliance, this is slightly different from SCA.
+
+Think:
+
+**SCA : "Is this open-source dependency vulnerable?"**
+
+**OSS Compliance : "Are we legally and organizationally allowed to use this open-source component, and are we complying with its license obligations?"**
+
+For example:
+```
+My Application
+      │
+      ├── React
+      ├── Angular
+      ├── lodash
+      ├── library-X
+      └── library-Y
+```
+
+**An OSS compliance process may identify:**
+```
+library-X
+License: GPL
+Risk: Requires legal review
+
+library-Y
+License: MIT
+Risk: Low
+
+library-Z
+License: Apache-2.0
+Risk: Acceptable
+```
+
+**So OSS compliance can involve:**
+- License detection
+- License policy
+- Copyright obligations
+- Attribution requirements
+- Forbidden licenses
+- Open-source inventory
+- SBOM
+- Dependency governance
+
+SCA and OSS compliance often overlap, and modern tools may provide both.
+
+## Mend
+**Mend is an AppSec platform rather than just a single-purpose scanner.**
+
+Current Mend documentation describes the Mend platform as providing SAST, SCA and container scanning, with centralized security findings, policies and reports.
+
+For SCA, Mend can analyze open-source components and identify CVEs, outdated dependencies, licensing information and other risks.
+
+Conceptually:
+```
+                     Mend
+                      │
+        ┌─────────────┼──────────────┐
+        ↓             ↓              ↓
+      SAST            SCA        Container
+        │             │            Scan
+        ↓             ↓              ↓
+   Source Code    Dependencies   Docker Image
+        │             │              │
+        └─────────────┼──────────────┘
+                      ↓
+               Security Findings
+                      ↓
+                 Reports / Risk
+```
+Mend also provides reachability/exploitability information for SCA findings, which can help prioritize a vulnerable dependency that is actually relevant to your application.
+
+## Snyk — important correction
+
+**Snyk Code is SAST. Snyk officially describes Snyk Code as its SAST solution.**
+
+Snyk also has other AppSec capabilities, including SCA/dependency scanning. 
+
+For a resume/interview, I would phrase your stack more carefully:
+```
+SonarQube → SAST / Code Quality
+
+Snyk Code → SAST
+
+Snyk Open Source → SCA
+
+DAST → Dedicated DAST solution
+         e.g. OWASP ZAP / Burp Suite
+```
+If your organization specifically uses a Snyk product/capability for runtime/API security, name the exact Snyk product rather than saying generically "Snyk = DAST."
 
