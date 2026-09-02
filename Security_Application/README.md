@@ -258,7 +258,132 @@ OWASP specifically describes source-code analysis tools as SAST tools and notes 
 | ✅ Provides developers with **source-code-level evidence** for remediation      | ⚠️ May miss vulnerabilities that only appear because of **runtime configuration/environment**        |
 | ✅ Supports **automated security gates** in CI/CD                               | ⚠️ Can struggle with some **complex data flows, dynamic code, and framework-specific behavior**      |
 
-**Easy way to remember**
+### False positive
+**🔴 A security tool reports a vulnerability, but the code is actually safe.**
+
+**Suppose you have:**
+```
+const message = "Hello " + user.name;
+```
+
+**A SAST scanner might see:**
+```
+user.name → string concatenation
+       ↓
+Potential XSS
+       ↓
+⚠️ Security Warning
+```
+But suppose user.name is already properly encoded/sanitized before reaching this code.
+
+**Then:**
+```
+Scanner says:     ❌ Vulnerable
+Reality:          ✅ Safe
+```
+That's a false positive.
+
+### Why do false positives happen?
+
+SAST analyzes code statically. It doesn't always know the complete runtime context.
+
+**For example:**
+```
+Source Code
+    ↓
+Static Analysis
+    ↓
+Limited knowledge of:
+  • Runtime configuration
+  • Actual user input
+  • Authentication rules
+  • Data validation elsewhere
+  • Framework behavior
+    ↓
+May report something that isn't exploitable
+```
+
+**False Positive vs True Positive**
+
+|                       | Meaning                                           | Example                               |
+| --------------------- | ------------------------------------------------- | ------------------------------------- |
+| 🔴 **True Positive**  | Tool reports a vulnerability and it really exists | SQL Injection actually possible       |
+| 🟡 **False Positive** | Tool reports a vulnerability but code is safe     | Parameterized SQL incorrectly flagged |
+
+### if i want to skip any sast issue then i can make that issue as false positive
+
+Yes, technically you can mark/suppress a SAST finding, but you should not mark a real vulnerability as “False Positive” just because you want to skip it.
+
+The important distinction is:
+```
+SAST Finding
+     │
+     ├── Actually vulnerable?
+     │       │
+     │       ├── YES → Fix it
+     │       │
+     │       └── NO → Mark as FALSE POSITIVE
+     │
+     └── Vulnerable but accepted temporarily?
+             ↓
+        Risk Accepted / Won't Fix
+        (depending on tool/process)
+```
+
+**Example**
+
+SonarQube reports:
+```
+❌ SQL Injection
+Severity: High
+File: UserService.java
+Line: 42
+```
+
+**You investigate and discover:**
+```
+PreparedStatement stmt =
+    connection.prepareStatement(
+        "SELECT * FROM users WHERE id = ?");
+```
+The scanner misunderstood the code.
+
+**➡️ False Positive is appropriate.**
+
+But suppose the code really is vulnerable:
+```
+String sql =
+    "SELECT * FROM users WHERE id=" + userId;
+```
+You say:
+> **"I don't want to fix it."**
+
+That doesn't make it a false positive.
+
+It is still a real vulnerability.
+
+**Depending on your organization's security process, you might instead record:**
+```
+Status: Risk Accepted / Won't Fix
+Reason: Business justification
+Owner: Security Team
+Expiry: 30 days
+```
+
+**Very important interview distinction**
+
+| Status                  | Meaning                                                           |
+| ----------------------- | ----------------------------------------------------------------- |
+| **False Positive**      | Tool is wrong; vulnerability doesn't actually exist               |
+| **Won't Fix**           | Vulnerability exists, but organization decides not to fix it      |
+| **Risk Accepted**       | Organization knowingly accepts the security risk                  |
+| **Fixed/Resolved**      | Vulnerability has been remediated                                 |
+| **Suppressed/Excluded** | Finding is intentionally hidden/ignored according to tool/process |
+
+> [!NOTE]
+> **So, don't use False Positive as a way to bypass SAST. In a professional AppSec process, false-positive marking should have a legitimate technical reason and often requires review/auditability.**
+
+### Easy way to remember
 ```
 SAST
  │
