@@ -49,5 +49,12 @@ If by AMU reports you mean your organization's Application/Maturity/Management/A
 | Evidence      | Scanner finding       |
 | Exception     | Approved/Not approved |
 
+## The key concept
 
+AMU reporting is usually the reporting/management layer, whereas:
+- SonarQube → detects SAST findings
+- Snyk → detects SAST/SCA findings depending on the product
+- Mend → SCA/SAST/OSS-related findings
+- DAST tool → detects runtime vulnerabilities
+- AMU report → can consolidate, track, categorize and report those findings
 
