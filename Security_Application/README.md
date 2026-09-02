@@ -249,6 +249,27 @@ Common SAST tools include:
 
 OWASP specifically describes source-code analysis tools as SAST tools and notes that they can be integrated into development/IDE workflows.
 
+### SAST — Benefits vs Limitations
+| **SAST Benefits**                                                              | **SAST Limitations**                                                                                 |
+| ------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------- |
+| ✅ Identifies security vulnerabilities **early in the SDLC**, before deployment | ⚠️ Can produce **false positives** and requires proper rule/configuration tuning                     |
+| ✅ Integrates into **IDE, pull requests, CI/CD pipelines**                      | ⚠️ Has **limited visibility into runtime behavior**                                                  |
+| ✅ Helps reduce the **cost of fixing vulnerabilities early**                    | ⚠️ Does **not primarily assess third-party dependency vulnerabilities** — that's the role of **SCA** |
+| ✅ Provides developers with **source-code-level evidence** for remediation      | ⚠️ May miss vulnerabilities that only appear because of **runtime configuration/environment**        |
+| ✅ Supports **automated security gates** in CI/CD                               | ⚠️ Can struggle with some **complex data flows, dynamic code, and framework-specific behavior**      |
+
+**Easy way to remember**
+```
+SAST
+ │
+ ├── Looks at → MY SOURCE CODE
+ ├── Runs → BEFORE / DURING BUILD
+ ├── Finds → Coding security weaknesses
+ └── Tools → SonarQube, Snyk Code, Checkmarx
+```
+
+> **SAST is valuable because it finds security vulnerabilities early by analyzing source code and can be integrated directly into developer workflows and CI/CD. Its limitations are false positives, limited runtime visibility, and inability to replace SCA for third-party dependency vulnerabilities.**
+
 ### SonarQube for SAST
 
 SonarQube is commonly used in CI/CD to analyze source code for bugs, code smells and security vulnerabilities.
