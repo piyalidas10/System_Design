@@ -105,6 +105,89 @@ SCA, SAST, and DAST are three different testing methods used in application secu
 - **SCA (Software Composition Analysis):** Scans open-source libraries and third-party dependencies used in your project for known vulnerabilities and license issues. 
 - **DAST (Dynamic Application Security Testing):** Tests the compiled, running application from the outside by simulating real-world attacks during runtime (black-box testing). 
 
+| Feature                   | **SAST**                                                                       | **SCA**                                                                | **DAST**                                                                                  |
+| ------------------------- | ------------------------------------------------------------------------------ | ---------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| **Full form**             | Static Application Security Testing                                            | Software Composition Analysis                                          | Dynamic Application Security Testing                                                      |
+| **What it analyzes**      | Your **source/custom code**                                                    | **Third-party libraries & dependencies**                               | **Running application / APIs**                                                            |
+| **Testing approach**      | **White-box** — sees the source code                                           | Dependency/package analysis                                            | **Black-box** — behaves like an external attacker                                         |
+| **Requires source code?** | ✅ Yes                                                                          | Usually package/dependency manifests                                   | ❌ No                                                                                      |
+| **When it runs**          | Development / PR / CI/CD                                                       | Build / CI/CD / continuously                                           | Testing / staging / sometimes production                                                  |
+| **Finds**                 | SQL Injection, XSS in code, hardcoded secrets, insecure APIs, buffer overflows | Known CVEs, vulnerable packages, outdated dependencies, license issues | Authentication problems, exposed endpoints, XSS, SQL Injection, security misconfiguration |
+| **Example**               | `query = "SELECT * FROM users WHERE id=" + id`                                 | `log4j 2.x` with a known CVE                                           | Attacker sends malicious input to `/api/users?id=...`                                     |
+| **Main question**         | **"Is my code insecure?"**                                                     | **"Are my dependencies insecure?"**                                    | **"Can my running application be attacked?"**                                             |
+
+### Easy way to remember
+
+Think about an application like a car:
+```
+                 APPLICATION SECURITY
+                         │
+          ┌──────────────┼──────────────┐
+          ▼              ▼              ▼
+        SAST             SCA            DAST
+          │              │              │
+     Your code       Dependencies    Running app
+          │              │              │
+     "Is my code      "Are my        "Can an
+       safe?"        packages safe?" attacker
+                                      break in?"
+```
+
+### Example
+Suppose you have an Angular + FastAPI application:
+```
+Angular / FastAPI Application
+│
+├── Your code
+│     └── authentication.py
+│           └── insecure SQL query
+│
+├── Third-party dependencies
+│     ├── fastapi
+│     ├── sqlalchemy
+│     └── some-package
+│
+└── Running APIs
+      ├── /login
+      ├── /users
+      └── /orders
+```
+
+**SAST → scans authentication.py and detects insecure coding patterns.**
+
+**SCA → scans requirements.txt, package.json, package-lock.json, etc., and detects vulnerable third-party packages.**
+
+**DAST → attacks the running /login, /users, /orders endpoints and discovers vulnerabilities from the application's external behavior.**
+
+### Where do SonarQube, Snyk and Mend fit?
+
+A useful mental model is:
+```
+Developer writes code
+        │
+        ▼
+     ┌───────┐
+     │ SAST  │ ──► SonarQube
+     └───────┘
+        │
+        ▼
+     ┌───────┐
+     │  SCA  │ ──► Snyk / Mend
+     └───────┘
+        │
+        ▼
+    Build & Deploy
+        │
+        ▼
+     ┌───────┐
+     │ DAST  │ ──► Scan running application/API
+     └───────┘
+```
+
+**One correction to your earlier understanding:** Snyk is not best described simply as **"SAST + DAST."** Snyk has multiple security products/capabilities, including **Snyk Code (SAST)** and **Snyk Open Source (SCA)**, while its broader platform also covers other security areas.
+
+If you're building an **Application Security / DevSecOps** interview roadmap, I'd organize it as **SAST → SCA → Secrets → Container/IaC scanning → DAST → API Security → SBOM → Runtime Security**.
+
 ## What Are Application Security (AppSec) Tools?
 Application security (AppSec) tools are designed to identify, analyze, and remediate vulnerabilities in software applications. These tools help security and development teams reduce risk, maintain compliance, and protect against increasingly sophisticated attacks.
 
