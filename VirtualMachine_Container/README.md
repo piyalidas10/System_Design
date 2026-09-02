@@ -208,3 +208,22 @@ resources:
 ---
 
 *Related: Docker, Kubernetes, Hypervisor, Linux cgroups, Namespaces, Micro-Frontend Architecture*
+
+---
+
+## Is allocation static or dynamic?
+
+This is the most important interview distinction.
+
+| Resource                              | VM                                                 | Container                                        |
+| ------------------------------------- | -------------------------------------------------- | ------------------------------------------------ |
+| CPU                                   | Configured vCPU + scheduled dynamically            | Shared/scheduled dynamically, optionally limited |
+| RAM                                   | Configured virtual RAM; hypervisor manages mapping | Shared host RAM, optionally limited with cgroups |
+| Storage                               | Virtual disk capacity assigned to VM               | Shared host filesystem/volumes                   |
+| OS                                    | Own guest OS                                       | Shares host kernel                               |
+| Main isolation layer                  | Hypervisor                                         | OS kernel + namespaces/cgroups                   |
+| Who configures limits?                | Admin / VM platform                                | Admin / Docker / Kubernetes                      |
+| Can workloads share unused resources? | Depends on configuration/overcommitment            | Yes, when limits allow                           |
+
+The document correctly emphasizes that CPU is not simply physically carved into permanent pieces. Even with VMs, the hypervisor scheduler determines when a VM gets physical CPU time.
+
