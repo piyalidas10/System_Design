@@ -584,3 +584,133 @@ DAST → Dedicated DAST solution
 ```
 If your organization specifically uses a Snyk product/capability for runtime/API security, name the exact Snyk product rather than saying generically "Snyk = DAST."
 
+## One vulnerability through all scanners
+
+This is the best way to understand the whole ecosystem.
+
+**Suppose your application has:**
+```
+Angular Frontend
+       ↓
+Node.js API
+       ↓
+PostgreSQL
+```
+
+**Developer writes:**
+```
+app.get("/users", (req, res) => {
+    const query =
+      "SELECT * FROM users WHERE id=" + req.query.id;
+
+    db.query(query);
+});
+```
+
+### SonarQube / SAST
+```
+❌ SQL Injection
+
+Source:
+user.controller.js
+
+Line:
+42
+
+Reason:
+User input is concatenated into SQL.
+```
+
+### DAST
+
+**Application is deployed:**
+```
+https://test.myapp.com
+```
+**DAST scanner sends malicious input:**
+```
+/users?id=<test payload>
+```
+and observes the application behavior.
+
+**Result:**
+```
+❌ SQL Injection
+
+Endpoint:
+GET /users
+
+Parameter:
+id
+
+Severity:
+High/Critical
+```
+
+### SCA
+
+Meanwhile:
+```
+package.json
+
+lodash = vulnerable version
+```
+
+**SCA reports:**
+```
+❌ Dependency Vulnerability
+
+Package:
+lodash
+
+Installed:
+4.x vulnerable version
+
+Fixed:
+4.x patched version
+
+CVE:
+CVE-XXXX-XXXXX
+```
+
+### OSS Compliance
+
+**The same application may have:**
+```
+library-A
+License: MIT       ✅
+
+library-B
+License: Apache-2  ✅
+
+library-C
+License: GPL       ⚠️ Legal review
+```
+
+### Final security report
+
+**Your organization can consolidate:**
+```
+APPLICATION: Customer Portal
+────────────────────────────────────
+
+SAST
+  Critical: 2
+  High:     5
+  Medium:   11
+
+SCA
+  Critical: 1
+  High:     7
+  Medium:   14
+
+DAST
+  Critical: 0
+  High:     3
+  Medium:   8
+
+OSS Compliance
+  Policy violations: 2
+
+Total Open Findings: 53
+```
