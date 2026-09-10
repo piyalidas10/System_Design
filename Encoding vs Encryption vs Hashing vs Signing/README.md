@@ -12,6 +12,19 @@ Hashing → Create fingerprint
 Signing → Prove authenticity
 ```
 
+|                           | **Encoding**   | **Encryption**                   | **Hashing**                 | **Signing**                  |
+| ------------------------- | -------------- | -------------------------------- | --------------------------- | ---------------------------- |
+| **Main purpose**          | Representation | **Confidentiality**              | **Integrity / fingerprint** | **Authenticity + integrity** |
+| **Reversible?**           | ✅ Yes          | ✅ Yes                            | ❌ No                        | ❌ No                         |
+| **Secret key required?**  | ❌ No           | ✅ Yes*                           | ❌ No                        | ✅ Yes                        |
+| **Hides original data?**  | ❌ No           | ✅ Yes                            | ❌ No                        | ❌ No                         |
+| **Detects modification?** | ❌ No           | ⚠️ Only authenticated encryption | ✅ With comparison           | ✅ Yes                        |
+| **Common example**        | Base64         | AES                              | SHA-256                     | RSA / ECDSA                  |
+| **Password storage?**     | ❌ Never        | ❌ No                             | ⚠️ Use password hashing     | ❌ No                         |
+| **JWT?**                  | ✅ Base64URL    | JWE                              | ❌ Not normally              | ✅ JWS                        |
+
+* **Encryption**: symmetric encryption such as AES requires a secret key; asymmetric encryption such as RSA uses a public/private key pair.
+
 ## 🧠 Super-simple memory trick
 | Term           | Think                   |
 | -------------- | ----------------------- |
