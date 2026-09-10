@@ -33,6 +33,85 @@ Signing → Prove authenticity
 | **Hashing**    | 🧩 One-way fingerprint  |
 | **Signing**    | ✍️ Prove who created it |
 
+## 🧠 The easiest way to remember
+
+Think of these as four different questions:
+
+### 🔵 Encoding → "How do I represent this data?"
+```
+"Hello"
+   ↓ Base64
+"SGVsbG8="
+```
+Anyone can decode it.
+
+No security.
+> **Encoding ≠ Security**
+
+### 🟢 Encryption → "How do I hide this data?"
+```
+Plaintext
+   ↓ AES + Key
+Ciphertext
+   ↓ Key
+Plaintext
+```
+Example:
+```
+"my secret message"
+        ↓
+   🔐 Encryption
+        ↓
+"8fA92xK...."
+```
+Only someone with the appropriate key can decrypt it.
+
+> **Goal = confidentiality**
+
+### 🟡 Hashing → "Has this data changed?"
+```
+"Hello"
+   ↓ SHA-256
+2cf24dba5...
+```
+If the input changes:
+```
+"Hello!"
+   ↓ SHA-256
+ce06092f...
+```
+The hash changes completely.
+
+You cannot normally reverse:
+> **Hash → Original**
+
+**Goal = fingerprint / integrity**
+
+## 🟣 Signing → "Who created this, and was it modified?"
+```
+Message
+   ↓
+Hash
+   ↓
+Private Key
+   ↓
+✍️ Signature
+```
+
+**The receiver uses the public key to verify it.**
+```
+Message + Signature
+        ↓
+   Verify
+        ↓
+✅ Authentic
+✅ Not modified
+```
+
+**Goal = authenticity + integrity**
+
+---
+
 ## 🔵 1. Encoded = easy to reverse
 **Suppose I have:**
 ```
