@@ -1,0 +1,23 @@
+docker image pull alpine
+
+docker image pull nginx:alpine
+
+docker image pull curlimages/curl
+
+docker search alpine
+(it will search all alpine images)
+
+
+docker search --limit 3 alpine
+(it will show 3 images)
+
+
+docker search --limit 1 ubuntu
+(it will show 1 image)
+
+
+docker image ls
+
+
+docker images
+
