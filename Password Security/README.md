@@ -1,5 +1,7 @@
 # Password Security
 
+<img src="./Secure%20Password%20Storage.png" width="100%" />
+
 ## 🔐How Companies store your Password securely ?
 Companies should never store your password in plain text. Instead, 
 they store a password hash generated using a password-specific hashing algorithm such as Argon2id, bcrypt, scrypt, or PBKDF2.
