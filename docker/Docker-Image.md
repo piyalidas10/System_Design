@@ -1,4 +1,4 @@
-# Doker Image
+# Docker Image
 
 ## python:3.12 - docker fetching the python image from docker hub ?
 
