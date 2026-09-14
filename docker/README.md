@@ -31,12 +31,15 @@ docker run postgres
 | Shares host OS    | Own full OS      |
 | Perfect for dev   | Mostly for infra |
 
+## Docker File
+A Dockerfile is a text document that contains all the commands a user could call on the command line to assemble an image in Docker. When you run a command to build a Docker image, Docker reads these instructions from the Dockerfile to automatically build a new image according to your specifications.
+
 ## Docker containers
 
-```
 Docker containers need a Docker Engine (container runtime environment) to run. Docker Engine itself runs on a host OS; that host can be your laptop, a VM, or a physical/cloud server.
 ```
-Docker ≠ server.  
+Docker ≠ server.
+```
 Docker Engine runs on a host. 
 Containers run through the Docker Engine. 
 
