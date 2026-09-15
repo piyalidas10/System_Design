@@ -251,7 +251,7 @@ And that's exactly the problem I've been describing over the last minutes.
 So now that we know the problem really well, and that we know that containers are able to write data but that this data is lost when the container is removed, now that we know all of that, what is the solution?
 
 ```mermaid
-graph TD
+graph LR
     %% Styling definitions
     classDef containerBg fill:#FFF4E6,stroke:#FF922B,stroke-width:2px;
     classDef imageBg fill:#F8F0FC,stroke:#D0BFFF,stroke-width:2px;
@@ -260,14 +260,11 @@ graph TD
 
     %% Diagram Structure
     subgraph Container_Context [Container]
-        direction TB
+        direction LR
         
-        %% Top Read-Write Layer
-        RW[Container Layer <br> read-write]:::rwLayer
-        
-        %% Inner Image Layers
-        subgraph Image_Context [Image Read-only]
-            direction BT
+        %% Inner Image Layers (Stacked Left-to-Right)
+        subgraph Image_Context [Image: Read-only]
+            direction LR
             L1[Instruction #1: Image Layer 1]:::roLayer
             L2[Instruction #2: Image Layer 2]:::roLayer
             L3[Instruction #3: Image Layer 3]:::roLayer
@@ -275,13 +272,13 @@ graph TD
             L1 --> L2 --> L3
         end
         
-        RW --- Image_Context
+        %% Top Read-Write Layer
+        Image_Context --> RW[Container Layer <br> read-write]:::rwLayer
     end
 
     %% Apply context styling
     style Container_Context fill:#FFF4E6,stroke:#FF922B,stroke-width:2px;
     style Image_Context fill:#F8F0FC,stroke:#E599F7,stroke-width:2px;
-
 ```
 
 
