@@ -283,7 +283,9 @@ graph LR
 
 ## Visualizing How Volumes Bypass the Container Lifecycle
 Below is a diagram showing how the Read-Write layer syncs directly out to your host machine's physical hardware:
-```mermaidgraph TD
+
+```mermaid
+graph TD
     classDef host fill:#E3F2FD,stroke:#1E88E5,stroke-width:2px;
     classDef container fill:#FFF4E6,stroke:#FF922B,stroke-width:2px;
     classDef vol fill:#E8F5E9,stroke:#43A047,stroke-width:2px;
