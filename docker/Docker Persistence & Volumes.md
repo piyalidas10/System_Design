@@ -281,7 +281,30 @@ graph LR
     style Image_Context fill:#F8F0FC,stroke:#E599F7,stroke-width:2px;
 ```
 
+## Visualizing How Volumes Bypass the Container Lifecycle
+Below is a diagram showing how the Read-Write layer syncs directly out to your host machine's physical hardware:
+```mermaidgraph TD
+    classDef host fill:#E3F2FD,stroke:#1E88E5,stroke-width:2px;
+    classDef container fill:#FFF4E6,stroke:#FF922B,stroke-width:2px;
+    classDef vol fill:#E8F5E9,stroke:#43A047,stroke-width:2px;
 
+    subgraph Host_Machine [Your Computer / Host Machine]
+        direction TB
+        
+        subgraph Container_Context [Docker Container Lifecycle]
+            RW[Container Layer: Read-Write]:::container
+            RO[Image Layers: Read-Only]:::container
+            RW --- RO
+        end
+
+        HostFolder[(Host Folder / Volume Data)]:::vol
+        
+        %% Connection bypassing the container
+        RW <===> |Live Two-Way Sync| HostFolder
+    end
+
+    style Host_Machine fill:#fafafa,stroke:#ccc,stroke-dasharray: 5 5;
+```
 
 ---
 
