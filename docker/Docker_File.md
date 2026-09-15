@@ -116,6 +116,9 @@ Then:
 ```
 COPY . .
 ```
+- 1st dot refers current project directly
+- 2nd dot refers the working directory 
+
 means:
 ```
 Current project directory
