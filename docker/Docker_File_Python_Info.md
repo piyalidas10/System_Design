@@ -121,19 +121,46 @@ demo.py executes
 
 ## Build and run it
 
-From the directory containing your Dockerfile:
+**From the directory containing your Dockerfile:**
 ```
 docker build -t python-demo .
 ```
-Then:
+**Then:**
 ```
 docker run --rm python-demo
 ```
-If demo.py contains:
+
+**python-demo is simply the name you are giving to the Docker image.**
+```
+docker build -t python-demo .
+```
+Break it down:
+```
+docker build -t python-demo .
+             │     │          │
+             │     │          └── Build context = current directory
+             │     │
+             │     └── Image name
+             │
+             └── Tag/name option
+```
+```
+Dockerfile
+    │
+    │ docker build -t python-demo .
+    ↓
+IMAGE
+python-demo:latest
+    │
+    │ docker run python-demo
+    ↓
+CONTAINER
+```
+**If demo.py contains:**
 ```
 print("Hello from Docker!")
 ```
-you'll get:
+**you'll get:**
 ```
 Hello from Docker!
 ```
