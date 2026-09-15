@@ -1,4 +1,15 @@
 # Basic Dockerfile for a Python application
+
+<img src="./imgs/Dockerfile Python Guide.png" width="100%" />
+
+**Simple application structure:**
+```
+my-python-app/
+├── Dockerfile
+├── demo.py
+```
+
+**Dockerfile**
 ```
 FROM python
 
