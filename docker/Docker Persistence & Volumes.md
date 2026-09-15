@@ -399,6 +399,154 @@ Persistent data
 
 > **COPY gives the container a snapshot. A volume gives the container persistent storage that survives container removal.**
 
+## Updated Dockerfile
+
+```dockerfile
+FROM node:14
+
+WORKDIR /app
+
+COPY package.json .
+
+RUN npm install
+
+COPY . .
+
+EXPOSE 80
+
+VOLUME [ "/app/feedback" ]
+
+CMD [ "node", "server.js" ]
+```
+
+### What Changed?
+
+The important addition is:
+
+```dockerfile
+VOLUME [ "/app/feedback" ]
+```
+
+This tells Docker that:
+
+> **`/app/feedback` is intended to be used for persistent data and should be treated as a volume mount point.**
+
+The application stores feedback files inside:
+
+```text
+/app/feedback
+```
+
+Instead of allowing those files to exist only in the container's writable layer, Docker can use a volume for this directory.
+
+### Dockerfile Flow
+
+```text
+Dockerfile
+    │
+    ├── FROM node:14
+    │       ↓
+    │   Node.js base image
+    │
+    ├── WORKDIR /app
+    │       ↓
+    │   Working directory
+    │
+    ├── COPY package.json .
+    │       ↓
+    │   Copy dependency definition
+    │
+    ├── RUN npm install
+    │       ↓
+    │   Install dependencies
+    │
+    ├── COPY . .
+    │       ↓
+    │   Copy application source
+    │
+    ├── EXPOSE 80
+    │       ↓
+    │   Document container port
+    │
+    ├── VOLUME ["/app/feedback"]
+    │       ↓
+    │   Persistent storage location
+    │
+    └── CMD ["node", "server.js"]
+            ↓
+        Start application
+```
+
+### Before `VOLUME`
+
+```text
+Container
+└── /app
+    └── feedback
+        └── feedbackawesome.txt
+
+Container deleted
+        ↓
+feedbackawesome.txt ❌
+```
+
+### With `VOLUME`
+
+```text
+Container
+└── /app
+    └── feedback
+          │
+          │ mounted to volume
+          ▼
+      Docker Volume
+          │
+          └── feedbackawesome.txt
+```
+
+Now:
+
+```text
+Container deleted
+        ↓
+Container writable layer ❌
+        ↓
+Volume ✅
+        ↓
+feedbackawesome.txt remains
+```
+
+### Important Point
+
+`VOLUME ["/app/feedback"]` **does not mean that `/app/feedback` becomes part of the Docker image's persistent filesystem**.
+
+Instead, it declares that this directory should be treated as a volume mount point.
+
+So the architecture becomes:
+
+```text
+             Docker Image
+          ┌───────────────┐
+          │ Node.js       │
+          │ Application   │
+          │ Dependencies  │
+          └───────┬───────┘
+                  │
+                  ▼
+             Container
+          ┌───────────────┐
+          │ /app          │
+          │               │
+          │ /feedback ────┼──────► Volume
+          └───────────────┘         │
+                                    ▼
+                              Persistent Data
+```
+
+### Key takeaway
+
+> **`VOLUME ["/app/feedback"]` tells Docker that `/app/feedback` should be backed by a volume so that data stored there can survive the lifecycle of the container.**
+
 
 
 ---
