@@ -250,7 +250,7 @@ And that's exactly the problem I've been describing over the last minutes.
 
 So now that we know the problem really well, and that we know that containers are able to write data but that this data is lost when the container is removed, now that we know all of that, what is the solution?
 
-```
+```mermaid
 graph TD
     %% Styling definitions
     classDef containerBg fill:#FFF4E6,stroke:#FF922B,stroke-width:2px;
