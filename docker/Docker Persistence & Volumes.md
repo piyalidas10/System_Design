@@ -547,6 +547,11 @@ So the architecture becomes:
 
 > **`VOLUME ["/app/feedback"]` tells Docker that `/app/feedback` should be backed by a volume so that data stored there can survive the lifecycle of the container.**
 
+## ⚠️ The Catch: This creates an "Anonymous" Volume
+Using the VOLUME instruction inside a Dockerfile creates an Anonymous Volume. This has a few major limitations you should be aware of:
+- **Docker chooses the host path:** Docker creates a folder with a long, random hash name hidden deep inside its internal storage directory on your computer (e.g., /var/lib/docker/volumes/...). You cannot easily see or access it outside of Docker.
+- **It does not survive container removal (docker rm):** If you stop the container, the data stays. However, if you remove the container and start a brand-new one using docker run, a new, empty anonymous volume will be generated. The new container will not automatically hook back up to the old data.
+
 
 
 ---
