@@ -281,6 +281,56 @@ graph LR
     style Image_Context fill:#F8F0FC,stroke:#E599F7,stroke-width:2px;
 ```
 
+## Docker Volumes
+
+Now we know the problem.
+
+What's the solution?
+
+Docker has a built-in feature called **volumes**.
+
+And volumes help us with persisting data and solving the problem I outlined in the last lecture.
+
+Now, how do we utilize volumes in our application?
+
+In this Docker application, for example.
+
+First of all, we have to understand what exactly volumes are and how they work.
+
+Volumes are folders on your host machine, so not in the container, not in the image, but on your host machine's hard drive, which are mounted, which basically means made available or mapped, into containers.
+
+So volumes are folders on your host machine, on your computer, which you make Docker aware of and which are then mapped to folders inside of a Docker container.
+
+Now, that might sound a bit like the `COPY` instruction from the Dockerfile.
+
+But keep in mind that this instruction really just takes a snapshot of the path and files you would tell it to copy, and then it copies these files and folders into the image, and that's it.
+
+There's no ongoing relation or connection. It's just a one-time snapshot, which is copied into the image.
+
+With volumes, that's different.
+
+Here, you can really connect a folder inside of the container to a folder outside of the container, on your host machine.
+
+And changes in either folder will be reflected in the other one.
+
+So, if you add a file on your host machine, it is accessible inside of the container, and if the container adds a file in that mapped path, it is available outside of the container, in the host machine as well.
+
+And therefore, because of this mechanism, volumes allow you to persist data.
+
+Volumes persist and continue to exist even if a container is shut down.
+
+That's important.
+
+If you add a volume to a container, the volume will not be removed when a container is removed.
+
+It survives, and therefore, the data in a volume survives.
+
+And containers can both read and write data from and to a volume.
+
+And that's, of course, a powerful feature, which we can use for folders which we want to access from outside our container, and/or simply for data that should survive container shutdown and the removal of a container.
+
+Because if the data is also saved outside of the container, of course, it survives the removal of the container.
+
 ## Visualizing How Volumes Bypass the Container Lifecycle
 Below is a diagram showing how the Read-Write layer syncs directly out to your host machine's physical hardware:
 
