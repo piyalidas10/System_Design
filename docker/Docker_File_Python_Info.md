@@ -1,4 +1,4 @@
-# Basic Dockerfile for a Python application
+# Building & Running a Python file using Docker
 
 <img src="./imgs/Dockerfile Python Guide.png" width="100%" />
 
