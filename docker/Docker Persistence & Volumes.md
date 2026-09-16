@@ -589,16 +589,17 @@ check the container
 ```
 docker ps
 ```
-Now try to save feedbackawesome.txt file using a feedback form submit. On clicking Submit button, you can see browser starts spinning and it crashes. So clearly something went wrong.
+Now try to save feedbackawesome.txt file using a feedback form submit. It will work.
 <img src="./imgs/docker_volume_run.png" width="80%" />
+<img src="./imgs/docker_volume_file_present.png" width="80%" />
 
-**in order to see what went wrong, I'll run**
+Now stop the container & Rerun the container
 ```
-docker logs feedback-app
+docker stop feedback-app
+docker run -d -p 3000:80 --rm --name feedback-app feedback-node:volumes
 ```
-And we see that we got an error here, `unhandled rejection warning`. And the problem here seems to be that cross-device link is not permitted.
-<img src="./imgs/docker_volume_error.png" width="80%" />
-
+no, this feedbackawesome.txt file is still not there.
+<img src="./imgs/docker_volume_file_notpresent.png" width="80%" />
 
 
 
