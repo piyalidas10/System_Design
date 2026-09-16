@@ -586,7 +586,7 @@ This image is created and tagged.
 ```
 docker run -d -p 3000:80 --rm --name feedback-app feedback-node:volumes
 ```
-check the container
+**check the container**
 ```
 docker ps
 ```
@@ -594,7 +594,7 @@ Now try to save feedbackawesome.txt file using a feedback form submit. It will w
 <img src="./imgs/docker_volume_run.png" width="80%" />
 <img src="./imgs/docker_volume_file_present.png" width="80%" />
 
-Now stop the container & Rerun the container
+**Now stop the container & Rerun the container**
 ```
 docker stop feedback-app
 docker run -d -p 3000:80 --rm --name feedback-app feedback-node:volumes
@@ -659,15 +659,67 @@ docker-complete $
 ### ⚠️ The Anonymous Volume "Gotcha"
 If you define a volume inside a Dockerfile like this:
 ```
-dockerfileVOLUME ["/app/feedback"]
+dockerfile
+
+VOLUME ["/app/feedback"]
 ```
 1. At Runtime: Docker spins up the container and assigns a random, cryptic name to this volume. You can see it by running docker volume ls.
 2. On Shutdown: The moment you stop or remove the container (especially when using the --rm flag), the anonymous volume is permanently deleted.
 3. The Problem: It completely fails to solve data persistence issues across container restarts.
 
-## With named volumes, volumes will survive container's shutdown.
+### With named volumes, volumes will survive container's shutdown.
 The folders on your hard drive will survive. And therefore, if you start new containers thereafter, the volumes will be back, the folder will be back, and all the data stored in that folder will still be available.
 
+So named volumes are great for data which should be persistent, and that's important, which you don't need to edit or view directly, because you don't really have access
+to that folder on your host machine.
+
+And we can't create named volumes inside of a Docker file, hence we can remove this instruction actually.
+```
+VOLUME ["/app/feedback"]
+```
+Instead we have to create a named volume when we run a container.
+
+**First remove already created docker volume**
+```
+# 1. Remove the existing image tag
+docker rmi feedback-node:volumes
+
+# 2. Rebuild the image with the correct docker command syntax
+docker build -t feedback-node:volumes .
+```
+**I will now once again restart my container based on that image with the Docker run command. now I add another flag, another option to this command. And that's the -V option, which stands for volume, which allows me to add a volume to this container. But unlike in the Docker file, not just an anonymous volume but actually a named volume.**
+We still specify the path inside of the container file system which we wanna save. And in our case, that's `app/feedback`. But in front of this path `/app/feedback`, we now provide any name of our choice. For example, feedback. We then add a colon to separate our name from that path.
+```
+docker run -d -p 3000:80 --rm --name feedback-app -v feedback:/app/feedback feedback-node:volumes
+```
+It will now store app feedback in a managed volume. So it will create a folder on our hosting machine and connect it to this folder inside of the container, but it will store this volume under a name chosen by us.
+
+> **The key difference to anonymous volumes is that named volumes will not be deleted by Docker when the container shuts down.**
+> **Anonymous volumes are deleted because they are recreated whenever a container is created. And therefore, keeping them around after a container was removed makes no sense. Anonymous volumes are closely attached to one specific container.**
+> **Named volumes are not attached to a container.**
+
+I can go back to local host 3000, add another feedback or another message here, save this. And of course, visit feedback/awesome.txt. And see that.
+<img src="./imgs/docker_volume_run.png" width="80%" />
+<img src="./imgs/docker_volume_file_present.png" width="80%" />
+
+Now Docker stop feedback app & this will remove the container because of the -- rm flag at docker run time.
+```
+docker stop feedback-app
+```
+**Our volume will still be there. And hence, if we restart a new container with the same volume, our data will still be there. 
+So let's first check for the volume with**
+```
+docker-complete $ docker volume ls
+DRIVER          VOLUME NAME
+local           feedback
+docker-complete $ docker run -d -p 3000:80 --rm --name feedback-app -v feedback:/app/feedback feedback-node:volumes
+96532444cc8ec8697ad01d268c319d79297b5b1b5bae1164295e9567f179d7c
+docker-complete $ 
+```
+**Now check localhost:300/feedback/awesome.txt in the browser. it's still there even though the container was stopped.** 
+<img src="./imgs/docker_name_volume.png" width="80%" />
+
+**So finally we managed to persist data with the help of volumes, to be precise, with the help of named volumes.**
 
 > [!NOTE]
 > **Anonymous volumes are automatically named by Docker, while named volumes are explicitly named by you. Both are Docker-managed volumes, but named volumes are much easier to identify and reuse.**
