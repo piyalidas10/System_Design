@@ -724,6 +724,9 @@ docker-complete $
 > [!NOTE]
 > **Anonymous volumes are automatically named by Docker, while named volumes are explicitly named by you. Both are Docker-managed volumes, but named volumes are much easier to identify and reuse.**
 
+> [!NOTE]
+> **bunch of unused anonymous volumes - you can clear them via `docker volume rm VOL_NAME` or `docker volume prune`.**
+
 
 
 
