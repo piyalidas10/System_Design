@@ -165,7 +165,7 @@ After the image is built, there is **no live synchronization** between the host 
 
 This isolation is intentional and is a fundamental part of Docker's container model.
 
-## Stop the container & run again this container without --rm.
+## 3. Stop the container & run again this container without --rm.
 ```
 docker stop feedback-app
 ```
@@ -178,13 +178,13 @@ Now reload the app and it works. But you'll notice that if I try to view feedbac
 
 Now add again feedbackawesome.txt in the newly started container, we can view feedbackawesome.txt.
 
-## Stop the container again
+## 4. Stop the container again
 ```
 docker stop feedback-app
 ```
 And if I now stop this container feedback app again and keep in mind that now feedbackawesome.txt will not be removed because we did not add --rm on the Docker run command.
 
-## Restart the container again
+## 5. Restart the container again
 ```
 docker start feedback-app
 ```
@@ -192,7 +192,7 @@ I restart the container again. You will notice that now if I reload, the feedbac
 
 > **Now feedbackawesome.txt file is not lost because we didn't write the --rm at container creation 2nd time to remove the conatiner**
 
-## Docker Container Read-Write Layer
+## 6. Docker Container Read-Write Layer
 
 And when we then launch a Docker container based on the image, that container is added as an extra thin **read-write layer** on top of this image.
 
@@ -281,7 +281,7 @@ graph LR
     style Image_Context fill:#F8F0FC,stroke:#E599F7,stroke-width:2px;
 ```
 
-## Docker Volumes
+### Docker Volumes
 
 Now we know the problem.
 
@@ -297,7 +297,7 @@ In this Docker application, for example.
 
 First of all, we have to understand what exactly volumes are and how they work.
 
-Volumes are folders on your host machine, so not in the container, not in the image, but on your host machine's hard drive, which are mounted, which basically means made available or mapped, into containers.
+**Volumes are folders on your host machine, so not in the container, not in the image, but on your host machine's hard drive, which are mounted, which basically means made available or mapped, into containers.**
 
 So volumes are folders on your host machine, on your computer, which you make Docker aware of and which are then mapped to folders inside of a Docker container.
 
@@ -399,7 +399,7 @@ Persistent data
 
 > **COPY gives the container a snapshot. A volume gives the container persistent storage that survives container removal.**
 
-## Updated Dockerfile
+## 7. Updated Dockerfile by adding Volume
 
 ```dockerfile
 FROM node:14
@@ -552,7 +552,7 @@ Using the VOLUME instruction inside a Dockerfile creates an Anonymous Volume. Th
 - **Docker chooses the host path:** Docker creates a folder with a long, random hash name hidden deep inside its internal storage directory on your computer (e.g., /var/lib/docker/volumes/...). You cannot easily see or access it outside of Docker.
 - **It does not survive container removal (docker rm):** If you stop the container, the data stays. However, if you remove the container and start a brand-new one using docker run, a new, empty anonymous volume will be generated. The new container will not automatically hook back up to the old data.
 
-## Docker build again with Volume
+## 8. Docker build again with Volume
 ```dockerfile
 FROM node:14
 
@@ -601,6 +601,64 @@ docker run -d -p 3000:80 --rm --name feedback-app feedback-node:volumes
 no, this feedbackawesome.txt file is still not there.
 <img src="./imgs/docker_volume_file_notpresent.png" width="80%" />
 
+## 9. Docker Volumes — Anonymous vs Named Volumes
+> **Docker actually has three primary data storage mechanisms. While volumes and bind mounts are the two most common ways to persist data onto your host machine's hard drive, there is a third option called tmpfs mounts.**
 
+With Docker, we actually have multiple external data storage mechanisms, if we want to call them like this, two to be precise. And that would be volumes and bind mounts.
+
+Now, we'll worry about bind mounts later. For the moment, we'll focus on volumes. And it looks like they don't fully work as we want them to. Currently, we're using anonymous volumes.
+
+```
+VOLUME ["/app/feedback"]
+```
+With this instruction in the Dockerfile, we add an anonymous volume to this image and data for the containers running based on that image. 
+
+Now, we can also assign named volumes, and that's not something we're doing up to this point.
+
+Now, in both cases, no matter if it's anonymous or named — however that works, we'll see it soon — in both cases, Docker sets up some folder and path on your host machine.
+You don't know where. After all, here we only specified a path inside of the container, no path on our host machine. So we don't know where the folder is in which this is mirrored.
+
+It's somewhere managed by Docker, but we don't know where. And the only way for us to get access to these volumes is with the help of the docker volume command. And I can show this to you.
+
+List volumes:
+```
+docker volume ls
+```
+If we go back here to the terminal, we can run:
+```
+docker volume --help
+```
+to see our options.
+
+And here it's:
+```
+docker volume ls
+```
+to list all volumes Docker is currently managing. And we see one volume here. Let me show it to you again.
+
+We see one volume here with a very strange, cryptic name. This name is cryptic because it's an automatically generated name. Because it's an anonymous volume, we didn't assign any name to it. Hence, Docker automatically assigned one.
+
+Now here's the gotcha. If we stop our feedback app container, and therefore for we shut down this application, if we inspect our volumes again this anonymous volume is gone.
+It doesn't exist anymore. Now as I said, it's managed by Docker. And because it's anonymous, it actually only exists as long as our container exists. And that doesn't help us at all with the problem I outlined, which was that our data disappears if we shut down a container.
+
+```
+docker-complete $ docker volume ls
+DRIVER          VOLUME NAME
+local           fe6167c8122faf45dacbeff8aa8888912f3d44bd7ab83cdd2ba21a8f40376fd7
+docker-complete $ docker stop feedback-app
+feedback-app
+docker-complete $ docker volume ls
+DRIVER          VOLUME NAME
+docker-complete $ 
+```
+
+### ⚠️ The Anonymous Volume "Gotcha"
+If you define a volume inside a Dockerfile like this:
+```
+dockerfileVOLUME ["/app/feedback"]
+```
+1. At Runtime: Docker spins up the container and assigns a random, cryptic name to this volume. You can see it by running docker volume ls.
+2. On Shutdown: The moment you stop or remove the container (especially when using the --rm flag), the anonymous volume is permanently deleted.
+3. The Problem: It completely fails to solve data persistence issues across container restarts.
 
 
