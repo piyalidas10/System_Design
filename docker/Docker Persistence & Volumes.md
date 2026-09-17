@@ -741,55 +741,94 @@ Here is the kind of problem we might be facing.
 
 Whenever we change anything in our source code, be that in the `server.js` file or in any HTML file here, those changes are **not reflected in the running container unless we rebuild the image**.
 
-I mean, we do have a running application here.
-
-And if I go back to `localhost:3000`, it's actually the feedback HTML file which is loaded.
-
-But if I add "please" here after "your feedback" and save this file, if I reload here, we don't see "please" on the page.
-
-And it should be clear why this is happening.
-
-I emphasized this a lot in the last module and this module:
-
 We only copy a **snapshot** of this folder into the Docker image when it's created.
 
-Subsequent changes to anything in that folder will therefore not be reflected in the image and, therefore, also not in the container.
+Subsequent changes to anything in the application folder will therefore not be reflected in the image and, therefore, also not in the container. But of course, during development, if we're using Docker, it would be pretty important to us that such changes are reflected. Because otherwise, we always have to rebuild the entire image and restart a container whenever we change anything.
 
-But of course, during development, if we're using Docker, it would be pretty important to us that such changes are reflected.
-
-Because otherwise, we always have to rebuild the entire image and restart a container whenever we change anything.
-
-And of course, during development, we tend to change a lot.
-
-So restarting everything all the time is pretty cumbersome.
-
-That's where **bind mounts** can help us.
+So restarting everything all the time is pretty cumbersome. That's where **bind mounts** can help us.
 
 ### What Is a Bind Mount?
 
 Bind mounts have some similarities with volumes, but there is one key difference.
 
-Where volumes are managed by Docker and we don't really know where on our host machine's file system they are, for bind mounts, **we do know it**.
-
-Because for bind mounts, we, as a developer, set the path to which the container-internal path should be mapped on our host machine.
-
-So here, we're fully aware of the path on our local machine.
-
-And since that is the case, and containers cannot just write to volumes but also read from there, of course we could put our source code into such a bind mount.
-
-And if we do that, we could then make sure that the container is aware of that, and that the source code is actually not used from that copied-in snapshot, but instead from that bind mount.
-
-So, from that connection to some folder on our host machine.
-
-And therefore, the container would always have access to the **latest code** and not just to the snapshot we put into our image when it was created at the beginning.
+> **Where volumes are managed by Docker and we don't really know where on our host machine's file system they are, for bind mounts, `we do know it`.**
+> **Because for bind mounts, we, as a developer, set the path to which the container-internal path should be mapped on our host machine. So here, we're fully aware of the path on our local machine.**
+> **And since that is the case, and containers cannot just write to volumes but also read from there, of course we could put our source code into such a bind mount.**
+> **And if we do that, we could then make sure that the container is aware of that, and that the source code is actually not used from that copied-in snapshot, but instead from that bind mount. So, from that connection to some folder on our host machine.**
+> **And therefore, the container would always have access to the **latest code** and not just to the snapshot we put into our image when it was created at the beginning.**
 
 ### Why Bind Mounts Are Useful
 
-So bind mounts are therefore perfect for **persistent and editable data**.
+1. So bind mounts are therefore perfect for **persistent and editable data**. And that's the difference to normal volumes.
+2. A named volume can help us with **persistent data, but editing is not really possible** since we don't know where it's stored on our host machine.
 
-And that's the difference to normal volumes.
+```
+Named Volume = "Docker, manage my persistent data."
+Bind Mount = "Docker, use this exact folder from my machine."
+```
 
-A named volume can help us with persistent data, but editing is not really possible since we don't know where it's stored on our host machine.
+#### 1. Bind mounts
+> **Bind mounts are perfect for persistent and editable data.**
+
+✅ Correct.
+
+A bind mount connects a specific host directory to a container directory:
+```
+Host machine                         Container
+┌─────────────────────┐             ┌──────────────┐
+│ my-project/         │  bind mount │ /app         │
+│ ├── server.js       │◄───────────►│ ├── server.js│
+│ ├── index.html      │             │ ├── index.html
+│ └── package.json    │             │ └── package.json
+└─────────────────────┘             └──────────────┘
+```
+If you edit server.js on your host:
+```
+Host: server.js changed
+          ↓
+Container sees the change
+          ↓
+No image rebuild required
+```
+That's why bind mounts are especially useful for development.
+
+#### 2. Named volumes
+> **A named volume can help with persistent data, but editing is not really possible since we don't know where it's stored on our host machine.**
+
+**⚠️ The first part is correct; the second part is an oversimplification.**
+
+A named volume provides persistent storage:
+```
+Container
+   │
+   │ mount
+   ▼
+Named Volume
+   │
+   ▼
+Docker-managed storage
+```
+For example:
+```
+docker volume create feedback-data
+```
+Docker manages where that volume physically lives.
+
+You can technically access/modify the files in a named volume, but you generally don't use named volumes for directly editing application source code because:
+- Docker manages the physical location.
+- You normally don't work with that location directly.
+- Named volumes are intended more for persistent application data.
+- Bind mounts are much more convenient when developers need to edit files directly from the host.
+
+|                         | **Named Volume**      | **Bind Mount**           |
+| ----------------------- | --------------------- | ------------------------ |
+| Managed by              | Docker                | Developer/host           |
+| Host path               | Docker-managed        | Developer specifies      |
+| Persistent              | ✅                   | ✅                       |
+| Host editing            | Not convenient        | ✅ Excellent             |
+| Development source code | Usually not preferred | ✅ Common                |
+| Database/app data       | ✅ Excellent         | Possible                  |
+| Example                 | PostgreSQL data       | Angular/Node source code |
 
 ### Adding a Bind Mount
 
