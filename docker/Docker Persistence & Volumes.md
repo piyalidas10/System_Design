@@ -553,7 +553,7 @@ Using the VOLUME instruction inside a Dockerfile creates an Anonymous Volume. Th
 - **Docker chooses the host path:** Docker creates a folder with a long, random hash name hidden deep inside its internal storage directory on your computer (e.g., /var/lib/docker/volumes/...). You cannot easily see or access it outside of Docker.
 - **It does not survive container removal (docker rm):** If you stop the container, the data stays. However, if you remove the container and start a brand-new one using docker run, a new, empty anonymous volume will be generated. The new container will not automatically hook back up to the old data.
 
-## 8. Docker build again with Volume
+## 8. Docker build again with Anonymous Volume
 ```dockerfile
 FROM node:14
 
@@ -602,7 +602,7 @@ docker run -d -p 3000:80 --rm --name feedback-app feedback-node:volumes
 no, this feedbackawesome.txt file is still not there.
 <img src="./imgs/docker_volume_file_notpresent.png" width="80%" />
 
-## 9. Docker Volumes — Anonymous vs Named Volumes
+## 9. Docker Named Volumes resolve the issue
 
 > **Docker actually has three primary data storage mechanisms. While volumes and bind mounts are the two most common ways to persist data onto your host machine's hard drive, there is a third option called tmpfs mounts.**
 
@@ -727,6 +727,262 @@ docker-complete $
 > [!NOTE]
 > **bunch of unused anonymous volumes - you can clear them via `docker volume rm VOL_NAME` or `docker volume prune`.**
 
+## 10. Docker Bind Mounts can help us with application refresh issue
+## Docker Bind Mounts
+
+So now we learn about volumes, and specifically, named volumes are useful.
+
+Anonymous volumes, I would say, their use is not entirely clear yet. I'll come back to those.
+
+But I actually now want to dive into **bind mounts** first, before we have a look at anonymous volumes again.
+
+### The Problem During Development
+
+Here is the kind of problem we might be facing.
+
+Whenever we change anything in our source code, be that in the `server.js` file or in any HTML file here, those changes are **not reflected in the running container unless we rebuild the image**.
+
+I mean, we do have a running application here.
+
+And if I go back to `localhost:3000`, it's actually the feedback HTML file which is loaded.
+
+But if I add "please" here after "your feedback" and save this file, if I reload here, we don't see "please" on the page.
+
+And it should be clear why this is happening.
+
+I emphasized this a lot in the last module and this module:
+
+We only copy a **snapshot** of this folder into the Docker image when it's created.
+
+Subsequent changes to anything in that folder will therefore not be reflected in the image and, therefore, also not in the container.
+
+But of course, during development, if we're using Docker, it would be pretty important to us that such changes are reflected.
+
+Because otherwise, we always have to rebuild the entire image and restart a container whenever we change anything.
+
+And of course, during development, we tend to change a lot.
+
+So restarting everything all the time is pretty cumbersome.
+
+That's where **bind mounts** can help us.
+
+### What Is a Bind Mount?
+
+Bind mounts have some similarities with volumes, but there is one key difference.
+
+Where volumes are managed by Docker and we don't really know where on our host machine's file system they are, for bind mounts, **we do know it**.
+
+Because for bind mounts, we, as a developer, set the path to which the container-internal path should be mapped on our host machine.
+
+So here, we're fully aware of the path on our local machine.
+
+And since that is the case, and containers cannot just write to volumes but also read from there, of course we could put our source code into such a bind mount.
+
+And if we do that, we could then make sure that the container is aware of that, and that the source code is actually not used from that copied-in snapshot, but instead from that bind mount.
+
+So, from that connection to some folder on our host machine.
+
+And therefore, the container would always have access to the **latest code** and not just to the snapshot we put into our image when it was created at the beginning.
+
+### Why Bind Mounts Are Useful
+
+So bind mounts are therefore perfect for **persistent and editable data**.
+
+And that's the difference to normal volumes.
+
+A named volume can help us with persistent data, but editing is not really possible since we don't know where it's stored on our host machine.
+
+### Adding a Bind Mount
+
+So how can we then add such a bind mount?
+
+Again, it's not something we can do from inside the Dockerfile.
+
+Because it's actually specific to a **container which you run**, not to the image.
+
+It doesn't affect the image; it just affects the container.
+
+And therefore, we have to set up a bind mount from inside the terminal when we run our container.
+
+So for that, first of all, I'll stop my currently running container with:
+
+```bash
+docker stop feedback-app
+```
+
+And once this is stopped, I will rerun it.
+
+I will create a new container in the same way by using `docker run`.
+
+But now I'll add more than one volume — not just this one named volume, but a second volume — simply by again adding `-v`.
+
+So:
+
+```bash
+-v
+```
+
+And then again, a volume as we added it before.
+
+But now here's the key difference.
+
+The folder to which I want to map it inside of the container is just:
+
+```text
+/app
+```
+
+So just `/app`, because I'm also copying all my source code into just `/app` here.
+
+I want to control the entire `app` folder now.
+
+But that's the difference.
+
+The name which I now assign in front of the colon is not `app` or anything like that.
+
+Instead, it is a **path to the folder on my host machine** where I have all the code and all the content that should go into this mapped folder.
+
+And this must be an **absolute path**, not a relative one.
+
+### Getting the Absolute Path
+
+You can get such a path here in Visual Studio Code by right-clicking on `server.js`, for example, and choosing **Copy Path**.
+
+Choose that and add it in front of the colon.
+
+Yes, it's quite long, but that is what we need.
+
+Make sure you remove the file at the end, though.
+
+It should just be the path to your **project folder**.
+
+So your project folder name should be the last thing here.
+
+In this case, at least, you can also bind a single file in case you just want to share a single file with a container.
+
+You can bind a file to a file.
+
+But here, when I want to bind to a folder, and therefore I want to bind a complete folder on my host machine to this `app` folder in the container, that's why we're removing the file name at the end.
+
+Because I don't just want to share the file; I want to share the **complete folder**.
+
+### Bind Mount Syntax
+
+The basic syntax is:
+
+```text
+-v <host-path>:<container-path>
+```
+
+For example:
+
+```bash
+-v "C:\path\to\project:/app"
+```
+
+You might also want to consider putting this into quotes — this entire statement here.
+
+So your absolute path, the colon, and the map path, to ensure that it doesn't break in case your path includes special characters or whitespace.
+
+Mine doesn't, except for the slashes, which are okay.
+
+But if your path has some blanks in it or anything like that, simply wrap everything here — the entire volume mapping — with quotes.
+
+### Docker File Sharing Permissions
+
+Now, one important note about bind mounts and mounting folders, which you know, into containers:
+
+You should make sure that **Docker has access to the folder** which you're sharing as a bind mount.
+
+And you can do this by accessing the preferences of Docker, by using that running Docker service — this Docker process you started.
+
+And there, make sure that under:
+
+**Resources → File Sharing**
+
+your folder which you are sharing right now is listed here.
+
+It doesn't have to be the full folder, but it should be a **parent folder** of the folder you're sharing.
+
+If you don't have this file-sharing area under Resources, you are most likely on Windows and there you don't have this option; you don't have this area in the settings.
+
+If you are running Docker with the help of the **WSL integration**, you might remember the setup lecture from the first course section.
+
+Well, if that option is missing, that's no problem.
+
+It's missing because you won't have any problems with file sharing anyway, with the setup you're using, so you're fine.
+
+Now, if you should be using **Docker Toolbox** to run Docker, then by default your users folder will be shared, and attached you find a link to an article which explains how you can share other folders as well.
+
+So that is what you should do then, if you are using Docker Toolbox, to ensure that Docker is able to really write to your local machine for the given folder you want to use as a volume in your container.
+
+So the attached link is for you if you are using Docker Toolbox.
+
+In my case, for example, the project I'm sharing is in some subfolder of my users directory.
+
+And that will be accessible by Docker because it's listed here under File Sharing Resources.
+
+Now, if your project is in some folder which is not a subfolder of one of the resources specified here, you should make sure that you add your project folder, or a parent folder of it, even better, as a shareable resource in this list in your Docker preferences.
+
+That's important.
+
+### Starting the Container with the Bind Mount
+
+And if we now hit Enter, this starts the container again.
+
+And now our entire folders here will be mounted as a volume into the `app` folder inside of the container.
+
+Nonetheless, you'll notice if you reload that it crashes.
+
+And if we inspect our running and shutdown containers thereafter, we see this container is nowhere to be found.
+
+And we don't find it in the closed containers, in the stopped containers, because we remove all containers which are shut down.
+
+But this, of course, also means that it seems to shut down immediately.
+
+So something seems to be very wrong here.
+
+### Investigating the Error
+
+And to find out what's wrong, I'll restart it again.
+
+But now without:
+
+```bash
+--rm
+```
+
+to not automatically remove it when it shuts down.
+
+And thereafter we see it here under stopped containers.
+
+And we can now use:
+
+```bash
+docker logs
+```
+
+to look into our container, to see the error that was thrown.
+
+And we see that the problem is that it fails to find the module:
+
+```text
+Express
+```
+
+And that simply means that our Node code doesn't even start executing because an important dependency is missing.
+
+Now, up to this point, it always worked, of course.
+
+And after all, we are installing all dependencies with the `npm install` instruction in the Dockerfile.
+
+So why is it missing now?
+
+Well, that has something to do with our newly added **bind mount**.
+
+With this bind mount that binds our entire project folder to the `app` folder.
+
+And we'll see what's wrong and how to solve the problem in the next lecture.
 
 
 
