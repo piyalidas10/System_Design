@@ -888,28 +888,24 @@ And there, make sure that under:
 
 **Resources → File Sharing**
 
-your folder which you are sharing right now is listed here. It doesn't have to be the full folder, but it should be a **parent folder** of the folder you're sharing. If you don't have this file-sharing area under Resources, you are most likely on Windows and there you don't have this option; you don't have this area in the settings. If you are running Docker with the help of the **WSL integration**, you might remember the setup lecture from the first course section.
+your folder which you are sharing right now is listed here. It doesn't have to be the full folder, but it should be a **parent folder** of the folder you're sharing. If you don't have this file-sharing area under Resources, you are most likely on Windows and there you don't have this option; you don't have this area in the settings. If you are running Docker with the help of the **WSL integration**.
 
 <img src="./imgs/docker_preference.png" width="90%" />
 <img src="./imgs/docker_preference_bind_mount_folder.png" width="90%" />
 
-Well, if that option is missing, that's no problem.
+Well, if that option is missing, that's no problem. It's missing because you won't have any problems with file sharing anyway, with the setup you're using, so you're fine.
 
-It's missing because you won't have any problems with file sharing anyway, with the setup you're using, so you're fine.
+Now, if you should be using **Docker Toolbox** to run Docker, then by default your users folder will be shared, and attached you find a link to an article which explains how you can share other folders as well. So that is what you should do then, if you are using Docker Toolbox, to ensure that Docker is able to really write to your local machine for the given folder you want to use as a volume in your container. So the attached link is for you if you are using Docker Toolbox.
 
-Now, if you should be using **Docker Toolbox** to run Docker, then by default your users folder will be shared, and attached you find a link to an article which explains how you can share other folders as well.
+<img src="./imgs/docker_toolbox.png" width="90%" />
 
-So that is what you should do then, if you are using Docker Toolbox, to ensure that Docker is able to really write to your local machine for the given folder you want to use as a volume in your container.
+In my case, for example, the project I'm sharing is in some subfolder of my users directory. And that will be accessible by Docker because it's listed here under File Sharing Resources. 
+<img src="./imgs/docker_users_folder.png" width="90%" />
 
-So the attached link is for you if you are using Docker Toolbox.
+> [!NOTE]
+> **Now, if your project is in some folder which is not a subfolder of one of the resources specified here, you should make sure that you add your project folder, or a parent folder of it, even better, as a shareable resource in this list in your Docker preferences.**
 
-In my case, for example, the project I'm sharing is in some subfolder of my users directory.
-
-And that will be accessible by Docker because it's listed here under File Sharing Resources.
-
-Now, if your project is in some folder which is not a subfolder of one of the resources specified here, you should make sure that you add your project folder, or a parent folder of it, even better, as a shareable resource in this list in your Docker preferences.
-
-That's important.
+<img src="./imgs/docker_bind_mount_run.png" width="90%" />
 
 ### Starting the Container with the Bind Mount
 
