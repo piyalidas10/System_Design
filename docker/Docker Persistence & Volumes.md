@@ -834,103 +834,53 @@ You can technically access/modify the files in a named volume, but you generally
 
 So how can we then add such a bind mount?
 
-Again, it's not something we can do from inside the Dockerfile.
-
-Because it's actually specific to a **container which you run**, not to the image.
-
-It doesn't affect the image; it just affects the container.
-
-And therefore, we have to set up a bind mount from inside the terminal when we run our container.
-
-So for that, first of all, I'll stop my currently running container with:
+Again, it's not something we can do from inside the Dockerfile. Because it's actually specific to a **container which you run**, not to the image. It doesn't affect the image; it just affects the container. And therefore, we have to set up a bind mount from inside the terminal when we run our container. So for that, first of all, I'll stop my currently running container with:
 
 ```bash
 docker stop feedback-app
 ```
-
-And once this is stopped, I will rerun it.
+And once this is stopped, I will rerun it. 
 
 I will create a new container in the same way by using `docker run`.
 
 But now I'll add more than one volume — not just this one named volume, but a second volume — simply by again adding `-v`.
 
 So:
-
 ```bash
 -v
 ```
 
-And then again, a volume as we added it before.
-
-But now here's the key difference.
-
-The folder to which I want to map it inside of the container is just:
-
+And then again, a volume as we added it before. But now here's the key difference. The folder to which I want to map it inside of the container is just:
 ```text
 /app
 ```
 
-So just `/app`, because I'm also copying all my source code into just `/app` here.
+So just `/app`, because I'm also copying all my source code into just `/app` here. I want to control the entire `app` folder now. But that's the difference. The name which I now assign in front of the colon is not `app` or anything like that. Instead, it is a **path to the folder on my host machine** where I have all the code and all the content that should go into this mapped folder. And this must be an **absolute path**, not a relative one.
 
-I want to control the entire `app` folder now.
+You can get such a path here in Visual Studio Code by right-clicking on `server.js`, for example, and choosing **Copy Path**. Choose that and add it in front of the colon. Yes, it's quite long, but that is what we need. Make sure you remove the file at the end, though. It should just be the path to your **project folder**. So your project folder name should be the last thing here.
 
-But that's the difference.
+In this case, at least, you can also bind a single file in case you just want to share a single file with a container. You can bind a file to a file. But here, when I want to bind to a folder, and therefore I want to bind a complete folder on my host machine to this `app` folder in the container, that's why we're removing the file name at the end. Because I don't just want to share the file; I want to share the **complete folder**.
 
-The name which I now assign in front of the colon is not `app` or anything like that.
-
-Instead, it is a **path to the folder on my host machine** where I have all the code and all the content that should go into this mapped folder.
-
-And this must be an **absolute path**, not a relative one.
-
-### Getting the Absolute Path
-
-You can get such a path here in Visual Studio Code by right-clicking on `server.js`, for example, and choosing **Copy Path**.
-
-Choose that and add it in front of the colon.
-
-Yes, it's quite long, but that is what we need.
-
-Make sure you remove the file at the end, though.
-
-It should just be the path to your **project folder**.
-
-So your project folder name should be the last thing here.
-
-In this case, at least, you can also bind a single file in case you just want to share a single file with a container.
-
-You can bind a file to a file.
-
-But here, when I want to bind to a folder, and therefore I want to bind a complete folder on my host machine to this `app` folder in the container, that's why we're removing the file name at the end.
-
-Because I don't just want to share the file; I want to share the **complete folder**.
-
-### Bind Mount Syntax
-
-The basic syntax is:
+### The basic syntax is:
 
 ```text
 -v <host-path>:<container-path>
 ```
 
-For example:
+**For example:**
 
 ```bash
 -v "C:\path\to\project:/app"
 ```
 
-You might also want to consider putting this into quotes — this entire statement here.
-
-So your absolute path, the colon, and the map path, to ensure that it doesn't break in case your path includes special characters or whitespace.
-
-Mine doesn't, except for the slashes, which are okay.
-
-But if your path has some blanks in it or anything like that, simply wrap everything here — the entire volume mapping — with quotes.
+You might also want to consider putting this into quotes — this entire statement here. So your absolute path, the colon, and the map path, to ensure that it doesn't break in case your path includes special characters or whitespace. Mine doesn't, except for the slashes, which are okay. But if your path has some blanks in it or anything like that, simply wrap everything here — the entire volume mapping — with quotes.
 
 ### Docker File Sharing Permissions
 
 Now, one important note about bind mounts and mounting folders, which you know, into containers:
 
-You should make sure that **Docker has access to the folder** which you're sharing as a bind mount.
+> [!NOTE]
+> **You should make sure that **Docker has access to the folder** which you're sharing as a bind mount.**
 
 And you can do this by accessing the preferences of Docker, by using that running Docker service — this Docker process you started.
 
@@ -938,13 +888,10 @@ And there, make sure that under:
 
 **Resources → File Sharing**
 
-your folder which you are sharing right now is listed here.
+your folder which you are sharing right now is listed here. It doesn't have to be the full folder, but it should be a **parent folder** of the folder you're sharing. If you don't have this file-sharing area under Resources, you are most likely on Windows and there you don't have this option; you don't have this area in the settings. If you are running Docker with the help of the **WSL integration**, you might remember the setup lecture from the first course section.
 
-It doesn't have to be the full folder, but it should be a **parent folder** of the folder you're sharing.
-
-If you don't have this file-sharing area under Resources, you are most likely on Windows and there you don't have this option; you don't have this area in the settings.
-
-If you are running Docker with the help of the **WSL integration**, you might remember the setup lecture from the first course section.
+<img src="./imgs/docker_preference.png" width="90%" />
+<img src="./imgs/docker_preference_bind_mount_folder.png" width="90%" />
 
 Well, if that option is missing, that's no problem.
 
