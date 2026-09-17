@@ -897,10 +897,10 @@ Well, if that option is missing, that's no problem. It's missing because you won
 
 Now, if you should be using **Docker Toolbox** to run Docker, then by default your users folder will be shared, and attached you find a link to an article which explains how you can share other folders as well. So that is what you should do then, if you are using Docker Toolbox, to ensure that Docker is able to really write to your local machine for the given folder you want to use as a volume in your container. So the attached link is for you if you are using Docker Toolbox.
 
-<img src="./imgs/docker_toolbox.png" width="90%" />
+<img src="./imgs/docker_toolbox.png" width="70%" />
 
 In my case, for example, the project I'm sharing is in some subfolder of my users directory. And that will be accessible by Docker because it's listed here under File Sharing Resources. 
-<img src="./imgs/docker_users_folder.png" width="90%" />
+<img src="./imgs/docker_users_folder.png" width="70%" />
 
 > [!NOTE]
 > **Now, if your project is in some folder which is not a subfolder of one of the resources specified here, you should make sure that you add your project folder, or a parent folder of it, even better, as a shareable resource in this list in your Docker preferences.**
