@@ -728,7 +728,6 @@ docker-complete $
 > **bunch of unused anonymous volumes - you can clear them via `docker volume rm VOL_NAME` or `docker volume prune`.**
 
 ## 10. Docker Bind Mounts can help us with application refresh issue
-## Docker Bind Mounts
 
 So now we learn about volumes, and specifically, named volumes are useful.
 
