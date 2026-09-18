@@ -1154,4 +1154,9 @@ Now we actually have one additional benefit. Now if we change something in our H
 
 > **Now with the bind mount added, if we changed the HTML files, those changes are instantly reflected, when we reload the app here.**
 
+## 11. A NodeJS-specific Adjustment: Using Nodemon in a Container
+
+
+
+
 
