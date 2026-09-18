@@ -832,7 +832,21 @@ You can technically access/modify the files in a named volume, but you generally
 
 ### Adding a Bind Mount
 
-So how can we then add such a bind mount?
+**So how can we then add such a bind mount?**
+
+```
+└── DOCKER-COMPLETE
+    ├── feedback/
+    ├── pages/
+    │   ├── exists.html
+    │   └── feedback.html
+    ├── public/
+    ├── temp/
+    ├── .gitignore
+    ├── Dockerfile
+    ├── package.json
+    └── server.js
+```
 
 Again, it's not something we can do from inside the Dockerfile. Because it's actually specific to a **container which you run**, not to the image. It doesn't affect the image; it just affects the container. And therefore, we have to set up a bind mount from inside the terminal when we run our container. So for that, first of all, I'll stop my currently running container with:
 
@@ -841,9 +855,7 @@ docker stop feedback-app
 ```
 And once this is stopped, I will rerun it. 
 
-I will create a new container in the same way by using `docker run`.
-
-But now I'll add more than one volume — not just this one named volume, but a second volume — simply by again adding `-v`.
+I will create a new container in the same way by using `docker run`. But now I'll add more than one volume — not just this one named volume, but a second volume — simply by again adding `-v`.
 
 So:
 ```bash
@@ -931,6 +943,8 @@ to not automatically remove it when it shuts down. And thereafter we see it here
 docker-complete $ docker run -d -p 3000:80 --name feedback-app -v feedback:/app/feedback -v "/Users/maximilianschwarzmuller/development/teaching/udemy/docker-complete:/app" feedback-node:volumes
 docker ps -a
 ```
+> **When you run that command, -v "/Users/.../docker-complete:/app" tells Docker to mount your local project folder directly into the container's /app folder.Because the /app folder in the container already contains the code copied during the image build (COPY . .), mounting your local folder "overwrites" or hides those original container files in real time.**
+
 <img src="./imgs/docker_bind_mount_run_again.png" width="90%" />
 And we can now use:
 
@@ -952,7 +966,71 @@ And after all, we are installing all dependencies with the `npm install` instruc
 > **Well, that has something to do with our newly added **bind mount**.**
 > **With this bind mount that binds our entire project folder to the `app` folder.**
 
+<img src="./imgs/docker_bind_mount_error_nodemodules.png" width="90%" />
 
+### Bind Mount problem
+Keep in mind that we're binding this DOCKER-COMPLETE folder, everything in that folder to the app folder.
+```
+└── DOCKER-COMPLETE
+    ├── feedback/
+    ├── pages/
+    │   ├── exists.html
+    │   └── feedback.html
+    ├── public/
+    ├── temp/
+    ├── .gitignore
+    ├── Dockerfile
+    ├── package.json
+    └── server.js
+```
+
+**When you run that command, -v "/Users/.../docker-complete:/app" tells Docker to mount your local project folder directly into the container's /app folder.Because the /app folder in the container already contains the code copied during the image build (COPY . .), mounting your local folder "overwrites" or hides those original container files in real time.**
+```
+docker-complete $ docker run -d -p 3000:80 --name feedback-app -v feedback:/app/feedback -v "/Users/maximilianschwarzmuller/development/teaching/udemy/docker-complete:/app" feedback-node:volumes
+```
+
+as per our **Dockerfile**
+```
+FROM node:14
+
+WORKDIR /app
+
+COPY package.json .
+
+RUN npm install
+
+COPY . .
+
+EXPOSE 80
+
+CMD [ "node", "server.js" ]
+```
+Now we copy everything into that folder, initially here when the image is created, and we install all dependencies, but in the end we render all these steps
+```
+COPY . .
+RUN npm install
+COPY package.json .
+```
+, which we performed during image creation worthless, if we then blind this mount to the container, if we then blind this mount to the container, because we overwrite everything in the app folder anyways with our local folder. And this local folder doesn't have the node modules folder with all the dependencies this app needs, and that's the reason for this error we're getting. The server JS file needs the express package, the express dependency, and it exists in a container, because of npm install, it does not exist in my local setup, because I never ran npm install there.
+
+<img src="./imgs/docker_bind_mount_error_nodemodules.png" width="90%" />
+
+And since I mount my local folder to the app folder, we overwrite all the works `(Dockerfile commands)` we did here when we set up the image and therefore also the container. We overwrite this with our local folder, and that is the problem here.
+
+### How Containers interact with Volumes and Bind Mounts
+
+If we have a container, and we don't have a volume, and a bind mount, we can mount both into the container with the -V flag, which was explained previously.
+That means that some folders inside of the container are mounted, or are connected to folders on the host machine.
+
+Now let's say we already had files inside of the container. In that case, they also now exist in the outside volume, and if you write a new file, it's also added in the folder on the host machine.
+
+If you write a new file, it's also added in the folder on the host machine. If the container then stands up, and it finds files in the volume, and it doesn't have any internal files yet, it loads the files from the volume.
+
+If the container then stands up, and it finds files in the volume, and it doesn't have any internal files yet, it loads the files from the volume. That's actually what we utilize with the bind mount.
+
+Here we don't have any files inside of the container, let's say, but we have files on the local host machine. In that case, these files are basically also usable inside of the container, but now we have kind of both things happening.
+
+<img src="./imgs/docker_container_volume_interaction.png" width="90%" />
 
 
 
