@@ -905,21 +905,16 @@ In my case, for example, the project I'm sharing is in some subfolder of my user
 > [!NOTE]
 > **Now, if your project is in some folder which is not a subfolder of one of the resources specified here, you should make sure that you add your project folder, or a parent folder of it, even better, as a shareable resource in this list in your Docker preferences.**
 
+```
+docker-complete $ docker run -d -p 3000:80 --rm --name feedback-app -v feedback:/app/feedback -v "/Users/maximilianschwarzmuller/development/teaching/udemy/docker-complete:/app" feedback-node:volumes
+docker ps
+docker ps -a
+```
+
 <img src="./imgs/docker_bind_mount_run.png" width="90%" />
 
-### Starting the Container with the Bind Mount
-
-And if we now hit Enter, this starts the container again.
-
-And now our entire folders here will be mounted as a volume into the `app` folder inside of the container.
-
-Nonetheless, you'll notice if you reload that it crashes.
-
-And if we inspect our running and shutdown containers thereafter, we see this container is nowhere to be found.
-
-And we don't find it in the closed containers, in the stopped containers, because we remove all containers which are shut down.
-
-But this, of course, also means that it seems to shut down immediately.
+And if we now hit Enter, this starts the container again. And now our entire folders here will be mounted as a volume into the `app` folder inside of the container. 
+Nonetheless, you'll notice if you reload the browser that it crashes. And if we inspect our running and shutdown containers thereafter, we see this container is nowhere to be found. And we don't find it in the closed containers, in the stopped containers, because we remove all containers which are shut down. But this, of course, also means that it seems to shut down immediately.
 
 So something seems to be very wrong here.
 
@@ -928,42 +923,36 @@ So something seems to be very wrong here.
 And to find out what's wrong, I'll restart it again.
 
 But now without:
-
 ```bash
 --rm
 ```
-
-to not automatically remove it when it shuts down.
-
-And thereafter we see it here under stopped containers.
-
+to not automatically remove it when it shuts down. And thereafter we see it here under stopped containers.
+```
+docker-complete $ docker run -d -p 3000:80 --name feedback-app -v feedback:/app/feedback -v "/Users/maximilianschwarzmuller/development/teaching/udemy/docker-complete:/app" feedback-node:volumes
+docker ps -a
+```
+<img src="./imgs/docker_bind_mount_run_again.png" width="90%" />
 And we can now use:
 
 ```bash
 docker logs
 ```
-
-to look into our container, to see the error that was thrown.
-
-And we see that the problem is that it fails to find the module:
-
+to look into our container, to see the error that was thrown. And we see that the problem is that it fails to find the module:
 ```text
 Express
 ```
-
-And that simply means that our Node code doesn't even start executing because an important dependency is missing.
+And that simply means that our Node code doesn't even start executing because an important dependency is missing. 
 
 Now, up to this point, it always worked, of course.
 
 And after all, we are installing all dependencies with the `npm install` instruction in the Dockerfile.
 
-So why is it missing now?
+> [!NOTE]
+> **So why is it missing now?**
+> **Well, that has something to do with our newly added **bind mount**.**
+> **With this bind mount that binds our entire project folder to the `app` folder.**
 
-Well, that has something to do with our newly added **bind mount**.
 
-With this bind mount that binds our entire project folder to the `app` folder.
-
-And we'll see what's wrong and how to solve the problem in the next lecture.
 
 
 
