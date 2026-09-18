@@ -1007,9 +1007,9 @@ CMD [ "node", "server.js" ]
 ```
 Now we copy everything into that folder, initially here when the image is created, and we install all dependencies, but in the end we render all these steps
 ```
-COPY . .
-RUN npm install
 COPY package.json .
+RUN npm install
+COPY . .
 ```
 , which we performed during image creation worthless, if we then blind this mount to the container, if we then blind this mount to the container, because we overwrite everything in the app folder anyways with our local folder. And this local folder doesn't have the node modules folder with all the dependencies this app needs, and that's the reason for this error we're getting. The server JS file needs the express package, the express dependency, and it exists in a container, because of npm install, it does not exist in my local setup, because I never ran npm install there.
 
@@ -1032,5 +1032,126 @@ Here we don't have any files inside of the container, let's say, but we have fil
 
 <img src="./imgs/docker_container_volume_interaction.png" width="90%" />
 
+Now we have kind of both things happening. We have files inside of the container in the app folder, because of these `Dockerfile` instructions
+```
+COPY package.json .
+RUN npm install
+COPY . .
+```
+and we have files and folders of the application outside of the container in this folder on our local host machine.
+```
+└── DOCKER-COMPLETE
+    ├── feedback/
+    ├── pages/
+    │   ├── exists.html
+    │   └── feedback.html
+    ├── public/
+    ├── temp/
+    ├── .gitignore
+    ├── Dockerfile
+    ├── package.json
+    └── server.js
+```
+And now the good thing is that **Docker does not start overwriting our local files on our host machine**. This would be pretty bad, if Docker would be doing that, right. We could delete a lot of important things on our computer by accident. So that's not what's happening.
+> **Docker will not overwrite our local host folder here.**
+> **Docker prioritizes the host machine's files when using a bind mount, meaning your local project folder dictates what the container sees, protecting your local source code from being overwritten or deleted by the container.**
+
+Instead, here, the local host folder, and the content in it overwrites what's in the Docker container, and that's the problem here, with that we got rid of node modules and so on.
+
+**1. The Bind Mount Rule: Host Wins**
+   When you map your local directory (DOCKER-COMPLETE) to the container's /app folder using the bind mount (-v "/Users/...:/app"):
+   - Docker treats the host folder as the source of truth.
+   - It essentially "overlays" your local folder on top of the container's /app folder.
+   - Because it does this, any files created inside the container during the docker build phase (via COPY . .) are hidden, not destroyed. The container now reads directly from your laptop. Your local files remain completely safe and untouched.
+
+**2. The Named Volume Rule: Container Wins (Initially)**
+   In your previous thought, you mentioned that if a container stands up, finds an empty volume, and has internal files, it copies them out. That is true only for Named Volumes (e.g., -v feedback:/app/feedback).
+   - When the container starts, Docker sees that the named volume feedback is empty.
+   - It looks inside the container's /app/feedback directory, sees whatever files were put there during COPY . ., and copies them out to your host machine's Docker storage area.
+   - From that point forward, they stay synchronized.
+
+## Solution of Bind Mounts issue
+Now to solve this problem, we kind of need to tell Docker, that there are certain parts in its internal file system, which should not be overwritten from outside in case we have such a clash as we have it here. And that can be achieved with another volume, which we add to this Docker container with an anonymous volume actually.
+
+If we add one more volume with `-V`, we can find the app/node modules folder. And it's an anonymous volume, which we also can add like this, and not just in the Docker file.
+```
+docker-complete $ docker run -d -p 3000:80 --name feedback-app -v feedback:/app/feedback -v "/Users/maximilianschwarzmuller/development/teaching/udemy/docker-complete:/app" -v /app/node_modules feedback-node:volumes
+```
+`-v /app/node_modules` before `feedback-node:volumes` is an anonymous volume.
+
+it would have a name if we add a colon in front of it, and assign some name here
+```
+docker-complete $ docker run -d -p 3000:80 --name feedback-app -v feedback:/app/feedback -v "/Users/maximilianschwarzmuller/development/teaching/udemy/docker-complete:/app" -v somename:/app/node_modules feedback-node:volumes
+```
+`-v somename:/app/node_modules` before `feedback-node:volumes` is a named volume.
+
+but if we don't do that, it's an anonymous volume. So this is an anonymous volume, and adding it like this is equivalent to adding it like this here.
+
+Adding it like this `-v somename:/app/node_modules` is equivalent to adding it like this `VOLUME ["/app/node_modules"]` inside Dockerfile.
+```
+FROM node:14
+
+WORKDIR /app
+
+COPY package.json .
+
+RUN npm install
+
+COPY . .
+
+EXPOSE 80
+
+VOLUME ["/app/node_modules"]
+
+CMD [ "node", "server.js" ]
+```
+You could do both, but I'll comment this out with a hash in front of it and go with this `docker run` approach, because I then don't have to rebuild the image.
+
+> [!NOTE]
+> **this will now also show us a use case, where anonymous volumes can be helpful.**
+
+### Now why does this help here?
+Well, Docker always evaluates all volumes you are setting on a container, and if there are clashes, the longer internal path wins.
+
+```
+docker-complete $ docker run -d -p 3000:80 --name feedback-app -v feedback:/app/feedback -v "/Users/maximilianschwarzmuller/development/teaching/udemy/docker-complete:/app" -v /app/node_modules feedback-node:volumes
+```
+**So for example here we have a clash, we have `/app` volume which is bound to something `/Users/maximilianschwarzmuller/development/teaching/udemy/docker-complete`, and we have an `/app/node_modules` volume, which is also bound to something.**     
+**We didn't assign a name, but keep in mind, even for anonymous volumes, they are managed by Docker, and there is some mapped folder somewhere on the local machine. It's just cleared when a container is removed, but there is a folder on the host machine, even for anonymous modules.**     
+
+So here, Docker sees that we have some volume mapped to the `/app` folder, and some volume to the `/app/node_modules` folder. And in that case, the simple rule Docker has 
+is that the longer the more specific path wins.
+
+So that means we can still bind to the `/app` folder, but the node modules folder inside of the `/app` folder.      
+The `/app/node_modules` is the folder created by the `RUN npm install` command by the way.  
+
+**1. "The folder created by the npm install command" : When your Dockerfile runs during the build phase, it executes `RUN npm install`. This command downloads all your dependencies and creates a folder at `/app/node_modules` inside the container image.**
+
+The `/app/node_modules` folder will survive, `/app/node_modules` will overwrite the folder that's coming in from outside because of this module, and here, we actually pass in no node modules folder, and therefore this `/app/node_modules` folder overwrites the non existent node modules folder,
+
+**2. "We pass in no node modules folder from outside" : On your local host machine (your laptop), you generally do not run npm install locally, so your local DOCKER-COMPLETE folder does not have a node_modules directory.**
+
+**3. "It will overwrite the folder coming from outside" (The Docker Rule)**
+When you use the bind mount -v "/Users/...:/app", Docker overlays your local folder onto /app. Because your local folder doesn't have node_modules, the bind mount would normally wipe out the container's internal /app/node_modules folder.
+
+**However, because you added -v /app/node_modules (the anonymous volume), Docker follows its "longest path wins" rule:**
+- /app (Bind Mount) maps to your local folder.
+- /app/node_modules (Anonymous Volume) is a longer, deeper path.
+
+Docker grabs the node_modules folder generated during npm install and locks it safely inside that anonymous volume. It effectively overwrites the empty space coming from your laptop, ensuring your app has its dependencies and can actually run!
+
+### Final Story of Bind Mount
+The node modules folder, which was created during the image creation with `RUN npm install` will survive, and will actually co exist together with the bind mount `/Users/maximilianschwarzmuller/development/teaching/udemy/docker-complete:/app`, which still also works.
+
+And therefore now after this long explanation, if we stop the currently running container, and we remove this container, we can run this container now with this extra anonymous volume added. If we want to also again with --RM added, and now this starts, and now this app also works again, test this works. Again, we'll see under feedback, awesome.txt that file from earlier is also still there.
+```
+docker stop feedback-app
+docker rm feedback-app
+docker-complete $ docker run -d --rm -p 3000:80 --name feedback-app -v feedback:/app/feedback -v "/Users/maximilianschwarzmuller/development/teaching/udemy/docker-complete:/app" -v /app/node_modules feedback-node:volumes
+```
+
+Now we actually have one additional benefit. Now if we change something in our HTML file, for example, I removed that please text again, and I save that file, if I now reload we see that change instantly without rebuilding the image in between, and the reason for that is that now we added this bind mount `-v /app/node_modules`, which in this case also only works, if we add this anonymous module `/app/node_modules` to make sure that node_modules folder doesn't get overwritten by our bind mount folder content.
+
+> **Now with the bind mount added, if we changed the HTML files, those changes are instantly reflected, when we reload the app here.**
 
 
