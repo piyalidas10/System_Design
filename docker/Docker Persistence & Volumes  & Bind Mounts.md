@@ -1,4 +1,5 @@
 # Docker Persistence & Volumes & Bind Mounts
+
 **Proejct structure**
 ```
 feedback-node
@@ -1236,5 +1237,74 @@ docker logs feedback-app
 > [!NOTE]
 > Now I got an important note for windows users, especially when you're using WSL2 for running Docker on windows. If you're doing that, you might notice that, when for me, file changes do reload D development server, and everything does work as shown in the lecture, it doesn't work for you. The reason for that is that, when using WSL2, you should store your project and your project files, directly in the Linux file system  in the end. So somewhere in the Linux file system, not your regular windows file system. Now you might wonder how you get to this Linux file system, attached you'll find a link. You find a link to this article, which explains how you can mount and work with this Linux file system. Where if you then have your project in there, your changes will propagate to the Docker container. And therefore they should update as shown. If you use the regular windows file system, file changes are not propagated to the Docker container, and therefore not picked up by tools like nodemon.
 
+## Anonymous Volume vs Named Volume vs Bind Mount
 
+### 1. Anonymous Volume
+```
+docker run -v /app/data ...
+```
+There is no name and no host path before /app/data.
+```
+-v /app/data
+   └──────┘
+   container path only
+```
+Docker creates an anonymous volume and mounts it at:
+```
+/app/data
+```
+Docker generates the volume name automatically.
+
+### 2. Named Volume
+```
+docker run -v data:/app/data ...
+```
+Here:
+```
+data:/app/data
+│    │
+│    └── Container path
+└─────── Volume name
+```
+data is the named volume.
+
+You can reuse it:
+```
+docker run -v data:/app/data ...
+```
+with another container, and both can access the same persistent volume.
+
+You can also see it with:
+```
+docker volume ls
+```
+
+### 3. Bind Mount
+```
+docker run -v /path/to/code:/app/code ...
+```
+Here:
+```
+/path/to/code:/app/code
+│             │
+│             └── Container path
+└──────────────── Host path
+```
+The first part is an actual path on your host machine.
+
+For example:
+```
+docker run -v "C:\Projects\feedback-app:/app" ...
+```
+So:
+```
+Host
+C:\Projects\feedback-app
+          │
+          │ bind mount
+          ▼
+Container
+/app
+```
+Changes made to the host folder are immediately visible inside the container.
 
