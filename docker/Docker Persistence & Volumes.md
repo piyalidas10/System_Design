@@ -1147,7 +1147,7 @@ And therefore now after this long explanation, if we stop the currently running 
 ```
 docker stop feedback-app
 docker rm feedback-app
-docker-complete $ docker run -d --rm -p 3000:80 --name feedback-app -v feedback:/app/feedback -v "/Users/maximilianschwarzmuller/development/teaching/udemy/docker-complete:/app" -v /app/node_modules feedback-node:volumes
+docker run -d --rm -p 3000:80 --name feedback-app -v feedback:/app/feedback -v "/Users/maximilianschwarzmuller/development/teaching/udemy/docker-complete:/app" -v /app/node_modules feedback-node:volumes
 ```
 
 Now we actually have one additional benefit. Now if we change something in our HTML file, for example, I removed that please text again, and I save that file, if I now reload we see that change instantly without rebuilding the image in between, and the reason for that is that now we added this bind mount `-v /app/node_modules`, which in this case also only works, if we add this anonymous module `/app/node_modules` to make sure that node_modules folder doesn't get overwritten by our bind mount folder content.
@@ -1155,6 +1155,79 @@ Now we actually have one additional benefit. Now if we change something in our H
 > **Now with the bind mount added, if we changed the HTML files, those changes are instantly reflected, when we reload the app here.**
 
 ## 11. A NodeJS-specific Adjustment: Using Nodemon in a Container
+Suppose, you change something (add console.log inside save api code) in server.js. Now my container is still up and running. You can always check this with `docker ps`, of course. if you run the browser & save the feedback form.     
+Now run `docker logs feedback-app` in terminal. you will see nothing.
+
+<img src="./imgs/docker_node_server_log_error.png" width="90%" />
+
+that's a node specific problem, but you might face similar issues in other applications as well. This code in server JS is executed by node, by the node runtime. Which is responsible for us seeing this page and having a working web server. Now we need to restart the web server, to pick up changes in the JavaScript code that is used by that server. We don't need to restart the entire container, but just the web server. Now, if the container is already running, restarting just the server in that container, is not really trivial though. 
+
+> **So actually, the best thing we can do here, is to simply stop that container and then restart it thereafter.**
+
+At least we don't need to rebuild the image. But by stopping and restarting, we start a new node server, which will pick up this server JS file.
+
+```
+docker stop feedback-app
+
+docker start feedback-app
+Error response from daemon: No such container: feedback-app
+Error: failed to start containers: feedback-app
+```
+
+`docker start feedback-app` is giving error because since I added `--rm` when I created the container, actually we can't start it again, because it was deleted once I stopped it. So here I would have to run Docker, run again.
+```
+docker run -d --rm -p 3000:80 --name feedback-app -v feedback:/app/feedback -v "/Users/maximilianschwarzmuller/development/teaching/udemy/docker-complete:/app" -v /app/node_modules feedback-node:volumes
+```
+Now run the browser & save the feedback form. Check the `docker logs`, will display the logs.
+```
+docker logs feedback-app
+TEST
+```
+So it's better than having to rebuild the entire image, but still not great. There is a useful extra package, which we can use in node JS development, which we can use in node JS development, which will watch the file system, and which will restart the node server, whenever a file changed.
+
+It's a package which be used during development, therefore, to ensure that changes are reflected instantly. And for that here in packaged.json, you should add a devDependencies node, next to dependencies. And in their, add nodemon. And then the version 2.0.4, for example. For that We should add a script section, a scripts section to package.json as well. And in there add a script named start, and type nodemon server.js in here.
+```
+package.json
+.
+.
+"scripts": {
+     "start": "nodemon server.js"
+}
+```
+
+We now also need to tweak our Docker file, to utilize this new script and use this script to start our process, our server. Change the docker script `CMD [ "npm", "srart" ]` which uses nodemon.
+```
+FROM node:14
+
+WORKDIR /app
+
+COPY package.json .
+
+RUN npm install
+
+COPY . .
+
+EXPOSE 80
+
+# VOLUME ["/app/node_modules"]
+
+CMD [ "npm", "srart" ]
+```
+
+we need to remove our feedback-node:volumes image. Stop the container Otherwise the image is still in use. and then build the image again to pick up this new command `CMD [ "npm", "srart" ]` at the end inside package.json.
+```
+docoker rmi feedback-node:volumes
+docker stop feedback-node
+docker build -t feedback-node:volumes .
+```
+
+And once that is all done, we can of course use our Docker run command again, to bring this server back up, now using this latest image.
+```
+docker run -d --rm -p 3000:80 --name feedback-app -v feedback:/app/feedback -v "/Users/maximilianschwarzmuller/development/teaching/udemy/docker-complete:/app" -v /app/node_modules feedback-node:volumes
+```
+Now the key difference is that this server should now automatically restart, whenever we change anything in server.js.
+
+
 
 
 
