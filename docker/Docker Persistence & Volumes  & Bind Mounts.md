@@ -1308,3 +1308,30 @@ Container
 ```
 Changes made to the host folder are immediately visible inside the container.
 
+| Syntax                       | Type                 | Before `:`  | After `:`      |
+| ---------------------------- | -------------------- | ----------- | -------------- |
+| `-v /app/data`               | **Anonymous Volume** | Nothing     | Container path |
+| `-v data:/app/data`          | **Named Volume**     | Volume name | Container path |
+| `-v /path/to/code:/app/code` | **Bind Mount**       | Host path   | Container path |
+
+### One-line memory trick
+```
+-v /container/path
+       ↓
+Anonymous Volume
+
+-v volume-name:/container/path
+  ↓
+Named Volume
+
+-v /host/path:/container/path
+  ↓
+Bind Mount
+```
+
+**The critical distinction is:**
+```
+Named volume → Docker-managed name
+Bind mount → Developer-managed host path
+Anonymous volume → Docker-generated name
+```
