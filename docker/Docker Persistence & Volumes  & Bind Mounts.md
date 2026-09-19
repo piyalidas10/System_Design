@@ -1,4 +1,4 @@
-# Docker Persistence & Volumes
+# Docker Persistence & Volumes & Bind Mounts
 **Proejct structure**
 ```
 feedback-node
@@ -1227,9 +1227,14 @@ docker run -d --rm -p 3000:80 --name feedback-app -v feedback:/app/feedback -v "
 ```
 Now the key difference is that this server should now automatically restart, whenever we change anything in server.js.
 
+Now add exclamation marks with `console.log('TEST!!!!')` inside server.js. Now save the feedback form in the browser. now if I run Docker logs feedback-app, we see these exclamation marks here.
+```
+docker logs feedback-app
+```
+<img src="./imgs/docker_node_server_log_nodemon.png" width="90%" />
 
-
-
+> [!NOTE]
+> Now I got an important note for windows users, especially when you're using WSL2 for running Docker on windows. If you're doing that, you might notice that, when for me, file changes do reload D development server, and everything does work as shown in the lecture, it doesn't work for you. The reason for that is that, when using WSL2, you should store your project and your project files, directly in the Linux file system  in the end. So somewhere in the Linux file system, not your regular windows file system. Now you might wonder how you get to this Linux file system, attached you'll find a link. You find a link to this article, which explains how you can mount and work with this Linux file system. Where if you then have your project in there, your changes will propagate to the Docker container. And therefore they should update as shown. If you use the regular windows file system, file changes are not propagated to the Docker container, and therefore not picked up by tools like nodemon.
 
 
 
