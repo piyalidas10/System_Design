@@ -31,6 +31,23 @@ docker run postgres
 | Shares host OS    | Own full OS      |
 | Perfect for dev   | Mostly for infra |
 
+**The interview version**
+1. Image = immutable application template
+2. Container writable layer = temporary container-specific changes
+3. Anonymous volume = Docker-managed storage associated with a container
+4. Named volume = Docker-managed persistent storage with a reusable name
+5. Bind mount = a specific host directory mapped into the container
+
+## Docker Storage
+Volume: A folder / file inside of a Docker container which is connected to some folder outside of the container.
+Bind Mount: A Bind Mount connects a specific folder/file on your host machine directly to a folder/file inside the Docker container.
+
+```
+-v host-path:container-path → Bind Mount
+-v volume-name:container-path → Named Volume
+-v container-path → Anonymous Volume
+```
+
 ## Docker File
 A Dockerfile is a text document that contains all the commands a user could call on the command line to assemble an image in Docker. When you run a command to build a Docker image, Docker reads these instructions from the Dockerfile to automatically build a new image according to your specifications.
 
