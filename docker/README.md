@@ -39,8 +39,8 @@ docker run postgres
 5. Bind mount = a specific host directory mapped into the container
 
 ## Docker Storage
-Volume: A folder / file inside of a Docker container which is connected to some folder outside of the container.
-Bind Mount: A Bind Mount connects a specific folder/file on your host machine directly to a folder/file inside the Docker container.
+✅ Volume: A folder / file inside of a Docker container which is connected to some folder outside of the container.  
+✅ Bind Mount: A Bind Mount connects a specific folder/file on your host machine directly to a folder/file inside the Docker container. **The idea is that we can edit our source code in the project folder, and changes are automatically available inside of the container.**
 
 ```
 -v host-path:container-path → Bind Mount
