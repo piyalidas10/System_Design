@@ -7,6 +7,16 @@ Host → Image → Container → Storage
 The most important concept is:
 > **A Docker image is not where your changing/persistent data should live. The container gets a writable layer, and volumes/bind mounts provide storage outside that writable layer.**
 
+**Easy memory trick:**
+```
+-v "HOST_PATH:CONTAINER_PATH" means: "Take this exact folder from my computer and make it available at this exact path inside the container."
+```
+```
+-v host-path:container-path → Bind Mount
+-v volume-name:container-path → Named Volume
+-v container-path → Anonymous Volume
+```
+
 ## 1. Our example project
 
 **Let's create this Node.js application:**
@@ -589,6 +599,424 @@ Search /app/node_modules
 ```
 That's exactly why the lecture's container suddenly failed after adding the bind mount.
 
+The confusing part is that there are actually two different node_modules locations. Let's make it very simple.
+
+### 1. During docker build
+
+**Suppose your project on Windows is:**
+```
+C:\Projects\feedback-app
+│
+├── server.js
+├── package.json
+└── public/
+```
+Notice:
+```
+❌ node_modules
+```
+You may not have node_modules on your Windows machine.
+
+**Your Dockerfile does:**
+```
+FROM node:20
+
+WORKDIR /app
+
+COPY package.json .
+RUN npm install
+
+COPY . .
+
+CMD ["node", "server.js"]
+````
+**When Docker executes:**
+```
+RUN npm install
+```
+**Docker installs Express inside the image:**
+```
+Docker IMAGE
+/app
+├── server.js
+├── package.json
+├── node_modules     ← Express is HERE
+│   └── express
+└── public/
+```
+
+**So everything works:**
+```
+Image
+  ↓
+/app/node_modules
+  ↓
+express
+```
+
+### 2. Then you add a bind mount
+
+**You run:**
+```
+docker run `
+  -v "C:\Projects\feedback-app:/app" `
+  feedback-app
+```
+
+This means:
+> **"Take my Windows folder and show it inside the container as /app."**
+
+**Your Windows folder is:**
+```
+C:\Projects\feedback-app
+│
+├── server.js
+├── package.json
+└── public/
+```
+There is no node_modules here.
+
+**Docker then mounts it:**
+```
+Windows Host
+C:\Projects\feedback-app
+│
+│ bind mount
+▼
+Container
+/app
+```
+Now /app is showing the host folder.
+
+**Therefore:**
+```
+Container /app
+
+/app
+├── server.js        ← Host
+├── package.json     ← Host
+└── public/          ← Host
+
+❌ node_modules
+```
+
+### 3. But didn't the image have node_modules?
+
+YES! This is the important part.
+
+**The image still has:**
+```
+IMAGE
+/app
+├── server.js
+├── package.json
+├── node_modules     ← Express exists here
+└── public/
+```
+
+**But your bind mount:**
+```
+C:\Projects\feedback-app
+        ↓
+      /app
+```
+covers/masks the entire /app directory.
+
+Think of it like putting a box over another box.
+
+**Before mount**
+```
+IMAGE
+
+/app
+├── server.js
+├── package.json
+├── node_modules  ← Express
+└── public/
+```
+
+**After mount**
+```
+              BIND MOUNT
+                 ↓
+       ┌─────────────────────┐
+       │ C:\Projects\...     │
+       │                     │
+       │ server.js           │
+       │ package.json        │
+       │ public/             │
+       │                     │
+       │ ❌ node_modules     │
+       └─────────────────────┘
+                 ↓
+              /app
+
+       Image's /app
+       ├── node_modules
+       └── ...
+       
+       👆 still exists
+       👆 but hidden
+```
+So the image's node_modules isn't deleted.
+
+It is simply not visible through /app while the bind mount is active.
+
+### 4. This is the key idea
+
+**Think:**
+```
+IMAGE
+/app/node_modules
+       │
+       │ hidden by
+       ▼
+HOST FOLDER
+C:\Projects\feedback-app
+       │
+       ▼
+CONTAINER
+/app
+```
+
+**Therefore Node sees:**
+```
+/app
+├── server.js
+├── package.json
+└── public/
+
+❌ /app/node_modules
+```
+
+**So:**
+```
+const express = require("express");
+```
+
+**Node looks for:**
+```
+/app/node_modules/express
+```
+
+**But because the host folder is covering /app:**
+```
+/app/node_modules/express
+        ↓
+       ❌
+```
+Hence:
+> **Cannot find module 'express'**
+
+### 5. So why isn't node_modules present?
+
+The answer is:
+
+Because npm install happened inside the Docker image, not on your Windows host.
+
+You have:
+
+HOST
+C:\Projects\feedback-app
+├── server.js
+├── package.json
+└── public/
+
+while:
+```
+IMAGE
+/app
+├── server.js
+├── package.json
+├── node_modules    ← created by Docker's npm install
+└── public/
+```
+
+**Then:**
+```
+HOST /app
+     ↓
+bind mount
+     ↓
+CONTAINER /app
+```
+The host's /app replaces what you can see at that path.
+
+### 6. The common development solution
+
+**This is why you often see:**
+```
+docker run `
+  -v "C:\Projects\feedback-app:/app" `
+  -v "/app/node_modules" `
+  feedback-app
+```
+The second mount protects the container's node_modules.
+
+**Conceptually:**
+```
+Host
+C:\Projects\feedback-app
+│
+│
+▼
+Container /app
+├── server.js       ← Host
+├── package.json    ← Host
+├── public/         ← Host
+│
+└── node_modules    ← Docker volume
+      └── express
+```
+
+**Now you get the best of both:**
+```
+Your code
+   ↓
+Host → Container
+   ↓
+changes immediately visible
+```
+
+while:
+```
+node_modules
+   ↓
+Docker-managed volume
+   ↓
+doesn't depend on Windows node_modules
+```
+
+Remember this one sentence:
+> **The bind mount doesn't delete node_modules from the image; it hides the image's /app, including /app/node_modules, behind your host folder.**
+
+### What does `-v "/app/node_modules"` mean exactly?
+
+> **Create/mount an anonymous Docker volume at /app/node_modules inside the container.**
+
+It is especially useful when you are using a bind mount for the entire /app folder.
+
+**Notice there is nothing before the path:**
+```
+-v /app/node_modules
+   └──────────────┘
+   container path only
+```
+
+**Compare:**
+```
+-v mydata:/app/data
+  ↑
+  named volume
+```
+
+**versus:**
+```
+-v "C:\Projects\feedback-app:/app"
+  ↑                              ↑
+  host path                     container path
+```
+
+**versus:**
+```
+-v /app/node_modules
+  ↑
+  no host path
+  → anonymous volume
+```
+
+**The mounts have a priority relationship:**
+```
+                    Container
+                       /app
+                        │
+        ┌───────────────┴───────────────┐
+        │                               │
+        ▼                               ▼
+Bind Mount                         Anonymous Volume
+C:\Projects\feedback-app           /app/node_modules
+        │                               │
+        ▼                               ▼
+server.js                         Docker-managed
+package.json                      node_modules
+public/                           express
+                                  other packages
+```
+So:
+> **/app comes from your host machine, but /app/node_modules comes from Docker's anonymous volume.**
+
+This lets you edit your source code on Windows while keeping the container's node_modules protected from the bind mount.
+
+### What does `-v "C:\Projects\feedback-app:/app"` mean exactly?
+**-v "C:\Projects\feedback-app:/app" means:**
+> **Mount the folder C:\Projects\feedback-app from my Windows machine into /app inside the Docker container.**
+
+This is a bind mount.
+```
+-v "C:\Projects\feedback-app:/app"
+    └───────────────┬────────┘
+                    │
+             host_path : container_path
+```
+**Specifically:**
+```
+C:\Projects\feedback-app
+        │
+        │  bind mount
+        ▼
+      /app
+```
+
+| Part                       | Meaning                                 |
+| -------------------------- | --------------------------------------- |
+| `-v`                       | Tell Docker to create a volume/mount    |
+| `C:\Projects\feedback-app` | **Host machine folder**                 |
+| `:`                        | Separates host path from container path |
+| `/app`                     | **Container folder**                    |
+
+### Before the container starts
+
+**Your Windows machine:**
+```
+C:\Projects\feedback-app
+│
+├── Dockerfile
+├── package.json
+├── server.js
+└── public/
+    └── index.html
+```
+**Your Docker image might contain:**
+```
+IMAGE
+/app
+├── server.js
+├── package.json
+├── node_modules/
+└── public/
+```
+
+### After -v "C:\Projects\feedback-app:/app"
+
+**The host folder is mounted over /app:**
+```
+HOST MACHINE                         CONTAINER
+                                         
+C:\Projects\feedback-app              /app
+│                                      │
+├── server.js ──────────────────────► server.js
+├── package.json ────────────────────► package.json
+└── public/ ─────────────────────────► public/
+```
+**So when the application inside Docker reads:**
+```
+/app/server.js
+```
+**it is actually reading:**
+```
+C:\Projects\feedback-app\server.js
+```
+from your Windows machine.
 
 ## 7. The standard development solution
 
