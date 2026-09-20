@@ -9,7 +9,8 @@ The most important concept is:
 
 **Easy memory trick:**
 ```
--v "HOST_PATH:CONTAINER_PATH" means: "Take this exact folder from my computer and make it available at this exact path inside the container."
+-v "HOST_PATH:CONTAINER_PATH"
+means: "Take this exact folder from my computer and make it available at this exact path inside the container."
 ```
 ```
 -v host-path:container-path → Bind Mount
