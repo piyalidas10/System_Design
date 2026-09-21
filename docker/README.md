@@ -38,26 +38,131 @@ docker run postgres
 4. Named volume = Docker-managed persistent storage with a reusable name
 5. Bind mount = a specific host directory mapped into the container
 
+## ⭐ Four things to remember
+| Concept        | When       | Who manages it? | Typical use                        |
+| -------------- | ---------- | --------------- | ---------------------------------- |
+| **ARG**        | Build time | Docker build    | Image customization                |
+| **ENV**        | Runtime    | Container/app   | Configuration                      |
+| **Volume**     | Runtime    | Docker          | Persistent application/DB data     |
+| **Bind mount** | Runtime    | You             | Development/source code            |
+| **tmpfs**      | Runtime    | Memory          | Temporary sensitive/ephemeral data |
+
+
 ## 🐳 Docker — Big Picture
 ```
+                                      DOCKER
+                                         │
+                    ┌────────────────────┴────────────────────┐
+                    │                                         │
+                 IMAGE                                    CONTAINER
+              (Blueprint)                               (Running App)
+                    │                                         │
+          ┌─────────┴─────────┐                    ┌──────────┴──────────┐
+          │                   │                    │                     │
+       Dockerfile          Build Process       ENV / Config           Storage
+          │                   │                    │                     │
+          │                   └── ARG             │              ┌──────┼──────────┐
+          │                      Build-time       │              │      │          │
+          │                      values           │            Volume  Bind      tmpfs
+          │                                       │            │      Mount        │
+          │                                       │            │        │          │
+          │                                       │            │        │          │
+          ▼                                       ▼            ▼        ▼          ▼
+     Image Layers                             Runtime       Docker     You       Host RAM
+     Read-only                               configuration  manages   manage    only
+                                                   │       storage    host      temporary
+                                                   │          │       folder     data
+                                                   │          │          │
+                                                   │          │          │
+                                                   │          ▼          ▼
+                                                   │      Persistent   Source
+                                                   │      app data     code
+                                                   │      / DB data    / config
+                                                   │
+                                                   │
+                                                   ▼
+                                            ┌───────────────┐
+                                            │ Container     │
+                                            │ Read/Write    │
+                                            │ Layer         │
+                                            └───────┬───────┘
+                                                    │
+                                                    │
+                                         Lost when container
+                                         is removed
+                                                    │
+                                                    ▼
+                                               ❌ DATA LOST
+
+
+                  ─────────────── PERSISTENCE MODEL ───────────────
+
+                    Container Read/Write Layer
+                              │
+                              ▼
+                         ❌ Not persistent
+                       when container removed
+
+
+                    Need persistent / external storage?
+                              │
+                 ┌────────────┼────────────┐
+                 │            │            │
+                 ▼            ▼            ▼
+              Volume     Bind Mount      tmpfs
+                 │            │            │
+                 │            │            └── ❌ Not persistent
+                 │            │                Host RAM only
+                 │            │
+                 │            └── Host folder you control
+                 │                → Development
+                 │                → Source code
+                 │
+                 └── Docker-managed storage
+                     → Database
+                     → Application data
+                     → Persistent files
+
+
+                    ───────── CONFIGURATION ─────────
+
+                       Build time          Runtime
+                           │                  │
+                           ▼                  ▼
+                         ARG                ENV
+                           │                  │
+                           ▼                  ▼
+                    docker build       docker run -e
+                    --build-arg         --env-file
+                           │                  │
+                           ▼                  ▼
+                         IMAGE            CONTAINER
+```
+
+## The simplest mental model
+```
                          DOCKER
-                           │
-          ┌────────────────┴────────────────┐
-          │                                 │
-       IMAGE                            CONTAINER
-   (Blueprint)                       (Running App)
-          │                                 │
-          │                                 ├── ENV
-          │                                 │   Runtime config
-          │                                 │
-          │                                 └── Storage
-          │                                      │
-          │                         ┌────────────┼────────────┐
-          │                         │            │            │
-          │                       Volume     Bind Mount    tmpfs
-          │
-          └── ARG
-              Build-time values
+                            │
+              ┌─────────────┴─────────────┐
+              │                           │
+            IMAGE                     CONTAINER
+         Blueprint                  Running App
+              │                           │
+          ┌───┴───┐               ┌──────┴──────┐
+          │       │               │             │
+         ARG     Layers           ENV         Storage
+      Build-time  │             Runtime          │
+          │       │                              │
+          ▼       ▼                    ┌─────────┼─────────┐
+       Build   Read-only             Volume   Bind Mount  tmpfs
+       config    image                │          │          │
+                                      │          │          │
+                                  Docker      You manage   RAM
+                                  manages     host folder   only
+                                      │          │
+                                      ▼          ▼
+                                  Persistent   Source
+                                  data/DB      code
 ```
 
 ### 1. 🖼️ Docker Image
@@ -515,6 +620,44 @@ server.js
 on your host, the container sees the change immediately.
 
 That's why bind mounts are extremely useful for development.
+
+#### Why Bind Mount + Anonymous Volume?
+
+This is a very important Docker development pattern.
+
+**Suppose you mount your entire project:**
+```
+-v C:\projects\feedback:/app
+```
+
+**But your image contains:**
+```
+/app/node_modules
+```
+The bind mount can effectively hide the container's existing /app contents.
+
+**So you can use:**
+```
+-v C:\projects\feedback:/app
+-v /app/node_modules
+```
+
+**Conceptually:**
+```
+Host
+C:\projects\feedback
+        │
+        │ bind mount
+        ▼
+Container
+/app
+│
+├── server.js       ← host version
+├── package.json    ← host version
+│
+└── node_modules    ← anonymous volume
+```
+This prevents the host bind mount from replacing the container's node_modules.
 
 ### 8. Volume vs Bind Mount
 
