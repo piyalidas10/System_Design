@@ -403,5 +403,157 @@ For some values, this might not matter but for credentials, private keys etc. yo
 
 If you use a separate file, the values are not part of the image since you point at that file when you run `docker run`. But make sure you don't commit that separate file as part of your source control repository, if you're using source control.
 
+### ❌ Bad approach
 
+**Don't put credentials directly in the Dockerfile:**
+```
+ENV DB_USER=admin
+ENV DB_PASSWORD=SuperSecret123
+ENV API_KEY=abc123
+```
+**Then build:**
+```
+docker build -t my-app .
+```
+Those values become part of the image's configuration/history and can potentially be inspected.
 
+**For example:**
+```
+docker history my-app
+```
+So anyone who gets access to the image may be able to discover sensitive information.
+
+### ✅ Better approach: runtime .env
+
+**Dockerfile:**
+```
+FROM node:20
+
+WORKDIR /app
+
+COPY package*.json ./
+RUN npm install
+
+COPY . .
+
+ENV PORT=80
+
+CMD ["node", "server.js"]
+```
+
+**Then create a local .env:**
+```
+DB_USER=admin
+DB_PASSWORD=SuperSecret123
+API_KEY=abc123
+```
+
+**Run:**
+```
+docker run --env-file .env my-app
+```
+
+**Now:**
+```
+Dockerfile
+    │
+    │ build
+    ↓
+Docker Image
+    │
+    │ docker run --env-file .env
+    ↓
+Container
+    │
+    ↓
+process.env.DB_PASSWORD
+```
+
+**The important part is that:**
+```
+.env
+  ↓
+runtime
+  ↓
+container
+
+rather than:
+
+secret
+  ↓
+Dockerfile
+  ↓
+image
+```
+
+### 🔐 But there's another important security point
+
+**.env is not itself a secret-management system.**
+
+It prevents the secret from being baked into the image, but the secret still exists as a file on your machine.
+
+**Therefore, don't commit it:**
+```
+.env
+```
+
+**Instead, commit something like:**
+```
+.env.example
+```
+**containing only placeholders:**
+```
+DB_USER=
+DB_PASSWORD=
+API_KEY=
+```
+
+**So your repository can contain:**
+```
+.env.example       ← commit
+.env               ← DON'T commit
+Dockerfile
+server.js
+.gitignore 
+```
+
+### ⚠️ Runtime environment variables aren't completely secret either
+
+There's another nuance worth knowing for interviews and production architecture.
+
+**Even when you use:**
+```
+docker run --env-file .env my-app
+```
+the secrets are now available inside the running container as environment variables.
+
+So runtime injection is better than baking secrets into the image, but for production systems you may want a proper secret-management mechanism rather than ordinary environment variables.
+
+**For example:**
+```
+Development
+    ↓
+.env file
+
+Production
+    ↓
+Secret manager
+    ↓
+Container / Kubernetes Pod
+    ↓
+Application
+```
+With Kubernetes, this is commonly handled through Kubernetes Secrets or an external secret-management system.
+
+### Remember this rule
+| Where secret is stored      | Recommendation |
+| --------------------------- | -------------- |
+| Dockerfile `ENV`            | ❌ Don't        |
+| Dockerfile `ARG`            | ❌ Don't        |
+| Source-code constant        | ❌ Don't        |
+| `.env` committed to Git     | ❌ Never        |
+| Local `.env` + `.gitignore` | ✅ Development  |
+| Runtime secret injection    | ✅ Better       |
+| Dedicated secret manager    | ✅ Production   |
+
+> **ARG and Dockerfile ENV should not be used for sensitive credentials because secrets can become part of the image metadata or layers. For development, keep secrets in an uncommitted .env file and inject them at runtime with --env-file. In production, prefer a dedicated secret-management solution**
