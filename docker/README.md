@@ -38,6 +38,594 @@ docker run postgres
 4. Named volume = Docker-managed persistent storage with a reusable name
 5. Bind mount = a specific host directory mapped into the container
 
+## 🐳 Docker — Big Picture
+```
+                         DOCKER
+                           │
+          ┌────────────────┴────────────────┐
+          │                                 │
+       IMAGE                            CONTAINER
+   (Blueprint)                       (Running App)
+          │                                 │
+          │                                 ├── ENV
+          │                                 │   Runtime config
+          │                                 │
+          │                                 └── Storage
+          │                                      │
+          │                         ┌────────────┼────────────┐
+          │                         │            │            │
+          │                       Volume     Bind Mount    tmpfs
+          │
+          └── ARG
+              Build-time values
+```
+
+### 1. 🖼️ Docker Image
+
+A Docker image is an immutable blueprint/template used to create containers.
+
+**Example:**
+```
+FROM node:20
+
+WORKDIR /app
+
+COPY package*.json ./
+RUN npm install
+
+COPY . .
+
+EXPOSE 3000
+
+CMD ["node", "server.js"]
+```
+
+**Build:**
+```
+docker build -t my-node-app .
+```
+
+**Result:**
+```
+Dockerfile
+    ↓
+docker build
+    ↓
+Docker IMAGE
+    ↓
+docker run
+    ↓
+CONTAINER
+```
+
+Think:
+> **Image = packaged application + runtime + dependencies**
+
+### 📦 Docker Container
+
+**A container is a running instance of an image. Containers can read + write data, but written data is lost if the container is removed.**
+```
+docker run -d \
+  --name my-app \
+  -p 3000:3000 \
+  my-node-app
+```
+
+**Conceptually:**
+```
+              IMAGE
+        ┌─────────────────┐
+        │ Node.js         │
+        │ Dependencies    │
+        │ Application     │
+        │ Files           │
+        └────────┬────────┘
+                 │
+          docker run
+                 ↓
+        ┌─────────────────┐
+        │   CONTAINER     │
+        │                 │
+        │ Running process │
+        │ Writable layer  │
+        └─────────────────┘
+```
+
+**You can create multiple containers from one image:**
+```
+            my-node-app IMAGE
+                    │
+          ┌─────────┼─────────┐
+          ↓         ↓         ↓
+      container1 container2 container3
+```
+
+### 3. 🏗️ ARG — Build-Time Variable
+
+ARG is available **while building the image**.
+```
+ARG NODE_VERSION=20
+
+FROM node:${NODE_VERSION}
+
+WORKDIR /app
+COPY . .
+```
+
+**Build:**
+```
+docker build \
+  --build-arg NODE_VERSION=22 \
+  -t my-app .
+```
+
+**Flow:**
+```
+docker build
+     │
+     │ --build-arg
+     ↓
+    ARG
+     │
+     ↓
+Dockerfile
+     │
+     ↓
+  IMAGE
+```
+
+**Important**
+
+ARG is primarily for build-time configuration.
+```
+ARG
+ │
+ └── BUILD
+       ↓
+     IMAGE
+```
+
+**Examples:**
+```
+ARG NODE_VERSION=20
+ARG APP_VERSION=1.0
+ARG BUILD_ENV=production
+```
+
+**Use it for things such as:**
+- Node/Python version
+- package version
+- build configuration
+- selecting build stages
+- compiler/build flags
+
+⚠️ Don't use ARG for secrets. Build arguments can become visible through image build history/metadata depending on how they're used.
+
+### 4. 🌎 ENV — Environment Variable
+
+ENV provides environment variables to the image/container.
+```
+ENV NODE_ENV=production
+ENV PORT=3000
+```
+**Inside the container:**
+```
+echo $NODE_ENV
+```
+**Output:**
+```
+production
+```
+**You can also override it at runtime:**
+```
+docker run \
+  -e NODE_ENV=development \
+  -e PORT=4000 \
+  my-app
+```
+**Flow:**
+```
+Dockerfile
+    │
+    │ ENV
+    ↓
+  IMAGE
+    │
+    │ docker run -e
+    ↓
+CONTAINER
+    │
+    ↓
+Environment variables
+```
+
+**ARG vs ENV**
+
+|                          | ARG                 | ENV                   |
+| ------------------------ | ------------------- | --------------------- |
+| Available during build   | ✅                   | ✅                     |
+| Available at runtime     | ❌ normally          | ✅                     |
+| Set with `docker build`  | ✅                   | ❌                     |
+| Set with `docker run -e` | ❌                   | ✅                     |
+| Typical use              | Build configuration | Runtime configuration |
+
+**Example:**
+```
+ARG NODE_VERSION=20
+FROM node:${NODE_VERSION}
+
+ENV NODE_ENV=production
+ENV PORT=3000
+```
+Then:
+```
+docker build --build-arg NODE_VERSION=22 -t my-app .
+```
+and:
+```
+docker run -e NODE_ENV=development my-app
+```
+
+### 5. 💾 Container Storage
+
+Every container gets a writable container layer.
+```
+             Docker Image
+        ┌──────────────────┐
+        │ Read-only layers │
+        └────────┬─────────┘
+                 │
+                 ↓
+        ┌──────────────────┐
+        │ Container layer  │
+        │ Read + Write     │
+        └──────────────────┘
+```
+Suppose your application writes:
+```
+/app/data.txt
+```
+That file is written into the container's writable layer unless /app or /app/data is mounted somewhere else.
+
+**Problem**
+
+If the container is removed:
+```
+docker rm my-app
+```
+data stored only in that writable layer is removed with the container.
+
+Therefore:
+> **Container writable storage should generally not be used for important persistent application data.**
+
+### 6. 📦 Volume
+
+**A Docker volume is persistent storage managed by Docker. Volumes can help us with storing data especially with data that should survive container removal.**
+
+**Volumes** are specialized folders on your **host machine hard drive** that are **mounted** ("made available" or mapped) directly into running **Docker containers**.
+The workflow establishes a strict bridge between the isolated container environment and your persistent local filesystem:
+
+```
++-------------------------------------------------------------+
+|                     Host (Your Computer)                    |
+|                                                             |
+|   [ /some-path ]  ===============>  [ /app/user-data ]      |
+|    (Host Pathway)       (Mount)      (Internal Container)   |
+|                                                             |
++-------------------------------------------------------------+
+                              ||
+                              \/
++-------------------------------------------------------------+
+|                      Docker Container                       |
++-------------------------------------------------------------+
+```
+
+* **Host Directory Target:** `/some-path`  
+* **Container Mount Destination:** `/app/user-data`  
+
+#### 1. Persistent Storage Lifecycle
+* Volumes **persist completely** even if a container shuts down, crashes, or is removed.
+* When a container (re-)starts and mounts the identical volume, any preexisting data inside that volume immediately becomes available within the container.
+
+#### 2. Bidirectional Data Flow
+* A container can **write new data** directly into the mounted volume.
+* A container can **read existing data** out from the volume in real time.
+
+#### Option A: Using the `-v` / `--volume` flag
+```bash
+docker run -d \
+  --name my-container \
+  -v /some-path:/app/user-data \
+  my-image:latest
+```
+
+#### Option B: Using the clearer `--mount` flag
+```bash
+docker run -d \
+  --name my-container \
+  --mount type=bind,source=/some-path,target=/app/user-data \
+  my-image:latest
+```
+
+#### Example
+```
+docker volume create app-data
+```
+
+**Run:**
+```
+docker run \
+  -v app-data:/app/data \
+  my-app
+```
+
+**Architecture:**
+```
+             CONTAINER
+        ┌─────────────────┐
+        │                 │
+        │ /app            │
+        │                 │
+        │ /app/data ──────┼────────┐
+        └─────────────────┘        │
+                                   ↓
+                            Docker Volume
+                            ┌─────────────┐
+                            │ app-data    │
+                            │ Persistent  │
+                            └─────────────┘
+```
+
+**Remove container:**
+```
+docker rm my-app
+```
+
+**Volume remains:**
+```
+app-data
+   │
+   └── DATA STILL EXISTS
+```
+
+**Create another container:**
+```
+docker run \
+  -v app-data:/app/data \
+  my-app
+```
+It can access the same data.
+
+**Best suited for**
+- PostgreSQL
+- MySQL
+- Redis persistent data
+- uploaded files
+- application-generated persistent data
+
+### 7. 🔗 Bind Mount
+
+**A bind mount connects a specific directory on your host machine directly to a directory inside the container.**
+
+**A bind mounts can help us with direct container interaction. For example, with our source code, that should be updatable by us and where the latest source code should then always be available inside of the container.**
+
+**When you use a bind mount, a file or directory on the host machine is mounted from the host into a container. are strongly tied to the host.**
+
+**Example:**
+```
+docker run \
+  -v ${PWD}:/app \
+  my-app
+```
+**Architecture:**
+```
+      WINDOWS HOST
+┌───────────────────────┐
+│                       │
+│  C:\projects\my-app   │
+│          │            │
+└──────────┼────────────┘
+           │
+       Bind Mount
+           │
+           ↓
+┌───────────────────────┐
+│      CONTAINER        │
+│                       │
+│      /app             │
+│                       │
+└───────────────────────┘
+```
+**Now:**
+```
+Host server.js
+      ↕
+Container /app/server.js
+```
+**If you edit:**
+```
+server.js
+```
+on your host, the container sees the change immediately.
+
+That's why bind mounts are extremely useful for development.
+
+### 8. Volume vs Bind Mount
+
+This is one of the most important Docker concepts.
+
+| Feature                     | Volume    | Bind Mount                             |
+| --------------------------- | --------- | -------------------------------------- |
+| Managed by Docker           | ✅         | ❌                                      |
+| Host path explicitly chosen | ❌         | ✅                                      |
+| Persistent                  | ✅         | ✅                                      |
+| Easy to edit from host      | Usually ❌ | ✅                                      |
+| Development source code     | Usually ❌ | ✅                                      |
+| Database data               | ✅         | Possible, but volume usually preferred |
+| Docker-managed storage      | ✅         | ❌                                      |
+
+**Development**
+```
+docker run \
+  -v ${PWD}:/app \
+  my-app
+```
+Use bind mount.
+
+**Database**
+```
+docker run \
+  -v postgres-data:/var/lib/postgresql/data \
+  postgres
+```
+Use a named volume.
+
+## 9. 🔥 Complete Example
+
+Imagine you're building a Node.js application.
+
+**Dockerfile**
+```
+ARG NODE_VERSION=20
+
+FROM node:${NODE_VERSION}
+
+WORKDIR /app
+
+COPY package*.json ./
+RUN npm install
+
+COPY . .
+
+ENV NODE_ENV=production
+ENV PORT=3000
+
+EXPOSE 3000
+
+CMD ["node", "server.js"]
+```
+
+**Build:**
+```
+docker build \
+  --build-arg NODE_VERSION=22 \
+  -t my-node-app .
+```
+
+**Here:**
+```
+ARG NODE_VERSION
+        ↓
+      BUILD
+        ↓
+      IMAGE
+```
+
+**Then run:**
+```
+docker run -d \
+  --name my-node-container \
+  -p 3000:3000 \
+  -e NODE_ENV=development \
+  -v ${PWD}:/app \
+  my-node-app
+```
+
+**Now:**
+```
+                 DOCKER
+                   │
+             ┌─────┴─────┐
+             │            │
+           IMAGE       CONTAINER
+             │            │
+             │            ├── ENV
+             │            │   NODE_ENV
+             │            │
+             │            ├── Writable Layer
+             │            │
+             │            └── /app
+             │                 │
+             │                 └── Bind Mount
+             │                       │
+             │                       ↓
+             │                    HOST CODE
+             │
+             └── created using
+                    ARG
+```
+
+## 🧠 The Most Important Mental Model
+
+**Remember this:**
+```
+                 Dockerfile
+                     │
+              ┌──────┴──────┐
+              │             │
+             ARG           ENV
+              │             │
+        Build-time       Runtime
+              │             │
+              ↓             ↓
+          docker build   docker run
+              │             │
+              └──────┬──────┘
+                     ↓
+                  IMAGE
+                     │
+                 docker run
+                     ↓
+                CONTAINER
+                     │
+             ┌───────┴────────┐
+             │                │
+        Writable Layer    Mounted Storage
+                              │
+                    ┌─────────┴─────────┐
+                    │                   │
+                  Volume            Bind Mount
+                    │                   │
+              Docker-managed       Host directory
+              persistent data      live development
+```
+
+**One-line interview definitions**
+1. Image → Immutable blueprint used to create containers.
+2. Container → Running instance of an image.
+3. ARG → Build-time variable.
+4. ENV → Environment variable available to the container at runtime.
+5. Container writable layer → Temporary storage tied to the container lifecycle.
+6. Volume → Docker-managed persistent storage.
+7. Bind mount → Host directory mounted directly into a container.
+8. Storage → Mechanism for keeping data beyond the lifetime of a container.
+
+**Enterprise rule of thumb**
+```
+Application source code
+        ↓
+   Bind Mount
+   (Development)
+
+Database / persistent application data
+        ↓
+      Volume
+   (Production)
+
+Runtime configuration
+        ↓
+       ENV
+
+Build configuration
+        ↓
+       ARG
+
+Secrets
+        ↓
+Secret management
+(not ARG / hard-coded ENV)
+```
+
 ## Docker Storage
 ✅ Volume: A folder / file inside of a Docker container which is connected to some folder outside of the container.  
 ✅ Bind Mount: A Bind Mount connects a specific folder/file on your host machine directly to a folder/file inside the Docker container. **The idea is that we can edit our source code in the project folder, and changes are automatically available inside of the container.**
