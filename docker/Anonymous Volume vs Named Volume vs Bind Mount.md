@@ -18,7 +18,7 @@ means: "Take this exact folder from my computer and make it available at this ex
 -v container-path → Anonymous Volume
 ```
 
-<img src="./imgs/Docker Storage - Anonymous Volumes vs Named Volumes vs Bind Mounts.png" width="90%" />
+<img src="./imgs/Docker Storage - Anonymous Volumes vs Named Volumes vs Bind Mounts.png" width="100%" />
 
 ## 1. Our example project
 
