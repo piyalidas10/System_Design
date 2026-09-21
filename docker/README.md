@@ -347,6 +347,72 @@ docker run -d \
   my-image:latest
 ```
 
+#### Named Volume
+
+A named volume has a name that you explicitly choose.
+```
+docker volume create feedback-data
+```
+Then:
+```
+docker run \
+  -v feedback-data:/app/feedback \
+  feedback-node
+```
+Meaning:
+```
+feedback-data  →  /app/feedback
+```
+Docker manages the physical location of the volume on the host.
+
+**Important**
+
+If the container is removed:
+```
+docker rm feedback-app
+```
+the named volume normally remains:
+```
+feedback-data
+      ↓
+      ✅
+```
+You can attach it to another container:
+```
+docker run \
+  -v feedback-data:/app/feedback \
+  feedback-node
+Main purpose
+```
+Persistent application data
+
+#### Anonymous Volume
+
+An anonymous volume doesn't have a name you choose.
+
+Example:
+```
+VOLUME ["/app/feedback"]
+```
+or:
+```
+docker run -v /app/feedback feedback-node
+```
+Docker creates the volume automatically.
+
+Conceptually:
+```
+Container
+   │
+   └── /app/feedback
+          │
+          ▼
+Anonymous Docker volume
+```
+Anonymous volumes are useful when you want Docker to manage some container directory separately.
+
+However, they are not the normal choice for important long-term persistent data, because they're harder to identify and manage.
+
 #### Example
 ```
 docker volume create app-data
