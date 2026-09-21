@@ -1,7 +1,7 @@
 # Environment Variables & ".env" Files
 
 > [!IMPORTANT]
-> **ARG  → available during `docker build`**
+> **ARG  → available during `docker build`**        
 > **ENV  → available during `docker build` AND runtime**
 
 Stop if any container is already runnuning.
