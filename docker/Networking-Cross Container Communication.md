@@ -938,6 +938,8 @@ docker container inspect mongodb
 
 The output contains networking information, including an IP address.
 
+<img src="./imgs/docker_container_ip_address.png" width="90%" />
+
 For example:
 
 ```text
