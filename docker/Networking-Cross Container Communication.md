@@ -48,6 +48,21 @@ app.get('/movies', async (req, res) => {
 app.listen(3000);
 
 ```
+```
+FROM node
+
+WORKDIR /app
+
+COPY package.json .
+
+RUN npm install
+
+COPY . .
+
+EXPOSE 3000
+
+CMD ["node", "app.js"]
+```
 
 ### 2. What happens in your example?
 
