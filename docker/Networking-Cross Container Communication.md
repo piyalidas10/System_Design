@@ -302,7 +302,17 @@ This is a very important Docker concept.
 
 **If your Node application tries:**
 ```
-mongoose.connect('mongodb://localhost:27017/mydb');
+mongoose.connect(
+  'mongodb://localhost:27017/swfavorites',
+  { useNewUrlParser: true },
+  (err) => {
+    if (err) {
+      console.log(err);
+    } else {
+      app.listen(3000);
+    }
+  }
+);
 ```
 
 **while running inside the container, Docker interprets localhost as:**
@@ -378,6 +388,40 @@ Another Docker Container
 MongoDB Container
 ```
 The latter is Container → Container networking, which is the next important Docker networking concept.
+
+### Source Code Example
+```
+const express = require('express');
+const bodyParser = require('body-parser');
+const axios = require('axios').default;
+const mongoose = require('mongoose');
+
+const app = express();
+
+app.use(bodyParser.json());
+
+app.get('/movies', async (req, res) => {
+  try {
+    const response = await axios.get('https://swapi.dev/api/films');
+    res.status(200).json({ movies: response.data });
+  } catch (error) {
+    res.status(500).json({ message: 'Something went wrong.' });
+  }
+});
+
+mongoose.connect(
+  'mongodb://host.docker.internal:27017/swfavorites',
+  { useNewUrlParser: true },
+  (err) => {
+    if (err) {
+      console.log(err);
+    } else {
+      app.listen(3000);
+    }
+  }
+);
+
+```
 
 ### 6. Keep these three scenarios in your notes
 | Scenario                  | Example                  | Important concept                         |
