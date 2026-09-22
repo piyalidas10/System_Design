@@ -1,5 +1,5 @@
 # Docker Container-to-Container Communication
-## Overview
+## ⭐ Overview
 
 Dockerized applications are commonly composed of multiple containers, where each container has a focused responsibility.
 
@@ -30,7 +30,7 @@ The key idea is:
 
 ---
 
-## The first approach: Container IP address
+## ⭐ The first approach: Container IP address
 
 You can inspect the MongoDB container:
 ```
@@ -115,7 +115,7 @@ MongoDB container
 
 ---
 
-## The better solution: Docker Network
+## ⭐ The better solution: Docker Network
 
 Docker networks allow multiple containers to communicate privately using container/service names through Docker's internal DNS, eliminating the need to hard-code dynamic container IP addresses.
 
