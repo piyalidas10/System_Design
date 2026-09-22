@@ -623,23 +623,26 @@ MongoDB :27017
 ---
 
 ## Container to Container Communication (Container → Container)
-### 1. The three scenarios
-```
+### Overview
+
+Dockerized applications are commonly composed of multiple containers, where each container has a focused responsibility.
+
+A typical application might look like:
+
+```text
                     ┌──────────────────┐
                     │     INTERNET     │
                     │   External API   │
                     └────────▲─────────┘
                              │
+                             │ Container → Internet
                              │
-                    Container → Internet
-                             │
-                             ▼
 ┌─────────────────────────────────────────────────┐
 │                 Docker Host                     │
 │                                                 │
 │  ┌─────────────────┐       ┌─────────────────┐  │
 │  │   App Container │──────►│  DB Container   │  │
-│  │   Node.js API   │       │  MongoDB / SQL  │  │
+│  │   Node.js API   │       │ MongoDB / SQL   │  │
 │  └────────┬────────┘       └─────────────────┘  │
 │           │                                     │
 └───────────┼─────────────────────────────────────┘
@@ -647,128 +650,247 @@ MongoDB :27017
             ▼
        Host Machine
 ```
-So:
-| Communication             | Example                                       |
-| ------------------------- | --------------------------------------------- |
-| **Container → Internet**  | Node → SWAPI                                  |
-| **Container → Host**      | Node container → MongoDB installed on Windows |
-| **Container → Container** | Node container → MongoDB container            |
 
-### 2. Why use multiple containers?
+### 1. The Three Docker Networking Scenarios
 
-This is a very important Docker principle:
+There are three important communication directions to understand.
 
-One container should generally have one main responsibility.
+| Communication | Example |
+|---|---|
+| **Container → Internet** | Node.js container → External API / SWAPI |
+| **Container → Host** | Node.js container → MongoDB installed on Windows |
+| **Container → Container** | Node.js container → MongoDB container |
 
-**For example, don't create one giant container containing:**
+These are different networking scenarios and should not be confused.
+
+**You have now learned the three fundamental Docker networking directions:**
 ```
-Node.js
-+
-MongoDB
-+
-Redis
-+
-Nginx
+1. Container → Internet
+   API container
+        │
+        └──────► External API
+
+
+2. Container → Host
+   API container
+        │
+        └──────► Host machine
+                  host.docker.internal
+
+
+3. Container → Container
+   API container
+        │
+        └──────► MongoDB container
+                  mongodb:27017
 ```
-**Instead:**
+
+#### 1.1 Container → Internet
+
+```text
+┌─────────────────┐
+│ Node.js         │
+│ Container       │
+└────────┬────────┘
+         │
+         ▼
+     INTERNET
+         │
+         ▼
+   External API
 ```
-┌─────────────────────┐
-│   Node API          │
-│   Container         │
-└──────────┬──────────┘
-           │
-           │ network
-           ▼
-┌─────────────────────┐
-│   MongoDB            │
-│   Container          │
-└─────────────────────┘
+
+The application inside the container communicates with an external service on the Internet.
+
+#### 1.2 Container → Host
+
+For example, a Node.js container connects to MongoDB installed directly on the Windows host.
+
+```text
+┌─────────────────┐
+│ Node.js         │
+│ Container       │
+└────────┬────────┘
+         │
+         ▼
+    Docker Host
+         │
+         ▼
+ MongoDB on Windows
 ```
-**And potentially:**
+
+In Docker Desktop environments, a special hostname such as:
+
+```text
+host.docker.internal
 ```
-                    ┌──────────────┐
-                    │    Redis     │
-                    │  Container   │
-                    └──────▲───────┘
-                           │
-                           │
-┌──────────────┐           │
-│  Node API    │───────────┤
-│  Container   │           │
-└──────┬───────┘           │
-       │                   │
-       ▼                   │
-┌──────────────┐           │
-│   MongoDB    │───────────┘
+
+can be used to reach services running on the host machine.
+
+#### 1.3 Container → Container
+
+The Node.js application and MongoDB both run as containers.
+
+```text
+┌─────────────────┐       ┌─────────────────┐
+│ Node.js API     │──────►│ MongoDB         │
+│ Container       │       │ Container       │
+└─────────────────┘       └─────────────────┘
+```
+
+This is the main topic of this document.
+
+### 2. Why Use Multiple Containers?
+
+A fundamental Docker principle is:
+
+> **One container should generally have one main responsibility.**
+
+For example, avoid putting everything into one giant container:
+
+```text
+┌───────────────────────────┐
+│       One Container       │
+│                           │
+│  Node.js                  │
+│  MongoDB                  │
+│  Redis                    │
+│  Nginx                    │
+│                           │
+└───────────────────────────┘
+```
+
+Instead, separate the responsibilities:
+
+```text
+┌─────────────────┐
+│ Node.js API     │
+│ Container       │
+└────────┬────────┘
+         │
+         │ Docker Network
+         ▼
+┌─────────────────┐
+│ MongoDB         │
+│ Container       │
+└─────────────────┘
+```
+
+And potentially:
+
+```text
+                 ┌──────────────┐
+                 │    Redis     │
+                 │  Container   │
+                 └──────▲───────┘
+                        │
+                        │
+┌──────────────┐        │
+│  Node API    │────────┤
+│  Container   │        │
+└──────┬───────┘        │
+       │                │
+       ▼                │
+┌──────────────┐        │
+│   MongoDB    │────────┘
 │  Container   │
 └──────────────┘
 ```
+
 Each container has a focused responsibility.
 
-### 3. Why is this better?
+### 3. Benefits of Multiple Containers
 
-**Suppose your application has:**
-```
+Suppose an application contains:
+
+```text
 Node.js API
 MongoDB
 Redis
 ```
-**If everything is inside one container:**
-```
+
+If everything is inside one container:
+
+```text
 One Container
 ├── Node.js
 ├── MongoDB
 └── Redis
 ```
-you tightly couple everything together.
 
-Instead:
-```
+the components become tightly coupled.
+
+With separate containers:
+
+```text
 Container 1 → Node.js
 Container 2 → MongoDB
 Container 3 → Redis
 ```
-**you can independently:**
-- restart Node without restarting MongoDB
-- update Node without rebuilding MongoDB
-- scale Node separately
-- replace MongoDB independently
-- configure different resource limits
-- monitor each component separately
-- deploy components independently
 
-This becomes especially important in enterprise applications.
+you can independently:
 
-### 4. But now we have a networking problem
+- Restart Node.js without restarting MongoDB.
+- Update Node.js without rebuilding MongoDB.
+- Scale the Node.js API separately.
+- Replace or upgrade MongoDB independently.
+- Configure different CPU and memory limits.
+- Monitor each component separately.
+- Deploy components independently.
+- Isolate failures more effectively.
+- Use different container images for different technologies.
 
-Suppose:
+This separation becomes particularly useful as applications grow.
+
+### 4. The Networking Problem
+
+Once components are split into multiple containers, they need to communicate.
+
+For example:
+
+```text
+Node.js Container
+       │
+       │ needs MongoDB
+       ▼
+MongoDB Container
 ```
-Node container
-      │
-      │ needs MongoDB
-      ▼
-MongoDB container
-```
-**How does Node know where MongoDB is?**
 
-You shouldn't rely on:
-```
+The question becomes:
+
+> How does the Node.js container find MongoDB?
+
+A common mistake is to use:
+
+```text
 localhost:27017
 ```
-because:
-```
+
+Inside the Node.js container:
+
+```text
 localhost
    ↓
-Node container itself
+Node.js container itself
 ```
-MongoDB is in a different container.
 
-Docker therefore needs to provide a networking mechanism that allows containers to discover and communicate with each other.
+It does **not** automatically mean:
 
-That's where Docker networks come in.
-
-**Conceptually:**
+```text
+localhost
+   ↓
+MongoDB container
 ```
+
+Each container has its own network namespace.
+
+Therefore, Docker needs to provide a networking mechanism that allows containers to discover and communicate with one another.
+
+### 5. Docker Networks
+
+Conceptually:
+
+```text
 ┌─────────────────────────────────────┐
 │          Docker Network             │
 │                                     │
@@ -779,49 +901,170 @@ That's where Docker networks come in.
 │                                     │
 └─────────────────────────────────────┘
 ```
-And Docker can provide container/service name-based communication, so instead of thinking:
-```
-MongoDB's changing IP address
-```
-**you can conceptually use:**
-```
+
+Containers connected to the same Docker network can communicate with each other.
+
+Instead of hard-coding a container's dynamically assigned IP address, Docker provides service/container name-based discovery on user-defined networks.
+
+For example:
+
+```text
 mongodb:27017
 ```
-where mongodb is the name/addressable identity of the MongoDB service on that Docker network.
 
-### 5. This is where Docker Compose becomes very important
+Here:
 
-Once you have multiple containers, manually running:
+```text
+mongodb
+   ↓
+MongoDB container/service name
+
+27017
+   ↓
+MongoDB default port
 ```
+
+The important idea is:
+
+> **Use a stable container/service name instead of relying on a changing container IP address.**
+
+### 6. The Problem With Container IP Addresses
+
+You can inspect a container with:
+
+```bash
+docker container inspect mongodb
+```
+
+The output contains networking information, including an IP address.
+
+For example:
+
+```text
+172.18.0.2
+```
+
+The Node.js application could theoretically connect using:
+
+```text
+mongodb://172.18.0.2:27017
+```
+
+This can work, but it is not a good application configuration strategy.
+
+Why?
+
+Because container IP addresses can change.
+
+For example:
+
+```text
+MongoDB container
+      ↓
+172.18.0.2
+```
+
+The container is removed and recreated:
+
+```text
+New MongoDB container
+      ↓
+172.18.0.5
+```
+
+Now the application configuration containing:
+
+```text
+172.18.0.2
+```
+
+is wrong.
+
+This can force unnecessary image/configuration changes.
+
+### 7. Better Approach: Docker DNS / Service Discovery
+
+Instead of:
+
+```text
+mongodb://172.18.0.2:27017
+```
+
+use a name:
+
+```text
+mongodb://mongodb:27017
+```
+
+Conceptually:
+
+```text
+Node.js
+   │
+   │ mongodb:27017
+   ▼
+Docker DNS
+   │
+   ▼
+MongoDB container
+```
+
+Docker resolves the name to the appropriate container IP on the Docker network.
+
+Therefore:
+
+```text
+Container IP can change
+        ↓
+Application does not need to know the IP
+        ↓
+Application uses the stable service/container name
+```
+
+This is one of the most important concepts in Docker networking.
+
+### 8. Docker Compose
+
+Once an application contains multiple containers, manually running:
+
+```bash
 docker run ...
 docker run ...
 docker run ...
 ```
+
 becomes inconvenient.
 
 For example:
-```
-Node
+
+```text
+Node.js
 MongoDB
 Redis
 ```
-Docker Compose lets you define the whole application:
 
-**services:**
-```
+Docker Compose allows the complete multi-container application to be defined declaratively.
+
+Example:
+
+```yaml
+services:
+
   api:
     ...
-    
+
   mongodb:
     ...
 
   redis:
     ...
 ```
-Then Docker can create the required network and connect the services.
 
-**Your architecture becomes:**
-```
+Compose can create the application network and attach the services to it.
+
+Conceptually:
+
+```text
               Docker Compose
                     │
        ┌────────────┼────────────┐
@@ -833,29 +1076,724 @@ Then Docker can create the required network and connect the services.
               Docker Network
 ```
 
-**The key mental model**
+The service name:
 
-You have now learned the three fundamental Docker networking directions:
+```text
+mongodb
 ```
-1. Container ──────────► Internet
-                         │
-                         └── External API
 
+can then be used by the API container to reach MongoDB.
 
-2. Container ──────────► Host
-                         │
-                         └── Host MongoDB
+### 9. Example: Node.js + MongoDB
 
+A typical architecture:
 
-3. Container ──────────► Container
-                         │
-                         └── MongoDB/Redis/API container
+```text
+┌────────────────────────────────────────────┐
+│              Docker Network                │
+│                                            │
+│  ┌─────────────────┐                       │
+│  │ Node.js API     │                       │
+│  │ Container       │                       │
+│  │                 │                       │
+│  │ Port: 3000      │                       │
+│  └────────┬────────┘                       │
+│           │                                │
+│           │ mongodb:27017                  │
+│           ▼                                │
+│  ┌─────────────────┐                       │
+│  │ MongoDB         │                       │
+│  │ Container       │                       │
+│  │                 │                       │
+│  │ Port: 27017     │                       │
+│  └─────────────────┘                       │
+│                                            │
+└────────────────────────────────────────────┘
 ```
-And the third scenario is particularly important because real Dockerized applications are commonly multi-container applications.
 
----
+The Node.js application should conceptually use:
 
-## 
+```text
+mongodb://mongodb:27017/<database>
+```
 
+rather than:
 
+```text
+mongodb://localhost:27017/<database>
+```
+
+or:
+
+```text
+mongodb://172.x.x.x:27017/<database>
+```
+
+when both services are on the same Docker network.
+
+### 10. Practical Demo From the Docker Course
+
+The original example starts with a Node.js favorites application.
+
+Initially:
+
+```text
+Node.js API Container
+        │
+        ▼
+MongoDB on Host Machine
+```
+
+The Node.js application could reach the host using:
+
+```text
+host.docker.internal
+```
+
+The architecture then changes to:
+
+```text
+Node.js API Container
+        │
+        ▼
+MongoDB Container
+```
+
+Now `host.docker.internal` is no longer the correct target because MongoDB is no longer running on the host.
+
+### 11. Stop the Existing Node Container
+
+First stop the existing application container.
+
+Example:
+
+```bash
+docker stop favorites
+```
+
+The exact container name depends on how the container was started.
+
+### 12. Start MongoDB as a Container
+
+MongoDB has an official image available from Docker Hub, so you do not necessarily need to create your own MongoDB Dockerfile.
+
+A basic command is:
+
+```bash
+docker run mongo
+```
+
+This creates a container based on the MongoDB image.
+
+However, this runs in the foreground.
+
+To run it in detached mode and give it a meaningful name:
+
+```bash
+docker run -d --name mongodb mongo
+```
+
+Now you have:
+
+```text
+┌──────────────────────┐
+│ mongodb container    │
+│                      │
+│ MongoDB              │
+│ Port 27017           │
+└──────────────────────┘
+```
+
+Check running containers:
+
+```bash
+docker ps
+```
+
+### 13. Inspect the MongoDB Container
+
+You can inspect the container with:
+
+```bash
+docker container inspect mongodb
+```
+
+or:
+
+```bash
+docker inspect mongodb
+```
+
+The result contains networking information.
+
+Conceptually:
+
+```json
+{
+  "NetworkSettings": {
+    "IPAddress": "172.18.0.2"
+  }
+}
+```
+
+The actual IP address will vary.
+
+You could temporarily use that IP:
+
+```text
+mongodb://172.18.0.2:27017
+```
+
+The Node.js application can then communicate with MongoDB.
+
+### 14. Why the IP-Based Approach Is Not Ideal
+
+Suppose MongoDB currently has:
+
+```text
+172.18.0.2
+```
+
+and the Node.js application contains:
+
+```text
+mongodb://172.18.0.2:27017
+```
+
+If the MongoDB container is recreated:
+
+```bash
+docker rm mongodb
+docker run -d --name mongodb mongo
+```
+
+the new container might receive:
+
+```text
+172.18.0.5
+```
+
+Now:
+
+```text
+Node.js
+   │
+   │ 172.18.0.2
+   ▼
+❌ Old MongoDB IP
+```
+
+The application configuration is now stale.
+
+This is why container IP addresses should generally not be hard-coded into application configuration.
+
+### 15. Better Solution: Use a Docker Network
+
+Create a user-defined network:
+
+```bash
+docker network create favorites-network
+```
+
+Run MongoDB on that network:
+
+```bash
+docker run -d \
+  --name mongodb \
+  --network favorites-network \
+  mongo
+```
+
+Run the Node.js application on the same network:
+
+```bash
+docker run -d \
+  --name favorites \
+  --network favorites-network \
+  favorites-node
+```
+
+Now the containers share the same Docker network:
+
+```text
+┌──────────────────────────────────────────┐
+│         favorites-network                │
+│                                          │
+│  ┌─────────────────┐                     │
+│  │ favorites       │                     │
+│  │ Node.js API     │                     │
+│  └────────┬────────┘                     │
+│           │                              │
+│           │ mongodb:27017                │
+│           ▼                              │
+│  ┌─────────────────┐                     │
+│  │ mongodb         │                     │
+│  │ MongoDB         │                     │
+│  └─────────────────┘                     │
+│                                          │
+└──────────────────────────────────────────┘
+```
+
+The Node.js application can use:
+
+```text
+mongodb://mongodb:27017
+```
+
+The important part is:
+
+```text
+mongodb
+```
+
+which corresponds to the MongoDB container/service name.
+
+### 16. Docker Compose Version
+
+For a real multi-container application, Docker Compose is usually much more convenient.
+
+Example:
+
+```yaml
+services:
+
+  api:
+    build: .
+    container_name: favorites
+    ports:
+      - "3000:3000"
+    depends_on:
+      - mongodb
+
+  mongodb:
+    image: mongo
+    container_name: mongodb
+```
+
+Compose creates a network for the application.
+
+The API can communicate with MongoDB using:
+
+```text
+mongodb:27017
+```
+
+The architecture becomes:
+
+```text
+                 Docker Compose
+                       │
+                       ▼
+              ┌─────────────────┐
+              │ Default Network │
+              └───────┬─────────┘
+                      │
+            ┌─────────┴─────────┐
+            ▼                   ▼
+      ┌───────────┐       ┌───────────┐
+      │ api       │──────►│ mongodb   │
+      │ Node.js   │       │ MongoDB   │
+      └───────────┘       └───────────┘
+          :3000               :27017
+```
+
+### 17. Important Port Concept
+
+There are two different questions:
+
+#### Can containers communicate internally?
+
+If both containers are on the same Docker network:
+
+```text
+api → mongodb:27017
+```
+
+MongoDB does **not** need to publish its port to the host just for this internal communication.
+
+#### Does the host/browser need to access the container?
+
+Then you may publish a port:
+
+```yaml
+ports:
+  - "3000:3000"
+```
+
+For example:
+
+```text
+Browser
+   │
+   │ localhost:3000
+   ▼
+Host
+   │
+   ▼
+API Container :3000
+```
+
+Internal:
+
+```text
+API Container
+      │
+      │ mongodb:27017
+      ▼
+MongoDB Container :27017
+```
+
+So:
+
+> **Published ports are primarily for traffic entering the container from outside its Docker network. Container-to-container communication can use the container's internal port over the Docker network.**
+
+### 18. `localhost` vs Service Name
+
+This distinction is critical.
+
+Inside the API container:
+
+```text
+localhost
+```
+
+means:
+
+```text
+API container itself
+```
+
+It does not mean MongoDB.
+
+Instead:
+
+```text
+mongodb
+```
+
+means:
+
+```text
+MongoDB service/container reachable through the Docker network
+```
+
+Therefore:
+
+```text
+❌ mongodb://localhost:27017
+
+✅ mongodb://mongodb:27017
+```
+
+when MongoDB is a separate service named `mongodb`.
+
+### 19. `host.docker.internal` vs Container Name
+
+These solve different problems.
+
+#### Container → Host
+
+```text
+host.docker.internal
+```
+
+Example:
+
+```text
+Node.js container
+       │
+       │ host.docker.internal
+       ▼
+Windows host
+       │
+       ▼
+MongoDB installed on host
+```
+
+#### Container → Container
+
+```text
+mongodb
+```
+
+Example:
+
+```text
+Node.js container
+       │
+       │ mongodb
+       ▼
+MongoDB container
+```
+
+Mental model:
+
+```text
+host.docker.internal
+        ↓
+Docker Host
+
+mongodb
+        ↓
+MongoDB service/container
+```
+
+### 20. Complete Mental Model
+
+Think about Docker networking in layers.
+
+```text
+                         INTERNET
+                            ▲
+                            │
+                            │
+                    Container → Internet
+                            │
+                            ▼
+┌───────────────────────────────────────────────────┐
+│                   Docker Host                     │
+│                                                   │
+│  ┌────────────────┐      Docker Network          │
+│  │ Node.js API    │ ─────────────────────────┐    │
+│  │ Container      │                           │    │
+│  └───────┬────────┘                           │    │
+│          │                                    │    │
+│          │                                    ▼    │
+│          │                           ┌────────────┐│
+│          │                           │ MongoDB    ││
+│          │                           │ Container  ││
+│          │                           └────────────┘│
+│          │                                        │
+│          ▼                                        │
+│  host.docker.internal                             │
+│          │                                        │
+│          ▼                                        │
+│     Host Service                                  │
+└───────────────────────────────────────────────────┘
+```
+
+### 21. The Three Directions — Final Summary
+
+```text
+1. Container → Internet
+
+┌──────────────┐
+│ Container    │
+└──────┬───────┘
+       │
+       ▼
+   INTERNET
+       │
+       ▼
+ External API
+```
+
+```text
+2. Container → Host
+
+┌──────────────┐
+│ Container    │
+└──────┬───────┘
+       │
+       ▼
+Docker Host
+       │
+       ▼
+Host Service
+```
+
+Typically:
+
+```text
+host.docker.internal
+```
+
+```text
+3. Container → Container
+
+┌──────────────┐
+│ API Container│
+└──────┬───────┘
+       │
+       │ Docker Network
+       │
+       ▼
+┌──────────────┐
+│ DB Container │
+└──────────────┘
+```
+
+Typically:
+
+```text
+mongodb:27017
+```
+
+### 22. Enterprise-Oriented Mental Model
+
+A typical Dockerized backend might look like:
+
+```text
+                         Internet
+                            │
+                            ▼
+                    ┌───────────────┐
+                    │ Reverse Proxy │
+                    │ / Nginx       │
+                    └───────┬───────┘
+                            │
+                            ▼
+                    ┌───────────────┐
+                    │ Node.js API   │
+                    │ Container     │
+                    └───┬───────┬───┘
+                        │       │
+              ┌─────────┘       └─────────┐
+              ▼                           ▼
+       ┌──────────────┐            ┌──────────────┐
+       │ PostgreSQL / │            │ Redis        │
+       │ MongoDB      │            │ Container    │
+       │ Container    │            └──────────────┘
+       └──────────────┘
+```
+
+Each component has a focused responsibility and communicates over a Docker network.
+
+In larger production environments, the same architectural idea extends to orchestration platforms such as Kubernetes, where services provide stable network identities while pods/containers can be recreated dynamically.
+
+### 23. Key Takeaways
+
+#### 1. Containers are isolated
+
+Each container has its own filesystem and network namespace.
+
+#### 2. `localhost` means the current container
+
+Inside the Node.js container:
+
+```text
+localhost
+```
+
+means the Node.js container itself.
+
+### 3. Container IPs are not stable application identities
+
+Avoid hard-coding:
+
+```text
+172.18.0.2
+```
+
+into application configuration.
+
+### 4. Use Docker networks
+
+Put communicating containers on the same Docker network.
+
+### 5. Use service/container names
+
+Prefer:
+
+```text
+mongodb:27017
+```
+
+over:
+
+```text
+172.18.0.2:27017
+```
+
+### 6. Docker Compose simplifies multi-container applications
+
+Define:
+
+```yaml
+services:
+  api:
+  mongodb:
+  redis:
+```
+
+and Compose handles the application network and service discovery.
+
+### 7. Published ports and internal ports are different
+
+For example:
+
+```yaml
+ports:
+  - "3000:3000"
+```
+
+allows external/host traffic to reach the API.
+
+It does not mean the API needs a published MongoDB port to communicate with MongoDB internally.
+
+### 8. Separation is a core Docker concept
+
+A common architecture is:
+
+```text
+One responsibility
+        ↓
+One service/container
+        ↓
+Docker network
+        ↓
+Service-to-service communication
+```
+
+### 24. Interview Questions
+
+#### Q1. Can two Docker containers communicate?
+
+Yes. If they are connected to a common Docker network, they can communicate using the network and Docker's service/container name resolution.
+
+#### Q2. Why should you avoid using a container IP directly?
+
+Container IP addresses can change when containers are recreated. A service/container name provides a more stable application-level identity.
+
+#### Q3. What does `localhost` mean inside a container?
+
+It refers to the current container, not another container and not automatically the Docker host.
+
+#### Q4. What is `host.docker.internal` used for?
+
+It is commonly used from a container to reach services running on the Docker host, particularly with Docker Desktop.
+
+#### Q5. Does MongoDB need a published port for the Node.js container to access it?
+
+No, not when both are on the same Docker network. The API can access MongoDB through its internal port, for example:
+
+```text
+mongodb:27017
+```
+
+#### Q6. Why use Docker Compose?
+
+It provides a declarative way to define and run a multi-container application, including services, networks, environment variables, volumes, dependencies, and port mappings.
+
+#### Q7. Why separate Node.js and MongoDB into different containers?
+
+It provides separation of responsibilities and allows the components to be managed, configured, restarted, scaled, monitored, and updated independently.
+
+### 25. One-Line Memory Trick
+
+```text
+Container → Internet   = External API
+Container → Host       = host.docker.internal
+Container → Container  = Docker Network + Service Name
+```
+
+The most important rule to remember:
+
+```text
+❌ localhost
+❌ hard-coded container IP
+
+✅ Docker Network
+✅ service/container name
+```
 
