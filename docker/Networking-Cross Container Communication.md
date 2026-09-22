@@ -210,8 +210,7 @@ For your current example, the answer is simply:
 
 ## Container to Local Host Machine Communication (Container → Host Machine)
 ### 1. The architecture
-
-**Previously:**
+**Previously, our container communicated with an external API:**
 ```
 Docker Container
    │
@@ -222,7 +221,8 @@ Internet
    ▼
 Star Wars API
 ```
-**Now we have:**
+
+**Now we have a different scenario:**
 ```
 ┌───────────────────────────────┐
 │       Docker Container        │
@@ -238,14 +238,16 @@ Star Wars API
 │         Host Machine          │
 │                               │
 │       MongoDB Server          │
+│       :27017                  │
 │       (NOT in Docker)         │
 └───────────────────────────────┘
 ```
-The important difference is that MongoDB is running directly on your host machine, not inside another container.
+The important difference is:
+> **MongoDB is installed and running directly on the host machine, while the Node.js application is running inside a Docker container.**
 
-### 2. Your application now has two external communication paths
+### 2. The application has two communication paths
 
-Your Node.js application may do both:
+Our Node.js application communicates with two different destinations:
 ```
                     Node.js
                   Application
@@ -255,7 +257,6 @@ Your Node.js application may do both:
         Star Wars API       MongoDB
         Internet            Host Machine
 ```
-So:
 
 **Path 1 — Container → Internet**
 ```
@@ -267,7 +268,16 @@ Internet
    ↓
 swapi.dev
 ```
-**Path 2 — Container → Host**
+
+**For example:**
+```
+const response = await axios.get(
+  'https://swapi.dev/api/films'
+);
+```
+This works because Docker allows the container to make outbound network requests.
+
+**Path 2 — Container → Host Machine**
 ```
 Node.js
    ↓
@@ -275,32 +285,13 @@ Docker Container
    ↓
 Host Machine
    ↓
-MongoDB
+MongoDB :27017
 ```
+This is where we have a problem.
 
-### 3. Why is Container → Host different?
+### 3. The original MongoDB connection does NOT work
 
-This is where Docker networking becomes interesting.
-
-**Suppose MongoDB is running on your Windows machine:**
-```
-Windows Host
-└── MongoDB :27017
-```
-**Your Node application is running here:**
-```
-Docker Container
-└── Node.js :3000
-```
-**Inside the container, localhost means:**
-```
-the container itself
-```
-It does not mean your Windows host.
-
-This is a very important Docker concept.
-
-**If your Node application tries:**
+**Our original code is:**
 ```
 mongoose.connect(
   'mongodb://localhost:27017/swfavorites',
@@ -315,100 +306,88 @@ mongoose.connect(
 );
 ```
 
-**while running inside the container, Docker interprets localhost as:**
-```
-Container
-   └── localhost
-```
-not:
+**At first glance, this looks correct because MongoDB is running on our local machine:**
 ```
 Windows Host
-   └── MongoDB
+└── MongoDB :27017
 ```
-So the application won't automatically reach the MongoDB running on your host.
+However, the Node.js application is not running directly on the Windows host.
 
-### 4. Think of localhost carefully
-
-**This is one of the most important rules to remember:**
+**It is running inside a Docker container:**
 ```
-┌──────────────────────┐
-│      HOST MACHINE    │
-│                      │
-│ localhost            │
-│    ↓                 │
-│ Host itself          │
-└──────────────────────┘
-
-
-┌──────────────────────┐
-│    DOCKER CONTAINER  │
-│                      │
-│ localhost            │
-│    ↓                 │
-│ This container       │
-└──────────────────────┘
-```
-Therefore:
-> **localhost is relative to the machine/network namespace where the application is running.**
-
-### 5. Real enterprise example
-
-**Imagine you have:**
-```
-Windows Developer Machine
+Windows Host
 │
-├── MongoDB
-│   └── :27017
+├── MongoDB :27017
 │
 └── Docker
-    └── Node.js API
+    └── Node.js Container
 ```
-**The Node API needs to access MongoDB:**
-```
-Node Container
-      │
-      │ MongoDB protocol
-      ▼
-Docker networking
-      │
-      ▼
-Host Machine
-      │
-      ▼
-MongoDB :27017
-```
-**This is completely different from:**
-```
-Node Container
-      │
-      ▼
-Another Docker Container
-      │
-      ▼
-MongoDB Container
-```
-The latter is Container → Container networking, which is the next important Docker networking concept.
+Therefore, the meaning of localhost changes.
 
-### Source Code Example
+### 4. The important localhost rule
+
+Inside the Docker container:
 ```
-const express = require('express');
-const bodyParser = require('body-parser');
-const axios = require('axios').default;
-const mongoose = require('mongoose');
+localhost
+    ↓
+The Docker container itself
+```
+**It does not mean:**
+```
+localhost
+    ↓
+Windows Host Machine
+```
+**So when the Node.js application executes:**
+```
+mongoose.connect(
+  'mongodb://localhost:27017/swfavorites'
+);
+```
 
-const app = express();
+**it effectively tries to find MongoDB here:**
+```
+┌──────────────────────────┐
+│    Docker Container      │
+│                          │
+│  Node.js                 │
+│     │                    │
+│     └── localhost:27017 ─┼──► MongoDB?
+│                          │
+└──────────────────────────┘
+```
+But MongoDB isn't running inside that container.
 
-app.use(bodyParser.json());
+**MongoDB is here:**
+```
+┌──────────────────────────┐
+│      Host Machine        │
+│                          │
+│  MongoDB :27017         │
+└──────────────────────────┘
+```
+Therefore:
 
-app.get('/movies', async (req, res) => {
-  try {
-    const response = await axios.get('https://swapi.dev/api/films');
-    res.status(200).json({ movies: response.data });
-  } catch (error) {
-    res.status(500).json({ message: 'Something went wrong.' });
-  }
-});
+localhost from inside a container does not refer to the host machine.
 
+### 5. How do we connect to the host?
+
+**Docker provides a special hostname:**
+```
+host.docker.internal
+```
+This hostname is specifically designed to allow a container to communicate with services running on the host.
+
+**Therefore, instead of:**
+```
+mongodb://localhost:27017/swfavorites
+```
+**we use:**
+```
+mongodb://host.docker.internal:27017/swfavorites
+```
+**So the updated code becomes:**
+```
 mongoose.connect(
   'mongodb://host.docker.internal:27017/swfavorites',
   { useNewUrlParser: true },
@@ -420,39 +399,226 @@ mongoose.connect(
     }
   }
 );
-
 ```
 
-### 6. Keep these three scenarios in your notes
-| Scenario                  | Example                  | Important concept                         |
-| ------------------------- | ------------------------ | ----------------------------------------- |
-| **Container → Internet**  | Node → SWAPI             | External network access                   |
-| **Container → Host**      | Node → Host MongoDB      | `localhost` ≠ host                        |
-| **Container → Container** | Node → MongoDB container | Docker networks + service/container names |
+### 6. What is host.docker.internal?
 
-**So your current lesson is building toward a very important mental model:**
+Think of it as a special Docker-provided hostname.
 ```
-                    ┌───────────────┐
-                    │   Internet    │
-                    │   SWAPI       │
-                    └───────▲───────┘
+Docker Container
+       │
+       │
+       │ host.docker.internal
+       ▼
+Docker Host Machine
+       │
+       ▼
+MongoDB :27017
+```
+**Docker resolves:**
+```
+host.docker.internal
+```
+to an address that allows the container to reach the host machine.
+
+You don't need to manually find the host's IP address.
+
+### 7. The complete architecture now works
+```
+                         INTERNET
                             │
-                            │
-┌───────────────────────────┼────────────────────┐
-│                    Docker Container            │
-│                                                │
-│                 Node.js App                    │
-│                    /   \                       │
-└───────────────────┼─────┼──────────────────────┘
-                    │     │
-             Container    │
-             → Host       │
-                    │     │
-                    ▼     ▼
-              Host Mongo   Other
-              Database     Containers
+                            ▼
+                    ┌──────────────┐
+                    │  Star Wars   │
+                    │     API      │
+                    └──────▲───────┘
+                           │
+                           │ HTTPS
+                           │
+┌──────────────────────────┼─────────────────────────┐
+│                    Docker Container                │
+│                                                    │
+│                 Node.js Application               │
+│                                                    │
+│        ┌─────────────────┴────────────────┐       │
+│        │                                  │       │
+│        │ HTTPS                            │ MongoDB│
+│        ▼                                  ▼       │
+└────────┼──────────────────────────────────┼───────┘
+         │                                  │
+         │                                  │
+         │                         host.docker.internal
+         │                                  │
+         │                                  ▼
+         │                         ┌──────────────────┐
+         │                         │   Host Machine   │
+         │                         │                  │
+         │                         │ MongoDB :27017   │
+         │                         └──────────────────┘
+         │
+         ▼
+      Internet
 ```
-> **The big lesson: Docker isolation doesn't mean the container cannot communicate externally. Docker networking determines how the container reaches the Internet, the host, and other containers.**
+
+### 8. We don't need to start the container differently
+
+This is an important point from the lecture.
+
+We do not need a special docker run option just for this scenario.
+
+The important change is in the application configuration:
+
+**Before**
+```
+mongodb://localhost:27017/swfavorites
+```
+**After**
+```
+mongodb://host.docker.internal:27017/swfavorites
+```
+So:
+```
+localhost
+   ❌
+   ↓
+Container itself
+```
+whereas:
+```
+host.docker.internal
+   ✅
+   ↓
+Host machine
+```
+
+### 9. Why do we need to rebuild the image?
+
+**If the Node.js source code is copied into the image:**
+```
+COPY . .
+```
+then changing:
+```
+localhost
+```
+to:
+```
+host.docker.internal
+```
+changes the application source code.
+
+**Therefore, you need to rebuild the image:**
+```
+docker build -t node-app .
+```
+
+**Then create a new container from the updated image:**
+```
+docker run -p 3000:3000 --name node-app node-app
+```
+The exact image/container names and port mapping depend on your project.
+
+### 10. How do we prove the connection works?
+
+**Suppose MongoDB already contains:**
+
+Star Wars Favorite
+
+**and your Node application exposes:**
+```
+GET /favorites
+```
+**You send:**
+```
+GET http://localhost:3000/favorites
+```
+**The flow becomes:**
+```
+Postman
+   │
+   │ HTTP
+   ▼
+localhost:3000
+   │
+   ▼
+Node.js Container
+   │
+   │ mongodb://host.docker.internal:27017
+   ▼
+Host Machine
+   │
+   ▼
+MongoDB
+   │
+   ▼
+Stored data
+   │
+   ▼
+Node.js
+   │
+   ▼
+Postman
+```
+If Postman receives the previously stored favorite, it proves that:
+
+The Node.js application inside the Docker container successfully communicated with MongoDB running directly on the host machine.
+
+### 11. Why does the existing MongoDB data still exist?
+
+This is another important observation from the lecture.
+
+**MongoDB is not running inside Docker:**
+```
+Host Machine
+└── MongoDB
+    └── Database
+        └── swfavorites
+```
+Therefore, restarting/rebuilding your Node.js container doesn't affect the MongoDB database.
+```
+Rebuild Node Image
+       ↓
+Restart Node Container
+       ↓
+MongoDB on Host
+       ↓
+Data still exists
+```
+Later, when MongoDB itself is moved into a Docker container, persistence becomes a separate Docker storage/volume concern.
+
+### 12. Final Docker networking notes
+
+You now have these two scenarios:
+
+| Scenario                  | Address                      | Destination              |
+| ------------------------- | ---------------------------- | ------------------------ |
+| **Container → Internet**  | `https://swapi.dev/...`      | External website/API     |
+| **Container → Host**      | `host.docker.internal:27017` | Service running on host  |
+| **Container → Container** | `mongodb:27017`              | Another Docker container |
+
+**The critical distinction is:**
+```
+┌─────────────────────────────────────────────┐
+│                  localhost                  │
+│                                             │
+│  From container → the container itself     │
+│  From host      → the host itself          │
+└─────────────────────────────────────────────┘
+```
+
+**And for Container → Host:**
+```
+Container
+    │
+    │ host.docker.internal
+    ▼
+Host Machine
+    │
+    ▼
+MongoDB :27017
+```
+
+> **When an application runs inside a Docker container and needs to communicate with a service running directly on the host machine, localhost normally points to the container itself. For Docker Desktop environments such as Windows/macOS, host.docker.internal provides the special hostname for reaching the host.**
 
 ---
 
