@@ -63,6 +63,7 @@ EXPOSE 3000
 
 CMD ["node", "app.js"]
 ```
+<img src="./imgs/docker_container_internet_connect.png" width="90%" />
 
 ### 2. What happens in your example?
 
