@@ -25,6 +25,30 @@ Think of the flow like this:
 The important point is:
 > **The application is running inside the container, but it needs to communicate with something outside the container.**
 
+### Source Code Example
+```
+const express = require('express');
+const bodyParser = require('body-parser');
+const axios = require('axios').default;
+const mongoose = require('mongoose');
+
+const app = express();
+
+app.use(bodyParser.json());
+
+app.get('/movies', async (req, res) => {
+  try {
+    const response = await axios.get('https://swapi.dev/api/films');
+    res.status(200).json({ movies: response.data });
+  } catch (error) {
+    res.status(500).json({ message: 'Something went wrong.' });
+  }
+});
+
+app.listen(3000);
+
+```
+
 ### 2. What happens in your example?
 
 **Your Node.js application uses Axios:**
