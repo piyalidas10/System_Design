@@ -1,7 +1,5 @@
-# Docker Networking-Cross Container Communication
-
-## Container to WWW Communication (Container → Internet)
-### 1. The architecture
+# Docker  Container to WWW Communication (Container → Internet)
+## 1. The architecture
 
 Think of the flow like this:
 ```
@@ -25,7 +23,7 @@ Think of the flow like this:
 The important point is:
 > **The application is running inside the container, but it needs to communicate with something outside the container.**
 
-### Source Code Example
+## Source Code Example
 ```
 const express = require('express');
 const bodyParser = require('body-parser');
@@ -65,7 +63,7 @@ CMD ["node", "app.js"]
 ```
 <img src="./imgs/docker_container_internet_connect.png" width="90%" />
 
-### 2. What happens in your example?
+## 2. What happens in your example?
 
 **Your Node.js application uses Axios:**
 ```
@@ -102,7 +100,7 @@ Node.js Application
 ```
 So Docker doesn't prevent your application from accessing the Internet.
 
-### 3. Very important distinction
+## 3. Very important distinction
 
 There are actually three different networking scenarios you'll encounter in Docker:
 
@@ -126,7 +124,7 @@ Your current lesson is focusing on the first one.
         └───────────────┘
 ```
 
-### 4. Why this matters in real applications
+## 4. Why this matters in real applications
 
 Imagine an enterprise application:
 ```
@@ -154,7 +152,7 @@ Your backend might need to communicate with:
 
 All of these are examples of outbound container networking.
 
-### 5. One important Docker concept
+## 5. One important Docker concept
 
 **A container has its own network namespace.**
 
@@ -184,7 +182,7 @@ axios.get('docker://internet/swapi.dev');
 ```
 Docker handles the networking underneath.
 
-### 6. The key takeaway
+## 6. The key takeaway
 
 **A container is isolated, but it is not disconnected. It can communicate outside itself.**
 
@@ -208,8 +206,8 @@ For your current example, the answer is simply:
 
 ---
 
-## Container to Local Host Machine Communication (Container → Host Machine)
-### 1. The architecture
+# Docker Container to Local Host Machine Communication (Container → Host Machine)
+## 1. The architecture
 **Previously, our container communicated with an external API:**
 ```
 Docker Container
@@ -245,7 +243,7 @@ Star Wars API
 The important difference is:
 > **MongoDB is installed and running directly on the host machine, while the Node.js application is running inside a Docker container.**
 
-### 2. The application has two communication paths
+## 2. The application has two communication paths
 
 Our Node.js application communicates with two different destinations:
 ```
@@ -289,7 +287,7 @@ MongoDB :27017
 ```
 This is where we have a problem.
 
-### 3. The original MongoDB connection does NOT work
+## 3. The original MongoDB connection does NOT work
 
 **Our original code is:**
 ```
@@ -324,7 +322,7 @@ Windows Host
 ```
 Therefore, the meaning of localhost changes.
 
-### 4. The important localhost rule
+## 4. The important localhost rule
 
 Inside the Docker container:
 ```
@@ -370,7 +368,7 @@ Therefore:
 
 localhost from inside a container does not refer to the host machine.
 
-### 5. How do we connect to the host?
+## 5. How do we connect to the host?
 
 **Docker provides a special hostname:**
 ```
@@ -401,7 +399,7 @@ mongoose.connect(
 );
 ```
 
-### 6. What is host.docker.internal?
+## 6. What is host.docker.internal?
 
 Think of it as a special Docker-provided hostname.
 ```
@@ -423,7 +421,7 @@ to an address that allows the container to reach the host machine.
 
 You don't need to manually find the host's IP address.
 
-### 7. The complete architecture now works
+## 7. The complete architecture now works
 ```
                          INTERNET
                             │
@@ -460,7 +458,7 @@ You don't need to manually find the host's IP address.
       Internet
 ```
 
-### 8. We don't need to start the container differently
+## 8. We don't need to start the container differently
 
 This is an important point from the lecture.
 
@@ -491,7 +489,7 @@ host.docker.internal
 Host machine
 ```
 
-### 9. Why do we need to rebuild the image?
+## 9. Why do we need to rebuild the image?
 
 **If the Node.js source code is copied into the image:**
 ```
@@ -518,7 +516,7 @@ docker run -p 3000:3000 --name node-app node-app
 ```
 The exact image/container names and port mapping depend on your project.
 
-### 10. How do we prove the connection works?
+## 10. How do we prove the connection works?
 
 **Suppose MongoDB already contains:**
 
@@ -563,7 +561,7 @@ If Postman receives the previously stored favorite, it proves that:
 
 The Node.js application inside the Docker container successfully communicated with MongoDB running directly on the host machine.
 
-### 11. Why does the existing MongoDB data still exist?
+## 11. Why does the existing MongoDB data still exist?
 
 This is another important observation from the lecture.
 
@@ -586,7 +584,7 @@ Data still exists
 ```
 Later, when MongoDB itself is moved into a Docker container, persistence becomes a separate Docker storage/volume concern.
 
-### 12. Final Docker networking notes
+## 12. Final Docker networking notes
 
 You now have these two scenarios:
 
