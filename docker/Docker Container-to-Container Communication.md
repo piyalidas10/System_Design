@@ -290,6 +290,102 @@ Both containers are members of the same network.
 As you saw, you don't need to publish any port when running that to be connected to container. When I run the MongoDB container, I don't have the -p option here. 
 The reason for that is that the -p option is only required if we plan on connecting to something in that container from our local host machine or from outside the container network.
 
+### Docker does NOT modify your source code
+When multiple containers are in the same network, you can actually use the name of a container as a domain, as an address, and Docker will automatically resolve the IP addresses.
+> **Docker does not modify or replace your application source code. Docker performs name resolution at runtime when the application tries to communicate with another network endpoint.**
+
+Suppose your Node.js code contains:
+```
+mongoose.connect('mongodb://mongodb:27017/favorites');
+```
+Docker does not open your JavaScript file and transform it into:
+```
+mongoose.connect('mongodb://172.18.0.2:27017/favorites');
+```
+Your source code remains:
+```
+mongodb://mongodb:27017/favorites
+```
+
+### What actually happens?
+
+**When your application starts a network connection:**
+```
+Node.js Application
+       │
+       │ MongoDB request
+       ▼
+mongodb:27017
+       │
+       │ DNS resolution
+       ▼
+Docker's internal DNS
+       │
+       ▼
+172.18.0.2:27017
+       │
+       ▼
+MongoDB Container
+```
+
+**Docker's networking layer resolves:**
+```
+mongodb
+```
+to the appropriate container IP.
+
+So the resolution happens during network communication, not during source-code processing.
+
+### Docker Runtime network resolution
+
+**Suppose you have:**
+```
+Node container
+    │
+    │ mongodb:27017
+    ▼
+MongoDB container
+```
+
+**Your application code:**
+```
+mongoose.connect(
+  'mongodb://mongodb:27017/favorites'
+);
+```
+
+**Docker effectively handles:**
+```
+mongodb
+   ↓
+Docker DNS
+   ↓
+172.18.0.x
+```
+
+**The important distinction is:**
+```
+❌ Source-code replacement
+
+mongodb
+   ↓
+replace string
+   ↓
+172.18.0.2
+```
+versus:
+
+**✅ Runtime network resolution**
+```
+mongodb
+   ↓
+network request
+   ↓
+Docker DNS
+   ↓
+172.18.0.2
+```
+
 ---
 
 ## Very Important: -p Is Not Required for Container-to-Container Communication
