@@ -208,7 +208,30 @@ Think:
 
 ### 📦 Docker Container
 
-**A container is a running instance of an image. Containers can read + write data, but written data is lost if the container is removed.**
+**A container is a running instance of an image. Containers can read + write data, but written data is lost if the container is removed. A container has its own filesystem, but that filesystem belongs to the container's writable layer.**
+```
+Host Machine
+     │
+     └── Docker
+          │
+          └── Container
+               └── Container Filesystem
+                    └── Application Data
+```
+If the container is removed, data stored only inside its writable layer is removed with it.
+
+**Important: docker stop and docker rm are different.**
+```
+docker stop my-container
+```
+**The container still exists, so its writable data remains.**
+```
+docker rm my-container
+```
+**The container is removed, so data stored only in its writable layer is lost.**
+
+This is why databases and other important application data should generally not live only inside the container filesystem.
+
 ```
 docker run -d \
   --name my-app \
@@ -518,6 +541,41 @@ Anonymous volumes are useful when you want Docker to manage some container direc
 
 However, they are not the normal choice for important long-term persistent data, because they're harder to identify and manage.
 
+#### Typical use
+
+**Persistent application data:**
+```
+PostgreSQL
+    │
+    ▼
+/var/lib/postgresql/data
+    │
+    ▼
+Docker Volume
+```
+**If you remove the container:**
+```
+docker rm postgres
+```
+**the volume can remain:**
+```
+Container ❌
+Volume    ✅
+Data      ✅
+```
+**A new container can mount the same volume:**
+```
+New PostgreSQL Container
+          │
+          ▼
+    Existing Volume
+          │
+          ▼
+     Existing Data
+```
+Therefore:
+> **Volume = Docker-managed persistent storage for container data.**
+
 #### Example
 ```
 docker volume create app-data
@@ -581,6 +639,8 @@ It can access the same data.
 **A bind mounts can help us with direct container interaction. For example, with our source code, that should be updatable by us and where the latest source code should then always be available inside of the container.**
 
 **When you use a bind mount, a file or directory on the host machine is mounted from the host into a container. are strongly tied to the host.**
+
+> **Bind mount = I know the host path and want the container to access it.**
 
 **Example:**
 ```
