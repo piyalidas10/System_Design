@@ -128,7 +128,322 @@ Tthe `-it` flag is a combination of two separate options (-i and -t) that tell D
 - **docker run -t node (Missing -i):** You will see the Node startup prompt (>), but you won't be able to type any text or interact with it.
 
 ## Different Ways of Running Commands in Containers
+There are 3 important ways to run commands with Docker containers. The main difference is when the command is specified and whether the container already exists/runs.
 
+### 1. Run the image with its default command
+```
+docker run -it node
+```
+Docker:
+```
+Node Image
+    ↓
+docker run
+    ↓
+New Container
+    ↓
+Default command → node
+    ↓
+Node REPL
+```
+The command comes from the image's CMD/entrypoint configuration.
+
+For the Node image, this starts the Node REPL.
+
+### 2. Override the default command with docker run
+
+You can provide a command after the image name:
+```
+docker run -it node npm init
+```
+Here:
+```
+node
+ ↑
+IMAGE
+
+npm init
+ ↑
+OVERRIDE COMMAND
+```
+Instead of:
+```
+node → Node REPL
+```
+Docker runs:
+```
+npm init
+```
+So:
+```
+docker run
+    ↓
+New container
+    ↓
+npm init
+    ↓
+Command finishes
+    ↓
+Container stops
+```
+This is the foundation of a utility container.
+
+### 3. Execute a command inside an existing running container
+
+Use:
+```
+docker exec -it <container-name> npm init
+```
+For example:
+```
+docker exec -it node-container npm init
+```
+Here, the container is already running.
+```
+Existing container
+       │
+       ├── Main process continues
+       │
+       └── docker exec
+               ↓
+            npm init
+```
+The important point:
+> **docker exec does not replace or stop the main process.**
+
+It starts an additional process inside the existing container.
+
+### docker run vs docker exec
+|                             | `docker run`                   | `docker exec`                               |
+| --------------------------- | ------------------------------ | ------------------------------------------- |
+| Container                   | Creates a new one              | Uses existing one                           |
+| Container must already run? | ❌ No                           | ✅ Yes                                       |
+| Command                     | Default or overridden          | Additional command                          |
+| Example                     | `docker run node npm init`     | `docker exec my-node npm init`              |
+| Main process                | Starts with container          | Continues running                           |
+| Typical use                 | Start container / utility task | Debugging, administration, one-off commands |
+
+### Why -it?
+
+When the command needs interaction:
+```
+docker run -it node npm init
+```
+or:
+```
+docker exec -it node-container npm init
+```
+Use:
+```
+-i → interactive
+-t → terminal
+```
+For example, npm init asks:
+```
+package name:
+version:
+description:
+entry point:
+```
+Without -it, you won't get the normal interactive experience.
+
+### Detached mode changes the behavior
+
+You can start a container in the background:
+```
+docker run -d node
+```
+Or, for a process that needs its stdin kept open:
+```
+docker run -dit node
+```
+Then:
+```
+docker ps
+```
+shows the running container.
+
+You can subsequently enter it with:
+```
+docker exec -it <container-name> sh
+```
+This is a very common pattern.
+
+---
+
+## Why utility containers are useful
+
+This is where the concept becomes much more interesting.
+
+Imagine your laptop has:
+```
+Windows
+├── Node.js
+├── npm
+├── PHP
+├── Composer
+├── Python
+├── Java
+├── Maven
+├── PostgreSQL client
+└── ...
+```
+
+This can become messy.
+
+With utility containers, you can instead have:
+```
+Windows
+   │
+   └── Docker
+        │
+        ├── Node container
+        │     └── npm
+        │
+        ├── Python container
+        │     └── pip
+        │
+        ├── PHP container
+        │     └── composer
+        │
+        └── PostgreSQL tools container
+```
+Your host machine doesn't necessarily need all those development tools installed globally.
+
+---
+
+## `docker exec` is especially useful for debugging
+
+Suppose your application is running:
+```
+┌───────────────────────────────┐
+│ Container                     │
+│                               │
+│  Node API                     │
+│  PID 1                        │
+│  │                            │
+│  └── Running                  │
+│                               │
+└───────────────────────────────┘
+````
+You don't want to stop the API just to inspect something.
+
+You can do:
+```
+docker exec -it my-api sh
+```
+Now:
+```
+Container
+│
+├── Node API          ← continues running
+│
+└── sh                ← your additional process
+```
+You can inspect:
+```
+ls
+cat some-file.log
+env
+ps
+```
+and then exit:
+```
+exit
+```
+The Node API continues running.
+
+---
+
+## The most important mental model
+
+**Think of these commands like this:**
+```
+                 IMAGE
+                   │
+          ┌────────┴────────┐
+          │                 │
+     docker run        docker run
+          │                 │
+          ▼                 ▼
+ default command      override command
+     node                npm init
+          │                 │
+          ▼                 ▼
+   New container      New container
+                            │
+                         finishes
+                            │
+                         stops
+```
+**Whereas:**
+```
+              EXISTING RUNNING CONTAINER
+                         │
+                         │
+                    docker exec
+                         │
+                         ▼
+                    npm init
+                         │
+                         ▼
+                  Additional process
+
+              Main application
+                    ↓
+              STILL RUNNING
+```
+
+**One-line rule to remember**
+> **docker run starts a new container; docker run IMAGE COMMAND overrides what that new container runs; docker exec runs an additional command inside an already-running container.**
+
+---
+
+## Utility container vs application container
+
+This distinction is worth remembering for interviews.
+
+| Application Container        | Utility Container                   |
+| ---------------------------- | ----------------------------------- |
+| Runs an application          | Runs a development/tool command     |
+| Usually long-running         | Often short-lived                   |
+| Has application code         | May not contain application code    |
+| `CMD` starts the application | Command can be supplied dynamically |
+| Example: Node API            | Example: `npm init`                 |
+| Example: Nginx               | Example: `composer create-project`  |
+| Example: PostgreSQL          | Example: database migration CLI     |
+
+### Simple mental model
+```
+Application container
+
+Docker → "Run my application."
+```
+Whereas:
+```
+Utility container
+
+Docker → "Give me Node/Python/PHP/etc.
+          and I'll tell you what command to run."
+```
+
+### The key Docker commands from this lesson
+```
+# Start container with default command
+docker run -it node
+
+# Start container and override default command
+docker run -it node npm init
+
+# Run command inside existing container
+docker exec -it <container> npm init
+
+# Run utility container and share current directory
+docker run -it --rm -v ${PWD}:/app -w /app node npm init
+```
+The last command is the important destination of this whole concept.
+
+It gives you a Node/npm environment without requiring Node.js/npm to be installed on Windows, while the generated project files remain on your host machine through the bind mount.
 
 ---
 
