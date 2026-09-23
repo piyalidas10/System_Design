@@ -271,6 +271,109 @@ This is a very common pattern.
 
 ---
 
+## Why bind mount is used with utility container ?
+Because a utility container is usually used to run a tool against files that you actually want to keep on your host/project directory.
+
+The bind mount connects those two worlds:
+```
+Host machine                         Utility container
+────────────────                    ──────────────────
+my-project/                         /app/
+  package.json    ◄────────────►      package.json
+  src/                                  src/
+  index.js                             index.js
+```
+
+### Without a bind mount
+
+**Suppose you run:**
+```
+docker run -it node npm init
+```
+
+**npm init creates:**
+```
+Container
+└── package.json
+```
+The problem is that package.json is inside the container.
+
+**If you remove the container:**
+```
+docker rm <container>
+```
+that file goes with it.
+
+So the utility container did its job, but the result isn't conveniently available in your actual project.
+
+### With a bind mount
+
+**You can do:**
+```
+docker run -it --rm \
+  -v ${PWD}:/app \
+  -w /app \
+  node npm init
+```
+
+**Now:**
+```
+Windows project
+C:\my-project
+│
+│  bind mount
+▼
+Container
+/app
+│
+└── npm init
+```
+
+**When npm init creates:**
+```
+/app/package.json
+```
+
+**it actually appears in:**
+```
+C:\my-project\package.json
+```
+because /app is mapped to your host directory.
+
+### Why this is especially useful for utility containers
+
+The utility container is temporary.
+
+**Its job might be:**
+```
+Create → run tool → produce/modify files → exit
+```
+**For example:**
+```
+Node utility container
+        │
+        ├── npm init
+        ├── npm install
+        ├── npm run build
+        └── npm test
+```
+You generally don't want the important project files trapped inside that temporary container.
+
+**So:**
+```
+                 Utility Container
+                       │
+                Node / npm / tools
+                       │
+                       │
+                  Bind Mount
+                       │
+                       ▼
+                Host Project Folder
+                       │
+                 Persistent files
+```
+
 ## Why utility containers are useful
 
 This is where the concept becomes much more interesting.
