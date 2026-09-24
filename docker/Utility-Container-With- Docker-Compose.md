@@ -159,3 +159,70 @@ docker-compose run npm init
 ```
 
 > **docker-compose up takes service names, whereas docker-compose run takes a service name followed by the command you want that service to execute.**
+
+## Real-world architecture
+
+You can actually mix application containers and utility containers in one Compose file.
+
+**For example:**
+```
+services:
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "4200:4200"
+
+  backend:
+    build: ./backend
+    ports:
+      - "8000:8000"
+
+  postgres:
+    image: postgres:16
+
+  npm:
+    build: ./utility
+    stdin_open: true
+    tty: true
+    volumes:
+      - ./frontend:/app
+```
+
+**Now you have:**
+```
+                 Docker Compose
+                       │
+       ┌───────────────┼────────────────┐
+       │               │                │
+       ▼               ▼                ▼
+   frontend          backend         postgres
+ application        application       database
+  container          container        container
+       │
+       │
+       ▼
+      npm
+    utility
+    container
+```
+
+**You could start the application stack:**
+```
+docker compose up
+```
+
+**And separately execute a utility command:**
+```
+docker compose run --rm npm install
+```
+or:
+```
+docker compose run --rm npm init
+```
+or:
+```
+docker compose run --rm npm audit
+```
+
+
