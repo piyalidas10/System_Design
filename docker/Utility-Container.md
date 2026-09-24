@@ -1,4 +1,6 @@
-# Docker Utility Container
+# 🐳 Docker Utility Container
+A Utility Container is not an official Docker term. It is a useful name for a container that provides a ready-to-use development environment/tooling, rather than running a continuously running application.
+
 The key idea is that Docker containers don't always have to run your application—they can provide a temporary development environment or tool.
 
 | Command       | What happens                                        |
@@ -19,6 +21,58 @@ docker compose run --rm <service> <command>
 ```
 docker compose run --rm npm init
 ```
+
+## Why use Utility Containers?
+
+**Suppose your machine doesn't have:**
+```
+Node.js
+npm
+PHP
+Composer
+Laravel CLI
+```
+
+**Instead of installing everything locally:**
+```
+Your Windows machine
+       │
+       ├── Node
+       ├── npm
+       ├── PHP
+       ├── Composer
+       └── Laravel
+```
+
+**you can keep the tooling inside Docker:**
+```
+Your Windows machine
+       │
+       ▼
+     Docker
+       │
+       ▼
+ Utility Container
+       │
+       ├── Node/npm
+       ├── PHP
+       └── Composer
+```
+
+**Your project can still be mounted into the container:**
+```
+volumes:
+  - ./:/app
+```
+Therefore:
+```
+Host project
+     │
+     │ Bind Mount
+     ▼
+Container /app
+```
+The container provides the tools, while your project files remain on your host.
 
 ## 1. Normal application container
 
