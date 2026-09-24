@@ -6,6 +6,37 @@ The key idea:
 
 Unlike CMD, the ENTRYPOINT is not normally replaced when you provide a command to docker run.
 
+ENTRYPOINT specifies the primary executable of a Docker container. It makes the container behave like an executable application, while arguments supplied through docker run are normally appended to the entrypoint. CMD is commonly used to provide default arguments or a default command.
+
+| Docker instruction | Purpose                          |
+| ------------------ | -------------------------------- |
+| `RUN`              | Build-time command               |
+| `CMD`              | Default command/arguments        |
+| `ENTRYPOINT`       | Fixed main executable            |
+| `COPY`             | Copy files into image            |
+| `EXPOSE`           | Document container port          |
+| `VOLUME`           | Declare persistent data location |
+
+## Easy mental model:
+```
+ENTRYPOINT = WHO runs?
+CMD        = WHAT are the default arguments?
+```
+
+**For example:**
+```
+ENTRYPOINT ["python"]
+CMD ["app.py"]
+```
+
+**means:**
+```
+python app.py
+   ↑     ↑
+   │     └── default argument
+   └──────── fixed executable
+```
+
 ## Simple example
 
 Suppose you have a Node.js utility container.
