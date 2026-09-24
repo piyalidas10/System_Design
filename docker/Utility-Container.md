@@ -7,6 +7,11 @@ The key idea is that Docker containers don't always have to run your application
 | `docker exec` | Executes a command in an existing running container |
 | `docker stop` | Stops container                                     |
 | `docker rm`   | Removes container                                   |
+| ------------------------- | ------------------------------------------------- |
+| `docker compose up`       | Start long-running application services           |
+| `docker compose exec`     | Run a command inside an already-running container |
+| `docker compose run --rm` | Run a one-off command using a service             |
+
 
 ## 1. Normal application container
 
