@@ -157,3 +157,5 @@ docker-compose run npm init
         │    └── COMMAND
         └───── SERVICE
 ```
+
+> **docker-compose up takes service names, whereas docker-compose run takes a service name followed by the command you want that service to execute.**
