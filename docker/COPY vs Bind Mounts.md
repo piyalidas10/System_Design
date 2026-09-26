@@ -1,4 +1,4 @@
-# COPY" vs Bind Mounts
+# COPY vs Bind Mounts
 
 > **Bind mounts are primarily a development mechanism; COPY in the Dockerfile is what makes the image self-contained and deployable.**
 
