@@ -1,7 +1,7 @@
 # 🧠 API - REST, SOAP, GraphQL, gRPC & WebSockets
 
-API Full Course for Beginners (2026) In Hindi : https://www.youtube.com/watch?v=A4CH3CBf3_Q & https://www.youtube.com/watch?v=-58TX3yCHI4
-Hindi Tutorial : https://www.youtube.com/watch?v=yib9g0U6VkQ
+1. API Full Course for Beginners (2026) In Hindi : https://www.youtube.com/watch?v=A4CH3CBf3_Q & https://www.youtube.com/watch?v=-58TX3yCHI4
+2. Hindi Tutorial : https://www.youtube.com/watch?v=yib9g0U6VkQ
 
 ✅ REST = resources  
 ✅ SOAP = enterprise contract  
