@@ -1,5 +1,7 @@
 # 🧠 API - REST, SOAP, GraphQL, gRPC & WebSockets
 
+Hindi Tutorial : https://www.youtube.com/watch?v=yib9g0U6VkQ
+
 ✅ REST = resources  
 ✅ SOAP = enterprise contract  
 ✅ GraphQL = client-controlled data  
