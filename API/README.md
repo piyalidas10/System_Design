@@ -59,13 +59,23 @@ The key distinction is its formal XML-based messaging and enterprise standards, 
 
 ## REST vs SOAP vs GraphQL vs gRPC vs WebSockets
 
-| Technology     | Communication                  | Data Format      | Best For               | Main Strength                |
-| -------------- | ------------------------------ | ---------------- | ---------------------- | ---------------------------- |
-| **REST**       | Request → Response             | JSON, XML        | Web/mobile APIs        | Simple & widely supported    |
-| **SOAP**       | Request → Response             | XML              | Enterprise systems     | Strong standards & contracts |
-| **GraphQL**    | Request → Response             | JSON             | Flexible frontend APIs | Client chooses data          |
-| **gRPC**       | Request → Response / Streaming | Protobuf         | Microservices          | Very fast & strongly typed   |
-| **WebSockets** | Bidirectional, persistent      | JSON/Binary/etc. | Real-time apps         | Server can push instantly    |
+| Technology | Communication                  | Underlying Protocol                                                                                      | Data Format                 | Data Streaming                                                     | Best For               | Main Strength                       | Why it impacts speed                                                                                                       |
+| ---------- | ------------------------------ | -------------------------------------------------------------------------------------------------------- | --------------------------- | ------------------------------------------------------------------ | ---------------------- | ----------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| REST       | Request → Response             | HTTP/1.1 or HTTP/2                                                                                       | JSON, XML                   | Usually non-streaming; streaming is possible                       | Web/mobile APIs        | Simple and widely supported         | JSON parsing and HTTP overhead can add latency; HTTP/2 multiplexing and caching can improve performance.                   |
+| SOAP       | Request → Response             | Usually HTTP/HTTPS; other transports are possible                                                        | XML                         | Usually non-streaming                                              | Enterprise systems     | Strong standards and contracts      | Verbose XML messages and XML parsing add processing overhead; WS-\* security can add more cost.                            |
+| GraphQL    | Request → Response             | Usually HTTP/HTTPS                                                                                       | JSON                        | Usually non-streaming; subscriptions can stream updates            | Flexible frontend APIs | Client chooses required data        | Reduces over-fetching and extra API calls, but complex queries and resolver execution can increase server processing time. |
+| gRPC       | Request → Response / Streaming | HTTP/2                                                                                                   | Protocol Buffers (binary)   | Unary, server streaming, client streaming, bidirectional streaming | Microservices          | Fast and strongly typed             | Compact binary messages, efficient serialization, and HTTP/2 multiplexing reduce payload and communication overhead.       |
+| WebSockets | Persistent, bidirectional      | Starts with an HTTP handshake, then uses the WebSocket protocol over TCP (typically `ws://` or `wss://`) | Text (often JSON) or binary | Full-duplex, continuous two-way messaging                          | Real-time apps         | Server can push updates immediately | Avoids repeated HTTP request/response setup and supports low-latency updates over a persistent connection.                 |
+
+## Key takeaways
+
+- REST: A good default for standard web APIs.
+- SOAP: Useful when enterprise contracts and WS-\* standards are important.
+- GraphQL: Can reduce unnecessary data transfer between frontend and backend.
+- gRPC: Excellent for efficient, strongly typed service-to-service communication.
+- WebSockets: Ideal for chat, live notifications, dashboards, and real-time status updates.
+
+Important: The underlying protocol alone does not determine speed. Payload size, network latency, serialization, server processing, connection reuse, and workload all matter. Also, streaming is different from speed: streaming allows data to be delivered incrementally rather than waiting for the entire response.
 
 ## A Practical Architecture
 In a large application, you don't necessarily choose one.
