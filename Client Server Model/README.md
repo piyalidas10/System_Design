@@ -398,8 +398,6 @@ Real-Time Messaging
 
 A practical way to understand synchronous and asynchronous communication is to contrast two real-world systems that most people use daily.
 
-<img src="./Network Tab_ Sync vs Async Calls.png" width="90%" />
-
 ---
 
 ### A. Traditional Web App — Synchronous Communication
@@ -637,6 +635,69 @@ Common interview questions on the client-server model:
 | **Adaptability** | The same pattern powers web apps, APIs, databases, and real-time systems |
 
 Understanding the client-server model gives you a framework for reasoning about **every larger system design topic**. As systems grow, many architectural decisions — load balancing, caching, service decomposition — are extensions of this foundational concept.
+
+---
+
+## How can i know from network tab which http call is Synchronous or Asynchronous ?
+
+You can use the browser’s Developer Tools → Network tab to investigate whether an HTTP call is part of synchronous or asynchronous communication. However, there is one important distinction:
+
+You cannot reliably determine synchronous vs. asynchronous communication from the HTTP request alone. You need to observe how the JavaScript code and application behave while the request is pending.
+
+<img src="./Network Tab_ Sync vs Async Calls.png" width="90%" />
+
+**When inspecting your own application, follow this process:**
+1. Open Network → Fetch/XHR.
+2. Trigger the action you want to investigate.
+3. Select the API request and check Initiator to locate the JavaScript source.
+4. Inspect the code for fetch(), async/await, Promises, or synchronous XHR.
+5. Observe whether the UI waits for the result or allows other work to continue.
+6. If you want to identify background message delivery, also inspect Network → WS → Messages when WebSockets are present.
+
+### The most reliable way to confirm it
+Check the JavaScript that initiated the request.
+
+Synchronous/blocking XHR:
+```
+const xhr = new XMLHttpRequest();
+xhr.open("GET", "/api/tasks", false); // false = synchronous
+xhr.send();
+console.log(xhr.responseText);
+```
+
+Here, false makes the XHR synchronous, blocking the main thread while it completes. Synchronous XHR on the main thread is deprecated and should generally be avoided.
+
+Asynchronous request using fetch():
+```
+async function loadTasks() {
+  const response = await fetch("/api/tasks");
+  const tasks = await response.json();
+  console.log(tasks);
+}
+loadTasks();
+console.log("The browser can continue executing other code");
+```
+
+Here, fetch() is asynchronous. Even with await, the JavaScript function pauses at that line while other eligible JavaScript and browser work can continue.
+
+### How to inspect a request in Chrome
+#### Step 1 — Open Network
+<img src="https://miro.medium.com/v2/resize:fit:828/format:webp/0*0KXb5JdlvxI4xt6l" width="80%" />
+
+- Open your web application.
+- Press F12 or Ctrl + Shift + I.
+- Select the Network tab.
+- Select the Fetch/XHR filter to see API calls.
+
+#### Step 2 — Trigger an action
+Click Login, Submit, Send Message, or another button. Select the corresponding request and inspect Headers, Payload, Response, and Timing.
+
+<img src="https://miro.medium.com/v2/resize:fit:1100/format:webp/0*fyfKLwiFPhxh6dh0" width="80%" />
+
+#### Step 3 — Observe the request and the UI
+<img src="https://miro.medium.com/v2/resize:fit:1100/format:webp/0*KPj_FStBwXL-IxKe" width="80%" />
+
+Does the interface wait for the response before continuing? Or does the request remain pending while you can keep working? The UI behavior and request dependencies are the important clues.
 
 ---
 
