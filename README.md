@@ -1,10 +1,12 @@
 ## System Design Tutorials
 1. System Design in Hindi : https://www.youtube.com/playlist?list=PLxCzCOWd7aiHanm1nA5_fMwbx5dCNFkDX
-2. System Design for Beginners (2026) : https://www.youtube.com/watch?v=SE2KF-vxvS0
-3. System Design : https://www.youtube.com/playlist?list=PLFdAYMIVJQHOWJgRrjv_RH-ng95B2h3ON
-4. System Design was HARD until I Learned these 30 Concepts : https://www.youtube.com/watch?v=s9Qh9fWeOAk
-5. System Design for Beginners : https://www.youtube.com/watch?v=lFeYU31TnQ8
-6. System Design Explained: APIs, Databases, Caching, CDNs, Load Balancing & Production Infra : https://www.youtube.com/watch?v=oYxTTirKY8M
+2. System Design & API Placement Series (Hindi) : https://www.youtube.com/playlist?list=PL2Jn4_RetiGSCFUPMU3MHOW5WgtXALwKq
+3. System Design Complete Course | All Important Concepts Explained (Hindi) : https://www.youtube.com/watch?v=5ozClNjO44A
+4. System Design for Beginners (2026) : https://www.youtube.com/watch?v=SE2KF-vxvS0
+5. System Design : https://www.youtube.com/playlist?list=PLFdAYMIVJQHOWJgRrjv_RH-ng95B2h3ON
+6. System Design was HARD until I Learned these 30 Concepts : https://www.youtube.com/watch?v=s9Qh9fWeOAk
+7. System Design for Beginners : https://www.youtube.com/watch?v=lFeYU31TnQ8
+8. System Design Explained: APIs, Databases, Caching, CDNs, Load Balancing & Production Infra : https://www.youtube.com/watch?v=oYxTTirKY8M
 
 ## Main topics covered
 1. Client–Server Architecture
