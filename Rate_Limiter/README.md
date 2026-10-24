@@ -4,10 +4,11 @@ A rate limiter lets you control the rate of traffic that your service processes 
 API endpoints are also frequently rate-limited to prevent any single user from monopolizing resources. Imagine that you want users to only be able to hit an expensive endpoint 100 times per minute. You could track hits with a counter that resets every minute. Any request after the 100th within that minute gets blocked. This is one of the simplest rate-limiting algorithms, called a fixed window limiter, and is a common way to control traffic to a service.
 
 ## Tutorials
-1. Design Rate Limiter (LLD) - Token Bucket, Fixed & Sliding Window with Thread Safety : https://www.youtube.com/watch?v=7y0KWxaUn-E
-2. Master Rate Limiting - System Design : https://www.youtube.com/watch?v=CVItTb_jdkE
-3. Design Rate Limiter (LLD) - Token Bucket, Fixed & Sliding Window with Thread Safety : https://www.youtube.com/watch?v=7y0KWxaUn-E&list=PLYPO3T7Sl63u7uLLpiKCMXnRjeFIhUAvk
-4. Website Reference : https://smudge.ai/blog/ratelimit-algorithms
+1. Rate Limiter System Design in One Shot 🔥 | system design full course | viswa sir | upGrad (Hindi) : https://www.youtube.com/watch?v=eIzo0hZVk80&list=PL2Jn4_RetiGSCFUPMU3MHOW5WgtXALwKq&index=2
+2. Design Rate Limiter (LLD) - Token Bucket, Fixed & Sliding Window with Thread Safety : https://www.youtube.com/watch?v=7y0KWxaUn-E
+3. Master Rate Limiting - System Design : https://www.youtube.com/watch?v=CVItTb_jdkE
+4. Design Rate Limiter (LLD) - Token Bucket, Fixed & Sliding Window with Thread Safety : https://www.youtube.com/watch?v=7y0KWxaUn-E&list=PLYPO3T7Sl63u7uLLpiKCMXnRjeFIhUAvk
+5. Website Reference : https://smudge.ai/blog/ratelimit-algorithms
 
 <img src="./Rate_Limiter.jpg" width="100%" />
 
