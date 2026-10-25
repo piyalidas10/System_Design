@@ -1,6 +1,7 @@
 # URL Shortener
 
-**System Design - Part 13 | Design a URL Shortener | 2 Methods** : https://www.youtube.com/watch?v=vKAZ16P4kdg
+1. **System Design - Part 13 | Design a URL Shortener | 2 Methods** : https://www.youtube.com/watch?v=vKAZ16P4kdg
+2. System Design: URL Shortener | Requirement to Production | Vishwa Sir | Placement Series | upGrad (Hindi): https://www.youtube.com/watch?v=zWhdvQ6M1pw
 
 ## For example:
 ```

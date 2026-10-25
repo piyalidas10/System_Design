@@ -5,10 +5,11 @@ API endpoints are also frequently rate-limited to prevent any single user from m
 
 ## Tutorials
 1. Rate Limiter System Design in One Shot 🔥 | system design full course | viswa sir | upGrad (Hindi) : https://www.youtube.com/watch?v=eIzo0hZVk80&list=PL2Jn4_RetiGSCFUPMU3MHOW5WgtXALwKq&index=2
-2. Design Rate Limiter (LLD) - Token Bucket, Fixed & Sliding Window with Thread Safety : https://www.youtube.com/watch?v=7y0KWxaUn-E
-3. Master Rate Limiting - System Design : https://www.youtube.com/watch?v=CVItTb_jdkE
-4. Design Rate Limiter (LLD) - Token Bucket, Fixed & Sliding Window with Thread Safety : https://www.youtube.com/watch?v=7y0KWxaUn-E&list=PLYPO3T7Sl63u7uLLpiKCMXnRjeFIhUAvk
-5. Website Reference : https://smudge.ai/blog/ratelimit-algorithms
+2. System Design Full Course | Unique ID Generation in Distributed Systems | Vishwa Sir | upGrad (Hindi) : https://www.youtube.com/watch?v=45P_bTQL9Us&list=PL2Jn4_RetiGSCFUPMU3MHOW5WgtXALwKq&index=27
+3. Design Rate Limiter (LLD) - Token Bucket, Fixed & Sliding Window with Thread Safety : https://www.youtube.com/watch?v=7y0KWxaUn-E
+4. Master Rate Limiting - System Design : https://www.youtube.com/watch?v=CVItTb_jdkE
+5. Design Rate Limiter (LLD) - Token Bucket, Fixed & Sliding Window with Thread Safety : https://www.youtube.com/watch?v=7y0KWxaUn-E&list=PLYPO3T7Sl63u7uLLpiKCMXnRjeFIhUAvk
+6. Website Reference : https://smudge.ai/blog/ratelimit-algorithms
 
 <img src="./Rate_Limiter.jpg" width="100%" />
 

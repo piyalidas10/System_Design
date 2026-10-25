@@ -1,0 +1,551 @@
+
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>From Single Server to Distributed System</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, "Segoe UI", system-ui, sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    background: #ffffff;
+    color: #1f2328;
+    padding: 32px 24px 48px;
+  }
+
+  .page { max-width: 760px; margin: 0 auto; }
+
+  h1 {
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 4px;
+    color: #1f2328;
+  }
+  .subtitle {
+    font-size: 13px;
+    color: #57606a;
+    margin-bottom: 36px;
+  }
+
+  /* Step container */
+  .steps { display: flex; flex-direction: column; gap: 40px; }
+
+  .step { position: relative; }
+
+  .step-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+  .step-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    font-size: 12px;
+    font-weight: 700;
+    flex-shrink: 0;
+    color: #fff;
+  }
+  .badge-1 { background: #57606a; }
+  .badge-2 { background: #3b82d4; }
+  .badge-3 { background: #7c5cd8; }
+  .badge-4 { background: #1b7f3a; }
+
+  .step-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: #1f2328;
+  }
+  .step-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    padding: 2px 8px;
+    border-radius: 4px;
+    margin-left: 4px;
+  }
+  .label-1 { background: #f7f8fa; color: #57606a; border: 1px solid #e5e7eb; }
+  .label-2 { background: #dbeafe; color: #1d4ed8; }
+  .label-3 { background: #ede9fe; color: #5b21b6; }
+  .label-4 { background: #d1fae5; color: #065f46; }
+
+  .step-desc {
+    font-size: 13px;
+    color: #57606a;
+    margin-bottom: 16px;
+  }
+
+  /* Architecture diagram box */
+  .arch {
+    background: #f7f8fa;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    padding: 20px 20px 16px;
+    position: relative;
+  }
+
+  /* Nodes */
+  .row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 4px;
+  }
+  .node {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    border: 1.5px solid;
+    padding: 8px 14px;
+    font-size: 12px;
+    font-weight: 600;
+    text-align: center;
+    min-width: 90px;
+    position: relative;
+  }
+  .node-icon {
+    font-size: 18px;
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+  .node-label {
+    font-size: 10px;
+    font-weight: 400;
+    color: #57606a;
+    margin-top: 2px;
+  }
+
+  /* Node colour themes */
+  .n-user    { background: #fff; border-color: #d0d7de; color: #1f2328; }
+  .n-server  { background: #dbeafe; border-color: #93c5fd; color: #1e40af; }
+  .n-db      { background: #fef9c3; border-color: #fde047; color: #713f12; }
+  .n-lb      { background: #ede9fe; border-color: #c4b5fd; color: #4c1d95; }
+  .n-app     { background: #dbeafe; border-color: #93c5fd; color: #1e40af; }
+  .n-cache   { background: #fce7f3; border-color: #f9a8d4; color: #831843; }
+  .n-worker  { background: #d1fae5; border-color: #6ee7b7; color: #065f46; }
+  .n-shard   { background: #fef3c7; border-color: #fcd34d; color: #78350f; }
+  .n-queue   { background: #e0f2fe; border-color: #7dd3fc; color: #0c4a6e; }
+
+  /* Arrows */
+  .arrow-down {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 22px;
+    color: #8c959f;
+    font-size: 16px;
+    line-height: 1;
+  }
+  .arrow-right {
+    color: #8c959f;
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+
+  /* Upgrade badge inside server */
+  .upgrades {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-top: 8px;
+  }
+  .chip {
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 7px;
+    border-radius: 99px;
+    background: #e0f2fe;
+    color: #0c4a6e;
+    border: 1px solid #bae6fd;
+  }
+  .chip.up { background: #dcfce7; color: #14532d; border-color: #86efac; }
+
+  /* Notes */
+  .notes {
+    margin-top: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .note {
+    font-size: 12px;
+    color: #57606a;
+    display: flex;
+    gap: 6px;
+    align-items: flex-start;
+  }
+  .note-good::before { content: "✓"; color: #1b7f3a; font-weight: 700; flex-shrink: 0; }
+  .note-bad::before  { content: "✗"; color: #cf222e; font-weight: 700; flex-shrink: 0; }
+
+  /* Connector arrow between steps */
+  .step-connector {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    justify-content: center;
+    color: #8c959f;
+    font-size: 12px;
+    margin: 4px 0 4px;
+  }
+  .step-connector::before,
+  .step-connector::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: #e5e7eb;
+  }
+
+  /* Legend */
+  .legend {
+    margin-top: 40px;
+    border-top: 1px solid #e5e7eb;
+    padding-top: 20px;
+  }
+  .legend-title { font-size: 12px; font-weight: 700; color: #57606a; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.06em; }
+  .legend-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: #57606a;
+  }
+  .legend-dot {
+    width: 12px; height: 12px;
+    border-radius: 3px;
+    flex-shrink: 0;
+    border: 1.5px solid;
+  }
+
+  footer {
+    margin-top: 40px;
+    padding-top: 16px;
+    border-top: 1px solid #e5e7eb;
+    text-align: center;
+    font-size: 12px;
+    color: #8c959f;
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <h1>From Single Server to Distributed System</h1>
+  <p class="subtitle">Step-by-step visual architecture evolution — vertical scaling, horizontal scaling, and distributed computing</p>
+
+  <div class="steps">
+
+    
+    <div class="step">
+      <div class="step-header">
+        <span class="step-badge badge-1">1</span>
+        <span class="step-title">Single Server</span>
+        <span class="step-label label-1">Starting Point</span>
+      </div>
+      <p class="step-desc">One machine runs the application and the database. Simple to build and deploy — but a single point of failure.</p>
+      <div class="arch">
+        <div class="row">
+          <div class="node n-user">
+            <div class="node-icon">👤</div>
+            Users
+          </div>
+        </div>
+        <div class="arrow-down">↓</div>
+        <div class="row">
+          <div class="node n-server" style="min-width:160px">
+            <div class="node-icon">🖥️</div>
+            Single Server
+            <div class="node-label">App + Database on one machine</div>
+          </div>
+        </div>
+        <div class="notes">
+          <div class="note note-good">Simple to develop and deploy</div>
+          <div class="note note-good">Suitable for low traffic</div>
+          <div class="note note-bad">Server becomes a bottleneck as users grow</div>
+          <div class="note note-bad">Single point of failure</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-connector">traffic grows → upgrade the machine</div>
+
+    
+    <div class="step">
+      <div class="step-header">
+        <span class="step-badge badge-2">2</span>
+        <span class="step-title">Vertical Scaling</span>
+        <span class="step-label label-2">Scale Up</span>
+      </div>
+      <p class="step-desc">Upgrade the same machine with more CPU, RAM, storage, or network capacity. No distribution needed — yet.</p>
+      <div class="arch">
+        <div class="row">
+          <div class="node n-user">
+            <div class="node-icon">👤</div>
+            Users
+          </div>
+        </div>
+        <div class="arrow-down">↓</div>
+        <div class="row">
+          <div class="node n-server" style="min-width:200px;padding:12px 18px">
+            <div class="node-icon">🖥️</div>
+            Upgraded Server
+            <div class="node-label">App + Database · Still one machine</div>
+            <div class="upgrades">
+              <span class="chip up">More CPU</span>
+              <span class="chip up">More RAM</span>
+              <span class="chip up">Faster SSD</span>
+              <span class="chip up">More Bandwidth</span>
+            </div>
+          </div>
+        </div>
+        <div class="notes">
+          <div class="note note-good">No distributed complexity</div>
+          <div class="note note-good">Simpler application code — no coordination</div>
+          <div class="note note-bad">Hardware has a ceiling — eventually maxes out</div>
+          <div class="note note-bad">Downtime required to upgrade hardware</div>
+          <div class="note note-bad">Still a single point of failure</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-connector">traffic keeps growing → add more machines</div>
+
+    
+    <div class="step">
+      <div class="step-header">
+        <span class="step-badge badge-3">3</span>
+        <span class="step-title">Horizontal Scaling</span>
+        <span class="step-label label-3">Scale Out</span>
+      </div>
+      <p class="step-desc">Add multiple application servers behind a load balancer. The database may still be a single shared node at this stage.</p>
+      <div class="arch">
+        <div class="row">
+          <div class="node n-user">
+            <div class="node-icon">👤</div>
+            Users
+          </div>
+        </div>
+        <div class="arrow-down">↓</div>
+        <div class="row">
+          <div class="node n-lb" style="min-width:160px">
+            <div class="node-icon">⚖️</div>
+            Load Balancer
+            <div class="node-label">Distributes incoming requests</div>
+          </div>
+        </div>
+        <div class="arrow-down">↓ distributes requests ↓</div>
+        <div class="row">
+          <div class="node n-app">
+            <div class="node-icon">⚙️</div>
+            App Server 1
+          </div>
+          <span class="arrow-right"> </span>
+          <div class="node n-app">
+            <div class="node-icon">⚙️</div>
+            App Server 2
+          </div>
+          <span class="arrow-right"> </span>
+          <div class="node n-app">
+            <div class="node-icon">⚙️</div>
+            App Server 3
+          </div>
+        </div>
+        <div class="arrow-down">↓ all read/write ↓</div>
+        <div class="row">
+          <div class="node n-db" style="min-width:160px">
+            <div class="node-icon">🗄️</div>
+            Database
+            <div class="node-label">Shared · May become next bottleneck</div>
+          </div>
+        </div>
+        <div class="notes">
+          <div class="note note-good">Can handle more concurrent requests</div>
+          <div class="note note-good">Add or remove servers as demand changes</div>
+          <div class="note note-good">Individual server failure does not take down the service</div>
+          <div class="note note-bad">Database can become the new bottleneck</div>
+          <div class="note note-bad">Stateless design required — sessions must be shared</div>
+          <div class="note note-bad">More operational complexity: monitoring, health checks</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-connector">data volume grows → distribute storage too</div>
+
+    
+    <div class="step">
+      <div class="step-header">
+        <span class="step-badge badge-4">4</span>
+        <span class="step-title">Distributed Computing</span>
+        <span class="step-label label-4">Full Scale</span>
+      </div>
+      <p class="step-desc">Both computation and storage are distributed. Workers handle async tasks. Cache layer absorbs read traffic. The database is partitioned or replicated.</p>
+      <div class="arch">
+        <div class="row">
+          <div class="node n-user" style="min-width:60px;padding:6px 10px;font-size:11px">Web</div>
+          <div class="node n-user" style="min-width:60px;padding:6px 10px;font-size:11px">Mobile</div>
+          <div class="node n-user" style="min-width:60px;padding:6px 10px;font-size:11px">API</div>
+        </div>
+        <div class="arrow-down">↓</div>
+        <div class="row">
+          <div class="node n-lb" style="min-width:200px">
+            <div class="node-icon">⚖️</div>
+            Load Balancer / API Gateway
+          </div>
+        </div>
+        <div class="arrow-down">↓</div>
+        <div class="row">
+          <div class="node n-app" style="font-size:11px;min-width:76px;padding:6px 10px">
+            <div class="node-icon">⚙️</div>App 1
+          </div>
+          <div class="node n-app" style="font-size:11px;min-width:76px;padding:6px 10px">
+            <div class="node-icon">⚙️</div>App 2
+          </div>
+          <div class="node n-app" style="font-size:11px;min-width:76px;padding:6px 10px">
+            <div class="node-icon">⚙️</div>App 3
+          </div>
+          <div class="node n-app" style="font-size:11px;min-width:76px;padding:6px 10px">
+            <div class="node-icon">⚙️</div>App N
+          </div>
+        </div>
+        <div class="arrow-down">↓        ↓        ↓</div>
+        <div class="row" style="align-items:flex-start;gap:16px">
+          <div style="display:flex;flex-direction:column;align-items:center;gap:8px">
+            <div class="node n-cache" style="min-width:110px">
+              <div class="node-icon">⚡</div>
+              Cache Layer
+              <div class="node-label">Redis · Hot data</div>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:8px">
+            <div class="node n-queue" style="min-width:110px">
+              <div class="node-icon">📨</div>
+              Message Queue
+              <div class="node-label">Async events</div>
+            </div>
+            <div class="arrow-down" style="height:14px">↓</div>
+            <div class="node n-worker" style="min-width:110px">
+              <div class="node-icon">🔧</div>
+              Worker Servers
+              <div class="node-label">Background tasks</div>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:8px">
+            <div class="node n-shard" style="min-width:110px">
+              <div class="node-icon">🗃️</div>
+              DB Shard A
+              <div class="node-label">Users 1–5M</div>
+            </div>
+            <div class="node n-shard" style="min-width:110px">
+              <div class="node-icon">🗃️</div>
+              DB Shard B
+              <div class="node-label">Users 5–10M</div>
+            </div>
+            <div class="node n-shard" style="min-width:110px">
+              <div class="node-icon">🗃️</div>
+              DB Replica
+              <div class="node-label">Read scaling</div>
+            </div>
+          </div>
+        </div>
+        <div class="notes">
+          <div class="note note-good">Work processed in parallel across many machines</div>
+          <div class="note note-good">Data partitioned (sharding) and replicated for scale &amp; availability</div>
+          <div class="note note-good">Cache absorbs read traffic; queue decouples async work</div>
+          <div class="note note-bad">Network failures, partial failures, and consistency must be managed</div>
+          <div class="note note-bad">Distributed coordination adds operational overhead</div>
+          <div class="note note-bad">Requires observability, health checks, and failure recovery</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  
+  <div style="margin-top:44px">
+    <div style="font-size:13px;font-weight:700;margin-bottom:12px;color:#1f2328">Quick Comparison</div>
+    <table style="width:100%;border-collapse:collapse;font-size:12px">
+      <thead>
+        <tr style="background:#f7f8fa">
+          <th style="text-align:left;padding:8px 10px;border:1px solid #e5e7eb;color:#57606a;font-weight:600">Factor</th>
+          <th style="text-align:left;padding:8px 10px;border:1px solid #e5e7eb;color:#57606a;font-weight:600">Single Server</th>
+          <th style="text-align:left;padding:8px 10px;border:1px solid #e5e7eb;color:#57606a;font-weight:600">Vertical Scaling</th>
+          <th style="text-align:left;padding:8px 10px;border:1px solid #e5e7eb;color:#57606a;font-weight:600">Horizontal Scaling</th>
+          <th style="text-align:left;padding:8px 10px;border:1px solid #e5e7eb;color:#57606a;font-weight:600">Distributed</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="padding:7px 10px;border:1px solid #e5e7eb;font-weight:600">Complexity</td>
+          <td style="padding:7px 10px;border:1px solid #e5e7eb;color:#1b7f3a">Very Low</td>
+          <td style="padding:7px 10px;border:1px solid #e5e7eb;color:#1b7f3a">Low</td>
+          <td style="padding:7px 10px;border:1px solid #e5e7eb;color:#b08000">Medium</td>
+          <td style="padding:7px 10px;border:1px solid #e5e7eb;color:#cf222e">High</td>
+        </tr>
+        <tr style="background:#f7f8fa">
+          <td style="padding:7px 10px;border:1px solid #e5e7eb;font-weight:600">Capacity ceiling</td>
+          <td style="padding:7px 10px;border:1px solid #e5e7eb;color:#cf222e">Hardware</td>
+          <td style="padding:7px 10px;border:1px solid #e5e7eb;color:#cf222e">Hardware</td>
+          <td style="padding:7px 10px;border:1px solid #e5e7eb;color:#b08000">App servers ✓, DB ✗</td>
+          <td style="padding:7px 10px;border:1px solid #e5e7eb;color:#1b7f3a">Can grow further</td>
+        </tr>
+        <tr>
+          <td style="padding:7px 10px;border:1px solid #e5e7eb;font-weight:600">Availability</td>
+          <td style="padding:7px 10px;border:1px solid #e5e7eb;color:#cf222e">Single PoF</td>
+          <td style="padding:7px 10px;border:1px solid #e5e7eb;color:#cf222e">Single PoF</td>
+          <td style="padding:7px 10px;border:1px solid #e5e7eb;color:#1b7f3a">Redundant app layer</td>
+          <td style="padding:7px 10px;border:1px solid #e5e7eb;color:#1b7f3a">Highly available</td>
+        </tr>
+        <tr style="background:#f7f8fa">
+          <td style="padding:7px 10px;border:1px solid #e5e7eb;font-weight:600">Data management</td>
+          <td style="padding:7px 10px;border:1px solid #e5e7eb">Simple</td>
+          <td style="padding:7px 10px;border:1px solid #e5e7eb">Simple</td>
+          <td style="padding:7px 10px;border:1px solid #e5e7eb">Shared DB</td>
+          <td style="padding:7px 10px;border:1px solid #e5e7eb">Sharding + Replication</td>
+        </tr>
+        <tr>
+          <td style="padding:7px 10px;border:1px solid #e5e7eb;font-weight:600">Best for</td>
+          <td style="padding:7px 10px;border:1px solid #e5e7eb">Prototypes, MVPs</td>
+          <td style="padding:7px 10px;border:1px solid #e5e7eb">Small / medium apps</td>
+          <td style="padding:7px 10px;border:1px solid #e5e7eb">Growing traffic</td>
+          <td style="padding:7px 10px;border:1px solid #e5e7eb">Large-scale production</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  
+  <div class="legend">
+    <div class="legend-title">Node Legend</div>
+    <div class="legend-grid">
+      <div class="legend-item"><div class="legend-dot" style="background:#dbeafe;border-color:#93c5fd"></div>Application Server</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#fef9c3;border-color:#fde047"></div>Database</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#ede9fe;border-color:#c4b5fd"></div>Load Balancer</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#fce7f3;border-color:#f9a8d4"></div>Cache (Redis)</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#e0f2fe;border-color:#7dd3fc"></div>Message Queue</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#d1fae5;border-color:#6ee7b7"></div>Worker Server</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#fef3c7;border-color:#fcd34d"></div>DB Shard / Replica</div>
+    </div>
+  </div>
+
+  <footer>Made with IBM Bob</footer>
+
+</div>
+</body>
+</html>
