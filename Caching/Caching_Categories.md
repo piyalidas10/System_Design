@@ -273,26 +273,50 @@ graph TD
 ---
 
 ### 6. OS-Level Cache (Page Cache)
-The operating system automatically caches physical disk blocks in unused system RAM to optimize disk I/O performance.
+
+#### What is it?
+* The operating system kernel automatically caches physical disk blocks and filesystem data in unused system RAM (known as the **Page Cache** or buffer cache) to accelerate file system and disk I/O operations.
+
+#### Examples (OS Mechanisms & Concepts)
+* **Linux Page Cache:** Transparently caches filesystem blocks in free system memory
+* **Virtual File System (VFS) Cache:** Caches filesystem metadata, directory structures, and inode blocks
+* **Zero-Copy Network Transfer (`sendfile` / `splice`):** Streams data directly from Page Cache to network sockets without copying to user-space
+* **Windows Cache Manager:** Windows kernel system cache for filesystem I/O
+
+#### Where it sits
+* **Application Process $\rightarrow$ OS Virtual File System (VFS) $\rightarrow$ Kernel Page Cache (RAM) $\rightarrow$ Physical Storage (NVMe/SSD/HDD)**
 
 ```mermaid
 graph LR
-    App[Application Process] --> VFS[OS Virtual File System]
-    VFS <--> PageCache[OS Page Cache in RAM]
-    PageCache <--> Storage[Physical HDD / NVMe SSD]
+    App[User-Space Application / Database] --> VFS[OS Virtual File System]
+    subgraph Host OS Kernel & Memory
+        VFS <--> PageCache["OS Page Cache (RAM)<br/>(Linux Kernel File System Cache)"]
+    end
+    PageCache <--> Storage[(Physical Storage / NVMe SSD Blocks)]
 ```
 
-* **How It Works:** When an application reads or writes files/databases, the Linux OS kernel stores the referenced disk pages in RAM (Page Cache). Subsequent file reads are satisfied from memory without hitting disk hardware.
-* **When to Use:**
-  - Transparently and continuously active on all modern operating systems (Linux, Windows, macOS).
-* **Pros:**
-  - **Completely Transparent:** No software development or configuration effort needed.
-  - **Accelerates File & DB I/O:** Makes repeat disk reads orders of magnitude faster.
-* **Cons:**
-  - **No Application-Level Control:** OS kernel manages page eviction automatically.
-  - **Non-Distributed:** Bound strictly to the individual physical machine.
-* **Real-World Examples:**
-  - **Linux Page Cache:** Accelerating database files, append-only logs (Kafka / RocksDB), and static file servers.
+#### How It Works
+* When an application reads or writes to a file or database store, the operating system kernel intercepts the I/O call and loads the corresponding disk pages (typically 4 KB blocks) into available RAM. Subsequent reads for the same blocks are served directly from RAM at bus speeds without hitting physical disk hardware.
+
+#### When to Use
+* **Default behavior:** Automatically and continuously active on all modern operating systems (Linux, macOS, Windows).
+* **Sequential disk & log workloads:** Systems performing high-volume sequential append-only writes and sequential reads.
+* **Static file web servers:** Serving high-throughput static media directly from disk via kernel buffers.
+
+#### Real-World Examples
+* **Apache Kafka:** Heavily relies on the Linux Page Cache to buffer commit logs, achieving extreme throughput without needing a complex in-memory JVM cache.
+* **Database Engines (PostgreSQL, SQLite, RocksDB):** Rely on OS page caching to accelerate repeated reads of table storage files and commit logs.
+* **Web Servers (Nginx / Apache):** Utilizing the `sendfile()` system call to transfer static files directly from Page Cache to client network sockets (Zero-Copy).
+
+#### Pros:
+* **Always active & zero configuration:** Operates completely out of the box with zero developer coding or infrastructure setup.
+* **Transparent performance boost:** Drastically accelerates repeated disk, database file, and log access.
+* **Zero-copy optimization:** Enables ultra-efficient network streaming directly from kernel RAM to network interfaces.
+
+#### Cons:
+* **Zero application control:** Developers cannot manually pin or force specific pages into memory; the OS kernel manages eviction autonomously.
+* **Unpredictable under memory pressure:** If other host processes demand memory, the OS kernel will automatically evict clean cached pages.
+* **Not distributed:** Bound strictly to the individual physical server instance.
 
 ---
 
