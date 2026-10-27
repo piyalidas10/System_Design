@@ -1089,7 +1089,9 @@ sequenceDiagram
 
 ---
 
-> 📖 **Deep Dive Document:** For an in-depth exploration of caching categories, multi-layer architectures, Redis internals, CDN geographic latency analysis ($\Delta T$), and capacity estimations, see [`Caching_Categories.md`](Caching/Caching_Categories.md).
+> 📖 **Deep Dive Guides:**
+> - [**Multi-Layer Caching Architecture (L0 → L3)**](Caching/Multi_Layer_Caching_Architecture.md) — Comprehensive guide covering hierarchical request traversal, e-commerce product page case study, and layer-by-layer mapping.
+> - [**Caching Categories & Architectures**](Caching/Caching_Categories.md) — Detailed breakdown of all 6 caching categories, Redis internals, CDN $\Delta T$ latency analysis, and capacity estimation.
 
 ---
 

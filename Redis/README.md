@@ -1,4 +1,18 @@
-# Redis = Remote Dictionary Server
+# Redis = Remote Dictionary Server ( No SQL Database -> [key value], Read, O(1), in-memory | Stable Storage)
+
+- Redis = in-memory key-value store
+- Single-threaded but extremely optimized
+
+## Important
+1. Uses event loop
+2. No context switching
+3. Efficient memory usage
+
+## For scaling - Redis Cluster
+1. Sharding by hash slot
+2. 16,384 hash slots
+3. Distributed across nodes
+
 **Redis** : https://redis.io/
 
 <img src="imgs/caching_redis.jpg" width="90%">
