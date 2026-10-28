@@ -1,5 +1,10 @@
 # URL Shortener
 
+- 📖 [Day 6 — Designing a Production-Ready URL Shortener (Deep Dive & Interview Guide)](./Production_URL_Shortener_Architecture.md)
+- 📖 [Unique ID Generation in Distributed Systems](./Unique-ID-Generation.md)
+- 📖 [System Design Interview Guide](./system-design-interview-guide.md)
+- 📖 [Interview Questions](./questions.md)
+
 1. **System Design - Part 13 | Design a URL Shortener | 2 Methods** : https://www.youtube.com/watch?v=vKAZ16P4kdg
 2. **System Design: URL Shortener | Requirement to Production | Vishwa Sir | Placement Series | upGrad (Hindi)**: https://www.youtube.com/watch?v=zWhdvQ6M1pw
 3. **System Design Full Course | Unique ID Generation in Distributed Systems | Vishwa Sir | upGrad (Hindi)** : https://www.youtube.com/watch?v=45P_bTQL9Us
