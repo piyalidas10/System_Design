@@ -2,6 +2,8 @@
 
 > *A comprehensive guide to SOA and Microservices — what they are, how they work, key advantages, challenges, and how they differ from each other and from Monolithic Architecture.*
 
+<img src="./Evolution%20of%20Software%20Architecture%20Infographic.png" width="100%" />
+
 ---
 
 ## 1. Quick Recap: Why We Move Beyond Monoliths
