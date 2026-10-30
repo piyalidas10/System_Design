@@ -365,15 +365,3 @@ high fault tolerance, and own data ownership?
 5. **Start with a Monolith. Evolve to SOA/Microservices** only when there is a concrete scaling or team-coordination need.
 
 ---
-
-## 12. Series Navigation
-
-| Module | Topic | Status |
-| :--- | :--- | :--- |
-| Day 7 | Monolithic Architecture | ✅ Covered |
-| **Day 8** | **SOA & Microservices** | ✅ **This Module** |
-| Next | Rate Limiting System Design | 🔜 Upcoming |
-
----
-
-*Part of the Ultimate Placement Preparation Course 2026 — System Design Series.*
