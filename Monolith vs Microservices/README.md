@@ -4,6 +4,9 @@ Monolith vs Microservices — Which Architecture Should You choose and When?| Sy
 
 <img src="./Monolithic vs Microservices.png" width="100%" />
 
+<img src="./Evolution of Software Architecture Infographic.png" width="100%" />
+
+
 ## Introduction
 Everyone talks about Microservices like they are the obvious choice for every system. They are not. 
 Netflix, Amazon and Uber all started as Monoliths. 
