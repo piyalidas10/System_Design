@@ -110,6 +110,39 @@ Responsibilities are now clearly separated:
 
 > **Production detail:** a synchronous rate-limit check for every request introduces network latency and an additional dependency. The gateway and rate-limiter service should communicate over a low-latency internal interface with strict timeouts and a defined failure policy. Some API gateways run rate-limiting logic locally while sharing state through Redis, avoiding a separate network call on every request.
 
+### Why Rate Limiter service is placed after API gateway not before API Gateway ?
+The API Gateway is the centralized entry point for incoming API requests. It handles initial request processing, authentication, routing and request validation. Once the request context is established, the rate limiter can apply more granular policies based on user identity, API endpoint, subscription plan or client ID.
+
+However, for infrastructure protection, we can also implement edge-level rate limiting at the CDN or WAF before traffic reaches the API Gateway. Therefore, production systems commonly use multiple layers of rate limiting.
+
+Imagine putting the Rate Limiter first:
+```
+Client
+    │
+Rate Limiter
+    │
+API Gateway
+    │
+Backend Services
+```
+
+**There are some challenges:**
+1. Request identification: The rate limiter might not yet have the authenticated user identity or API subscription information.
+2. Routing information: It might not know which API or service the request targets.
+3. Authentication context: It may need to duplicate authentication logic to enforce user-specific limits.
+4. Architectural complexity: You may end up duplicating responsibilities already handled by the API Gateway.
+For example:
+- User A: 100 requests/minute.
+- User B: 1,000 requests/minute.
+- Payment API: 50 requests/minute.
+- Login API: 5 requests/minute.
+The rate limiter needs the right identity, API and subscription context to apply the correct policy.
+
+**Remember this architectural principle:**
+- Before API Gateway → Protect infrastructure.
+- At API Gateway → Protect API entry points.
+- After API Gateway → Enforce granular business and user-specific limits.
+
 ---
 
 ## Step 4: Add a Redis Cluster for Shared Counters
