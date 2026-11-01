@@ -153,6 +153,8 @@ RPC makes communication between services look like calling a function on another
 
 ## 6. gRPC Architecture and Workflow
 
+<img src="./Neon gRPC Protocol Flowchart.png" width="100%" />
+
 ### Step 1: Create a `.proto` file
 
 To define a gRPC service, first create a `.proto` file, e.g. `user.proto`. It defines:

@@ -58,6 +58,14 @@ A **Distributed Cache** is a **high-speed, temporary storage layer** that:
 ## 1. Overview
 A **Distributed Cache** is an in-memory, highly available, distributed data store that sits between application servers and persistent storage (databases) to reduce latency, offload read/write pressure from persistent databases, and provide sub-millisecond retrieval times for frequently accessed data.
 
+### Why do we need caching ?
+• Problems:
+	• high DB load
+	• slower responses
+	• expensive scaling
+	• connection exhaustion
+	• repeated computation
+
 ---
 
 ## 2. Requirements
