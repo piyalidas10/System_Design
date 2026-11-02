@@ -6,6 +6,8 @@
 Partitioning / consistent hashing makes a cache **scalable**.  
 **Replication** makes it **highly available** — able to survive node failures without losing data or crashing the application.
 
+<img src="./Distributed Cache Architecture Overview.png" width="100%" />
+
 ---
 
 ## Table of Contents
