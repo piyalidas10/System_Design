@@ -15,6 +15,8 @@ Popular technologies include Apache Kafka, RabbitMQ, Amazon SQS, Redis Streams, 
 3. What is a MESSAGE QUEUE and Where is it used? : https://www.youtube.com/watch?v=oUJbuFMyBDk
 4. Message Queue in System Design | EP 09 : https://www.youtube.com/watch?v=kcfNW9VjLNQ
 
+---
+
 ## Key Takeaways
 - Producer creates messages.
 - Message Queue stores them temporarily.
