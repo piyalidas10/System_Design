@@ -293,150 +293,16 @@ Process Later
 ```
 The processing happens in the background.
 
-## Advantages of Message Queue
 
-**1. Decoupling**
+## Challenges of Message Queues
 
-**Without MQ**
-```
-Frontend
-     │
-     ▼
-Backend
-     │
-     ▼
-Email Service
-```
-Everything depends on everything.
+| Challenge | Explanation | Possible solution |
+| :--- | :--- | :--- |
+| **Message ordering** | Messages may not be processed in their original order | FIFO queues, partitioning, sequence numbers |
+| **Duplicate messages** | A message may be delivered more than once | Idempotency, deduplication IDs, idempotent consumers |
+| **Latency** | An additional component adds processing time | Use queues only where asynchronous processing is suitable |
 
-**With MQ**
-```
-Frontend
-      │
-      ▼
 
- Message Queue
-
-      │
-
-Backend
-
-      │
-
-Email Service
-```
-Every service becomes independent.
-
-**2. Scalability**
-
-Suppose
-
-100,000 orders arrive.
-
-**Without Queue**
-```
-100000 Orders
-
-↓
-
-One Server
-
-↓
-
-Crash
-```
-
-**With Queue**
-```
-100000 Orders
-
-↓
-
-Queue
-
-↓
-
-Worker 1
-
-Worker 2
-
-Worker 3
-
-Worker 4
-
-Worker 5
-```
-Add more workers.
-
-System scales easily.
-
-**3. Fault Tolerance**
-
-Suppose Worker 2 crashes.
-```
-Queue
-
-Order #101
-
-↓
-
-Worker 2
-
-X Crashed
-```
-The message isn't lost.
-
-Queue sends it to another worker.
-```
-Queue
-
-↓
-
-Worker 3
-```
-Processes successfully.
-
-**4. Load Balancing**
-
-Instead of
-```
-One Worker
-
-1000 Jobs
-```
-We can have
-```
-Queue
-
-↓
-
-Worker 1
-
-Worker 2
-
-Worker 3
-
-Worker 4
-```
-Each processes part of the workload.
-
-**5. Reliability**
-
-Queue stores messages safely.
-
-Even if a server restarts
-```
-Queue
-
-Order #201
-
-Order #202
-
-Order #203
-```
-Messages remain.
-
-## Challenges
 **1. Ordering**
 
 Sometimes
