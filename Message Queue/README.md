@@ -25,6 +25,8 @@ Popular technologies include Apache Kafka, RabbitMQ, Amazon SQS, Redis Streams, 
 - **Trade-offs:** increased latency, message ordering challenges, and handling duplicate deliveries.
 - Use MQ for background or asynchronous workloads, not for ultra-low-latency interactions that require an immediate response.
 
+---
+
 ## Why do we need a Message Queue?
 
 Imagine an online bookstore.
@@ -46,6 +48,69 @@ Problems:
 - Slow response
 - Request failures
 - Poor scalability
+
+### A. Decoupling
+
+<img src="./Message_Queue_Decoupling.jpg" width="50%" />
+
+**Without a queue:**
+- Service A directly calls Service B.
+- Service A must wait for Service B.
+- Both services are tightly connected during the operation.
+
+**With a queue:**
+- Service A publishes a message.
+- Service B processes it independently.
+- Service A does not need to maintain a continuous connection while processing happens.
+
+**Real-world example:**
+> **You place an online order. You don't need to wait until the warehouse packs your product. The system accepts your order and processes it in the background.**
+
+### B. Scalability
+
+<img src="./Message_Queue_Scalability.jpg" width="50%" />
+
+Imagine 10,000 customers placing orders simultaneously.
+
+Without a queue, the backend may become overloaded.
+
+With a queue:
+- Requests accumulate in the queue.
+- Consumers process messages according to available capacity.
+- You can add more consumer instances when the workload increases.
+
+**Example:**
+```
+| Situation | Consumers |
+| :--- | :--- |
+| Normal traffic | 2 |
+| Increased traffic | 5 |
+| Peak traffic | 10 |
+```
+The queue absorbs temporary traffic spikes while consumers process the backlog.
+
+### C. Fault Tolerance
+Suppose Consumer A picks up an order but crashes during processing.
+
+A properly configured message broker can make the message available for another consumer to retry.
+
+<img src="./Message_Queue_FaultTolerance.jpg" width="50%" />
+
+This helps prevent messages from being lost when a consumer fails.
+
+Important: This requires acknowledgment, retry and message-retention mechanisms. Simply adding a queue does not automatically guarantee fault tolerance.
+
+### D. Independent Processing
+The producer and consumer can operate at different speeds.
+
+**For example:**
+- Producer generates 1,000 messages per second.
+- Consumers process 500 messages per second.
+- The remaining messages wait in the queue.
+
+The queue acts as a buffer between these two components.
+
+---
 
 ## Real Life Analogy
 
@@ -88,7 +153,7 @@ The token queue is the Message Queue.
 
 ## Message Queue Architecture
 
-<img src="Message_Queue.jpg" width="100%" />
+<img src="Message_Queue.jpg" width="50%" />
 
 ```
           Producer
