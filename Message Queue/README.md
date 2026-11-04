@@ -87,8 +87,11 @@ Exactly the same concept is used in software.
 The token queue is the Message Queue.
 
 ## Message Queue Architecture
+
+<img src="Message_Queue.jpg" width="100%" />
+
 ```
-               Producer
+          Producer
 
      User Places Order
              │
@@ -113,6 +116,20 @@ The token queue is the Message Queue.
 
 Processes one message at a time.
 ```
+
+```
+| Component | Responsibility |
+| :--- | :--- |
+| **Producer** | Sends messages to the queue |
+| **Message Queue** | Stores messages until they are processed |
+| **Consumer** | Retrieves and processes messages |
+```
+
+
+**Popular implementations:**
+- RabbitMQ
+- Apache Kafka
+- Amazon SQS
 
 ## Producers and Consumers
 ```
@@ -141,63 +158,13 @@ Processes one message at a time.
 ```
 Producer only sends messages. Consumer processes messages.
 
-## How it works
-
-**Step 1**
-
-Customer places an order.
-```
-Customer
-
-   │
-   ▼
-```
-Create Order
-
-**Step 2**
-
-Instead of processing immediately...
-```
-Customer
-
-      │
-
-      ▼
-
-Message Queue
-```
-Order #1
-
-**Step 3**
-
-Consumer picks message.
-```
-Queue
-
-Order #1
-
-      │
-
-      ▼
-
-Order Service
-```
-
-**Step 4**
-
-Processing completes.
-```
-Order Service
-
-Process Payment
-
-Reserve Inventory
-
-Generate Invoice
-
-Send Email
-```
-Customer doesn't have to wait.
+## How does it work? Step by step
+1. Customer places an order - The frontend sends an order request to the backend.
+2. Producer creates a message - The backend creates an order-processing message.
+3. Message enters the queue - The message broker stores the message.
+4. Consumer retrieves the message - An available worker picks up the order.
+5. Consumer processes the order - The system validates payment, updates order status and performs the required operations.
+6. Customer receives confirmation - The system sends an email or notification.
 
 ## Why is it called Asynchronous?
 
