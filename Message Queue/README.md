@@ -80,13 +80,13 @@ With a queue:
 - You can add more consumer instances when the workload increases.
 
 **Example:**
-```
+
 | Situation | Consumers |
 | :--- | :--- |
 | Normal traffic | 2 |
 | Increased traffic | 5 |
 | Peak traffic | 10 |
-```
+
 The queue absorbs temporary traffic spikes while consumers process the backlog.
 
 ### C. Fault Tolerance
@@ -182,14 +182,11 @@ The token queue is the Message Queue.
 Processes one message at a time.
 ```
 
-```
 | Component | Responsibility |
 | :--- | :--- |
 | **Producer** | Sends messages to the queue |
 | **Message Queue** | Stores messages until they are processed |
 | **Consumer** | Retrieves and processes messages |
-```
-
 
 **Popular implementations:**
 - RabbitMQ
@@ -302,6 +299,18 @@ The processing happens in the background.
 | **Duplicate messages** | A message may be delivered more than once | Idempotency, deduplication IDs, idempotent consumers |
 | **Latency** | An additional component adds processing time | Use queues only where asynchronous processing is suitable |
 
+### Understand duplicate messages
+Imagine a customer places an order worth ₹5,000.
+
+**The consumer:**
+1. Receives the message.
+2. Processes the payment.
+3. Crashes before acknowledging the message.
+4. The queue delivers the message again.
+
+Now the payment might be processed twice unless the consumer implements idempotency.
+
+Idempotency: Processing the same request multiple times should not produce duplicate business effects.
 
 **1. Ordering**
 
@@ -322,7 +331,6 @@ Distributed systems make this difficult.
 Sometimes
 ```
 Order #500
-
 Order #500
 ```
 appears twice.
@@ -331,36 +339,25 @@ Consumers should be idempotent (processing the same message multiple times shoul
 
 **3. Latency**
 
-Without MQ
+**Without MQ**
 ```
 Client
-
 ↓
-
 Server
-
 ↓
-
 Response
 ```
-With MQ
+
+**With MQ**
 ```
 Client
-
 ↓
-
 Queue
-
 ↓
-
 Consumer
-
 ↓
-
 Database
-
 ↓
-
 Response
 ```
 Extra hop means slightly higher latency.
@@ -370,11 +367,12 @@ Extra hop means slightly higher latency.
 **Excellent use cases**
 - Order Processing
 - Payment Processing
-- Email Sending
+- Email systems : Queue emails and send them in the background.
 - SMS Sending
 - Push Notifications
 - Image Processing
-- Video Encoding
+- Video processing : Queue uploaded videos for transcoding into different resolutions.
+- Social media notifications : Queue notifications when users like, comment or share posts.
 - PDF Generation
 - Log Processing
 - Inventory Updates
