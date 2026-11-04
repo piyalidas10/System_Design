@@ -507,17 +507,13 @@ Suppose writing to each cache takes the following amount of time:
 - Cache C = T3
 
 If we perform synchronous writes to all three nodes, the total completion time is approximately:
-```
-$$
-T_{\text{write}} = T_1 + T_2 + T_3
-$$
+```math
+T_{write} = T1 + T2 + T3
 ```
 
 In comparison, if we write only to the primary node and replicate asynchronously:
-```
-$$
+```math
 T_{write}\approx T1
-$$
 ```
 
 The write operation becomes faster because the application does not have to wait for every replica.
@@ -555,10 +551,8 @@ Suppose the primary writes data at time T1.
 The secondary receives that data at time T2.
 
 The difference between these two times is called replication lag (or cache lag, as described in the lecture).
-```
-$$
+```math
 \Delta T=T2-T1
-$$
 ```
 
 This represents the delay between writing data to the primary and replicating it to the secondary.
