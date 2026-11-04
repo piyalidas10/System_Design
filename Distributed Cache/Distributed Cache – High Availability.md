@@ -12,38 +12,37 @@ Each partition has two replicas in this example.
 **Replication is introduced to improve availability.**
 
 ```mermaid
-graph TD
+flowchart TD
     %% Application Layer
-    subgraph AppLayer ["Application Layer"]
+    subgraph AppLayer [Application Layer]
         App[Read / Write requests]
     end
 
     %% Distributed Cache Layer
-    subgraph CacheLayer ["Distributed Cache Layer"]
-        
+    subgraph CacheLayer [Distributed Cache Layer]
         %% Partition 1
-        subgraph P1 ["Partition 1"]
-            PA["Primary A<br>(Write)"]
-            RA1["Replica A1<br>(Read / Backup)"]
-            PA -->|Replication| RA1
+        subgraph P1 [Partition 1]
+            PA["Primary A<br>Write"]
+            RA1["Replica A1<br>Read / Backup"]
+            PA --> RA1
         end
 
         %% Partition 2
-        subgraph P2 ["Partition 2"]
-            PB["Primary B<br>(Write)"]
-            RB1["Replica B1<br>(Read / Backup)"]
-            PB -->|Replication| RB1
+        subgraph P2 [Partition 2]
+            PB["Primary B<br>Write"]
+            RB1["Replica B1<br>Read / Backup"]
+            PB --> RB1
         end
     end
 
     %% Sentinel Cluster
-    subgraph Sentinel ["Monitoring and Failover"]
-        SC["Sentinel Cluster<br>(Health checks • Heartbeats • Failure detection • Replica promotion)"]
+    subgraph Sentinel [Monitoring and Failover]
+        SC["Sentinel Cluster<br>Health checks • Heartbeats • Failure detection • Replica promotion"]
     end
 
     %% Connections
-    App --> CacheLayer
-    CacheLayer <=> SC
+    AppLayer --> CacheLayer
+    CacheLayer <--> Sentinel
 
     %% Styling
     style AppLayer fill:#f0f3ff,stroke:#d0d7de,stroke-width:1px
@@ -56,5 +55,4 @@ graph TD
     style RA1 fill:#ffffff,stroke:#a6c8ff,stroke-width:1px
     style PB fill:#ffffff,stroke:#a2e9b9,stroke-width:1px
     style RB1 fill:#ffffff,stroke:#a6c8ff,stroke-width:1px
-
 ```
