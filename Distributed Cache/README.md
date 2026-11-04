@@ -281,7 +281,388 @@ Understanding these challenges is what separates a junior from a senior engineer
 
 ---
 
-## 9. Summary Checklist for Interviews
+## What If a Cache Node Fails?
+Let's understand this with an example.
+
+Imagine a happy scenario.
+```
+You, as a user, request:
+
+"Please get me the profile of the user whose ID is 123."
+```
+
+**We have a distributed caching solution containing:**
+- Cache A
+- Cache B
+- Cache C
+
+
+### What is this architecture called?
+Ans. Partitioning. Each cache contains data belonging to different users.
+
+### How is the data distributed across these caches?
+Ans. Using Consistent Hashing.
+
+When you request a particular user, consistent hashing helps determine which cache contains that user's data.
+```
+For example, if the requested user's data is stored in Cache B, the system retrieves the data from Cache B.
+
+We cannot store all the data in a single cache when the dataset becomes too large. Therefore, we use multiple cache nodes.
+
+This is called partitioning.
+```
+
+> **Consistent Hashing is a very important concept. Large companies such as Google, Microsoft, and LinkedIn frequently ask interview questions about consistent hashing.**
+
+Now, let's consider another scenario.
+
+### What happens if one of the cache nodes fails?
+
+Suppose Cache B fails.
+
+Your system is distributed across three caches, so it is scalable. However, if the user data was stored in Cache B and that cache fails, the data will no longer be available there.
+
+### What happens next?
+
+The application must retrieve the data directly from the database.
+
+This can lead to several problems:
+1. The cache fails.
+2. The application has to fetch data from the database.
+3. Response time increases.
+4. Application performance decreases.
+5. The load on the database increases.
+If too many cache nodes fail or too many requests reach the database, the entire application could potentially crash.
+
+So, partitioning alone is not enough.
+
+Our system is scalable, but what if we lose an entire cache node?
+
+We need another concept to solve this problem.
+
+That concept is called Replication.
+
+---
+
+## What Is Replication?
+The simplest meaning of replication is:
+> **Instead of storing data in only one place, we create duplicate copies of that data and store them in multiple places.**
+
+In other words, we introduce redundancy.
+
+Let's understand with our previous example.
+
+Suppose Cache B contains some data.
+
+Now, I create another copy of Cache B's data and store it in another cache node called B'.
+
+So, if Cache B goes down, the data is still available in B'.
+
+As a result, the application can continue serving the data.
+
+This process is called:
+- Replication
+- Redundancy
+Large companies such as Google and Netflix operate thousands of servers.
+
+When you operate thousands of servers, some servers will inevitably fail.
+
+Server failures are unavoidable.
+
+If cache nodes fail and cached data becomes unavailable, applications like Google or Netflix may become slower.
+
+How do these companies handle this?
+
+They use replication to achieve high availability.
+
+The idea is simple:
+
+Store the same data in multiple locations so that if one location fails, another location can continue serving the data.
+
+Let's understand how this works.
+
+---
+
+## Primary-Secondary Replication Architecture
+Consider the following architecture.
+```
+We have a client application that wants to write some data into the cache.
+We designate one cache node as the primary node.
+This is the main node where actual write operations take place.
+We also want to maintain backup copies of its data.
+```
+
+### Why?
+
+Because if the primary node crashes or loses data, we should not lose everything.
+
+Therefore, we create replicas of the primary node.
+
+An important point here is that we generally perform replication asynchronously in this architecture.
+
+### How does asynchronous replication work?
+Suppose a user sends a write request.
+1. The application writes the data into the primary cache.
+2. The primary cache acknowledges the write request.
+3. The application returns the response to the user.
+4. The primary cache asynchronously sends the updated data to its replica nodes.
+The user does not need to wait for the replica nodes to finish writing the data.
+
+The replication process continues independently in the background.
+
+This improves write performance because the application does not have to wait for every replica to complete its write operation.
+
+### Two types of nodes
+In this architecture, we generally have two types of nodes.
+
+```mermaid
+flowchart TD
+    %% Primary Node Section
+    subgraph Primary [Primary-Secondary Architecture]
+        direction TB
+        PN["Primary Node<br><b>Cache A</b><br>Handles write operations"]
+    end
+
+    %% Mid-connection label
+    Repl[Asynchronous replication]
+
+    %% Secondary Nodes Section
+    subgraph Secondaries [ ]
+        direction LR
+        SNB["Secondary Node<br><b>Cache B</b><br>Read replica"]
+        SNC["Secondary Node<br><b>Cache C</b><br>Read replica"]
+    end
+
+    %% Connections
+    Primary --> Repl
+    Repl --> SNB
+    Repl --> SNC
+
+    %% Styling
+    style Primary fill:#effaf3,stroke:#d0d7de,stroke-width:1px
+    style Secondaries fill:none,stroke:none
+    style PN fill:none,stroke:none
+    
+    style SNB fill:#ffffff,stroke:#e1e4e8,stroke-width:1px,border-radius:6px
+    style SNC fill:#ffffff,stroke:#e1e4e8,stroke-width:1px,border-radius:6px
+    style Repl fill:#d1e7dd,stroke:#a2e9b9,stroke-width:1px
+```
+
+Primary node:
+- The main node.
+- Handles write operations.
+- Sends updates to secondary nodes.
+
+Secondary nodes:
+- Maintain replicated copies of primary data.
+- Are commonly used for read operations.
+- Are also called read replicas.
+
+So, in this architecture:
+- Primary = Write
+- Secondary = Read
+
+---
+
+## Why Not Write to Every Replica Simultaneously?
+An obvious question is:
+
+### Why don't we simply write to every cache node simultaneously?
+
+For example, whenever a write request arrives, why not write to Cache A, Cache B, and Cache C at the same time?
+
+This would ensure that every cache contains the latest data.
+
+The problem is write latency.
+
+Suppose writing to each cache takes the following amount of time:
+- Cache A = T1
+- Cache B = T2
+- Cache C = T3
+
+If we perform synchronous writes to all three nodes, the total completion time is approximately:
+```
+$$
+T_{\text{write}} = T_1 + T_2 + T_3
+$$
+```
+
+In comparison, if we write only to the primary node and replicate asynchronously:
+```
+$$
+T_{write}\approx T1
+$$
+```
+
+The write operation becomes faster because the application does not have to wait for every replica.
+
+This is why we generally follow a parent-child relationship.
+- Primary cache: handles the main write operation.
+- Child/secondary nodes: receive replicated data and serve read requests.
+
+This architecture improves write performance.
+
+---
+
+## What Happens If the Primary Fails Before Replication Completes?
+Now let's consider an important failure scenario.
+
+Suppose the application writes the following data:
+```
+name = "Vishwa"
+```
+The primary cache successfully stores this data.
+
+However, before the data gets replicated to the secondary node, the primary cache crashes.
+
+### What happens now?
+
+The secondary node does not have the latest update.
+
+As a result, we may lose the data that was written to the primary but had not yet been replicated.
+
+This is called data loss due to asynchronous replication.
+
+### Understanding Cache Lag
+Suppose the primary writes data at time T1.
+
+The secondary receives that data at time T2.
+
+The difference between these two times is called replication lag (or cache lag, as described in the lecture).
+```
+$$
+\Delta T=T2-T1
+$$
+```
+
+This represents the delay between writing data to the primary and replicating it to the secondary.
+
+If the primary fails during this period, the latest updates may be lost.
+
+Therefore, if we want to minimize the possibility of data loss, we should try to keep replication lag as small as possible.
+
+This is an important production scenario.
+
+Asynchronous replication improves performance, but it introduces a potential risk of losing recent writes.
+
+---
+
+## What Is Failover?
+When working in software engineering, you will sometimes meet developers who say:
+```
+"My code never fails."
+```
+If you encounter someone who says that, remember that it is an unrealistic statement.
+
+A good software engineer understands that any system can fail.
+
+No matter how well you design a system, it can fail under certain uncontrollable circumstances.
+
+However, what is in your control is how you plan for those failures.
+
+You should design your system so that even if a failure occurs, it can handle that failure gracefully.
+
+For example, a server, computer, or cache node can fail at any time.
+
+Saying that a system will never fail is not practically possible.
+
+### As software developers, we need to think about this:
+
+If a failure happens, how will my system recover gracefully?
+
+Let's return to our primary-secondary replication architecture.
+
+Suppose the primary node fails.
+
+### What should happen?
+
+One of the secondary replica nodes should be promoted to become the new primary node.
+
+The new primary node will then handle write operations.
+
+The application must also be informed that the primary node has changed.
+
+This entire process is called Failover.
+
+### Three steps involved in failover
+1. Step 1: Detect Failure
+   Identify that the primary cache node has failed.
+2. Step 2: Select a New Primary
+   Choose one of the available secondary replica nodes and promote it to primary.
+3. Step 3: Communicate With the Client
+   Inform the application that a new primary node has been selected. The application can now send write requests to the new primary.
+
+This is how failover works in a replication-based architecture.
+
+---
+
+## What Is a Sentinel Cluster?
+Now the next question is:
+
+How do we detect that a primary node has failed?
+
+For this, we need a dedicated system.
+
+In this lecture, the instructor introduces a system called the Sentinel Cluster.
+
+It is responsible for failover management.
+Responsibilities of a Sentinel Cluster
+
+### 1. Monitor the health of the entire system
+
+It continuously monitors the health of all cache nodes.
+
+For example:
+- Is Cache A healthy?
+- Is Cache B healthy?
+- Is Cache C healthy?
+It continuously sends pings to the nodes and checks their heartbeats.
+
+This helps determine whether the nodes are functioning correctly.
+
+### 2. Detect failures
+
+Suppose the Sentinel Cluster identifies that the primary node has failed.
+
+It detects the failure and initiates the recovery process.
+
+### 3. Promote a replica
+
+Once the failure is detected, Sentinel selects one of the available replica nodes.
+
+It promotes that replica to become the new primary.
+
+### 4. Inform the client
+
+After promoting the new primary, the system informs the application about the change.
+
+The application can then start sending write requests to the new primary node.
+Sentinel should also be highly available
+There is another important consideration.
+
+### What if the Sentinel itself fails?
+
+We don't want the Sentinel Cluster to become a single point of failure.
+
+Therefore, we can also distribute and replicate the Sentinel components.
+
+We can have multiple Sentinel instances.
+
+**Their configuration determines:**
+- How frequently they should ping the nodes.
+- Which servers they should monitor.
+- How failure detection should work.
+- How failover should be coordinated.
+The Sentinel system itself should also be distributed and highly available.
+Real-world example: Redis Sentinel
+The instructor gives the example of Redis.
+
+> **Redis provides a feature called Redis Sentinel.**
+> **Redis Sentinel helps Redis achieve high availability through monitoring, failure detection, and automatic failover.**
+
+---
+
+## Summary Checklist for Interviews
 - [x] Problem statement clearly articulated (why caching exists).
 - [x] Caching concept explained with analogy (Rahul & sweet shop).
 - [x] Functional Requirements: key-value store, O(1) get/put/delete, TTL, eviction, distribution, replication.
