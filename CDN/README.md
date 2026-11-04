@@ -22,7 +22,7 @@ Imagine you have 100 bookstores across different locations.
 
 Instead of maintaining one central warehouse for all bookstores, you establish smaller warehouses near groups of bookstores.
 
-<img src=".img/CDN_Bookstore.jpg" width="60%" />
+<img src="./img/CDN_Bookstore.jpg" width="60%" />
 
 **Now:**
 - Customers get products from nearby warehouses.
@@ -79,7 +79,7 @@ Imagine you build a web application with one central server in India.
 
 Your users are located across the world.
 
-<img src=".img/CDN_With_Without.jpg" width="60%" />
+<img src="./img/CDN_With_Without.jpg" width="60%" />
 
 **Consider these users:**
 - User A: India
