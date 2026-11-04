@@ -44,15 +44,18 @@ flowchart TD
     AppLayer --> CacheLayer
     CacheLayer <--> Sentinel
 
-    %% Styling
-    style AppLayer fill:#f0f3ff,stroke:#d0d7de,stroke-width:1px
-    style CacheLayer fill:#ffffff,stroke:#d0d7de,stroke-width:1px
-    style P1 fill:#effaf3,stroke:#d0d7de,stroke-width:1px
-    style P2 fill:#effaf3,stroke:#d0d7de,stroke-width:1px
-    style Sentinel fill:#fbf0ff,stroke:#d0d7de,stroke-width:1px
+    %% Styling for High Contrast and Maximum Width
+    style AppLayer fill:#f0f3ff,stroke:#d0d7de,stroke-width:2px
+    style CacheLayer fill:#ffffff,stroke:#d0d7de,stroke-width:2px
+    style P1 fill:#effaf3,stroke:#d0d7de,stroke-width:2px
+    style P2 fill:#effaf3,stroke:#d0d7de,stroke-width:2px
+    style Sentinel fill:#fbf0ff,stroke:#d0d7de,stroke-width:2px
     
-    style PA fill:#ffffff,stroke:#a2e9b9,stroke-width:1px
-    style RA1 fill:#ffffff,stroke:#a6c8ff,stroke-width:1px
-    style PB fill:#ffffff,stroke:#a2e9b9,stroke-width:1px
-    style RB1 fill:#ffffff,stroke:#a6c8ff,stroke-width:1px
+    style PA fill:#ffffff,stroke:#a2e9b9,stroke-width:2px
+    style RA1 fill:#ffffff,stroke:#a6c8ff,stroke-width:2px
+    style PB fill:#ffffff,stroke:#a2e9b9,stroke-width:2px
+    style RB1 fill:#ffffff,stroke:#a6c8ff,stroke-width:2px
+
+    %% Directing width configuration
+    classDef fullWidth width:100%;
 ```
