@@ -99,6 +99,38 @@ This increases latency and negatively impacts the user experience.
 
 ---
 
+## CDN Process Flow
+
+<img src="./img/CDN_Flow.webp" width="70%" />
+
+Let's understand using an example.
+
+Suppose a user opens an e-commerce website and requests its homepage.
+
+1. User requests a website resource
+   
+   Browser requests logo.png from the website.
+2. Request reaches the nearest CDN edge server
+   
+   CDN checks whether the requested image is available in its cache.
+3. Cache Hit
+   
+   If the image exists, the CDN immediately returns it to the browser.
+4. Cache Miss
+   
+   If the image doesn't exist, the CDN fetches it from the origin server.
+5. Cache and deliver
+   
+   The CDN stores the fetched content according to its caching policy and delivers it to the user.
+
+No CDN just blindly caches anything. Everything has a strategy and CDN has a lot of strategies involved depending upon what do you want to cache. From 100s of requests that went out , many of them were actually served by the CloudFlare CDN.
+
+You can actually check this image. Cf-Cache-Status: HIT (It was a Cache HIT by Cloudflare). Actually You might see 200 OK(from disk cache) . This means browser actually pre loaded it from disk, but first time it was served from Cloudflare
+
+<img src="./img/CloudFlare_CDN.webp" width="70%" />
+
+---
+
 ## Understanding the Problem
 
 Imagine this is my server. It hosts the website striver.in, and the server is located in Mumbai.
