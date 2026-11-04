@@ -25,6 +25,32 @@ Instagram (and every major platform) is **heavily read-skewed**: a Reel is uploa
 
 ---
 
+## Important System Design Interview Notes
+
+```
+| Concept | Meaning |
+| :--- | :--- |
+| **Partitioning** | Dividing data across multiple nodes |
+| **Consistent Hashing** | Deciding which node stores particular data |
+| **Replication** | Maintaining duplicate copies of data |
+| **Redundancy** | Having additional copies to survive failures |
+| **Primary Node** | Main node handling writes |
+| **Secondary Node** | Replica node maintaining copied data |
+| **Read Replica** | Secondary node used for read operations |
+| **Asynchronous Replication** | Replication happens in the background |
+| **Replication Lag** | Delay between primary and replica updates |
+| **Failover** | Switching to another node after failure |
+| **Sentinel** | Monitors nodes and coordinates failover |
+```
+
+**Important distinction to remember:**
+- Partitioning helps achieve scalability.
+- Replication helps achieve high availability and fault tolerance.
+- Failover helps achieve recovery when a node fails.
+- Asynchronous replication can introduce replication lag and potential data loss.
+
+---
+
 ## 0.1 What Is Caching?
 
 ### The Sweet Shop Analogy
