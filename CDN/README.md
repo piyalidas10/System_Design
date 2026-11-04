@@ -8,8 +8,28 @@
 ## Tutorials
 1. What is CDN | Content Delivery Network : https://www.youtube.com/watch?v=4pd5FgTluCM&t=2s
 2. Lec-4 : Content Delivery Network (CDN) | How it works : https://www.youtube.com/watch?v=ouqqU0FJjhQ
+3. System Design - Part 9 | Message Queue and CDN : https://www.youtube.com/watch?v=G2xEnPugNoo&list=PLFdAYMIVJQHOWJgRrjv_RH-ng95B2h3ON&index=10
 
 ## What is CDN ?
+
+A Content Delivery Network (CDN) is a geographically distributed network of servers that stores cached copies of content closer to users.
+
+Its primary purpose is to reduce latency and improve application loading speed.
+
+Think about the bookstore example again.
+
+Imagine you have 100 bookstores across different locations.
+
+Instead of maintaining one central warehouse for all bookstores, you establish smaller warehouses near groups of bookstores.
+
+<img src=".img/CDN_Bookstore.jpg" width="60%" />
+
+**Now:**
+- Customers get products from nearby warehouses.
+- They don't need to wait for products to travel from a distant central warehouse.
+- Delivery becomes faster.
+
+A CDN works on the same principle, except it delivers digital content such as images, CSS, JavaScript, videos and other cacheable resources.
 
 **A Content Delivery Network (CDN) speeds up websites using three main parts.** 
 - The origin server stores the master files.
@@ -50,6 +70,32 @@ The basic definition everyone has heard is:
 But how accurate is that statement? Where does the confusion come from?
 
 Today we'll understand everything from A to Z.
+
+---
+
+## Why do we need a CDN?
+
+Imagine you build a web application with one central server in India.
+
+Your users are located across the world.
+
+<img src=".img/CDN_With_Without.jpg" width="60%" />
+
+**Consider these users:**
+- User A: India
+- User B: USA
+- User C: Australia
+- User D: Europe
+
+All users request resources from the same central server.
+
+The problem:
+
+A user located far away must wait longer for network requests to travel between their location and your server.
+
+This increases latency and negatively impacts the user experience.
+
+> **Solution: Deploy CDN edge servers across different geographical regions.**
 
 ---
 
