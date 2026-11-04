@@ -107,27 +107,39 @@ Let's understand using an example.
 
 Suppose a user opens an e-commerce website and requests its homepage.
 
-1. User requests a website resource
-   
-   Browser requests logo.png from the website.
-2. Request reaches the nearest CDN edge server
-   
-   CDN checks whether the requested image is available in its cache.
-3. Cache Hit
-   
-   If the image exists, the CDN immediately returns it to the browser.
-4. Cache Miss
-   
-   If the image doesn't exist, the CDN fetches it from the origin server.
-5. Cache and deliver
-   
-   The CDN stores the fetched content according to its caching policy and delivers it to the user.
+1. User requests a website resource : Browser requests logo.png from the website.
+2. Request reaches the nearest CDN edge server : CDN checks whether the requested image is available in its cache.
+3. Cache Hit : If the image exists, the CDN immediately returns it to the browser.
+4. Cache Miss : If the image doesn't exist, the CDN fetches it from the origin server.
+5. Cache and deliver : The CDN stores the fetched content according to its caching policy and delivers it to the user.
 
 No CDN just blindly caches anything. Everything has a strategy and CDN has a lot of strategies involved depending upon what do you want to cache. From 100s of requests that went out , many of them were actually served by the CloudFlare CDN.
 
 You can actually check this image. Cf-Cache-Status: HIT (It was a Cache HIT by Cloudflare). Actually You might see 200 OK(from disk cache) . This means browser actually pre loaded it from disk, but first time it was served from Cloudflare
 
 <img src="./img/CloudFlare_CDN.webp" width="70%" />
+
+---
+
+## Region-specific CDN
+The lecture also explains an important concept: region-specific content.
+
+Imagine you build a Netflix-like application.
+
+Users in India may prefer different content from users in the USA.
+
+You can cache region-specific content at different CDN locations.
+
+<img src="./img/Region-specific-CDN.jpg" width="80%" />
+
+| CDN Region | Cached content |
+| :--- | :--- |
+| India | Indian movies and regional content |
+| USA | US movies and popular shows |
+| Europe | European regional content |
+
+If a user requests content not available in their local CDN, the CDN may retrieve it from another appropriate source or origin, depending on the architecture.
+
 
 ---
 
@@ -186,6 +198,44 @@ Now you may think:
 "What's the big deal? Even 200 milliseconds is less than one second."
 ```
 That's true, but this is only the delay for a single request.
+
+---
+
+## Advantages of CDN
+The lecture highlights the following advantages.
+
+A. Reduced latency : Users receive content from geographically closer servers.
+
+B. Faster website loading : Static resources such as images, banners, CSS and JavaScript can be cached at edge locations.
+
+C. Reduced origin-server load : Repeated requests can be served by CDN caches rather than reaching the origin server.
+
+D. Better global user experience : Users across different geographical regions can access content faster.
+
+## Challenges of CDN
+
+| Challenge | Explanation | Possible approach |
+| :--- | :--- | :--- |
+| Stale content | CDN may serve older content after an update | Cache invalidation and TTL |
+| Cache freshness | Different edge locations may have different cached versions | Purging and versioned assets |
+| Cost | CDN bandwidth, requests and storage cost money | Monitor usage and optimize caching |
+
+**Understand the stale content problem**
+
+Suppose you update your website logo.
+
+Your origin server now contains the new logo.
+
+However, CDN edge servers may still have the old logo.
+
+Users may continue seeing the old logo.
+
+This is called a stale cache problem.
+
+**Solutions include:**
+- TTL (Time To Live)
+- Cache invalidation/purging
+- Versioned file names, such as logo-v2.png
 
 ---
 
