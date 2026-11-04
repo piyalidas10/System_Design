@@ -59,3 +59,17 @@ flowchart TD
     %% Directing width configuration
     classDef fullWidth width:100%;
 ```
+
+## What happens when a primary fails?
+
+For example:
+- Primary A is working normally.
+- Replica A1 receives replicated data.
+- Sentinel monitors both nodes.
+- Primary A suddenly fails.
+- Sentinel detects the failure.
+- Replica A1 is promoted to become the new primary.
+- The application is informed about the new primary.
+
+The system can continue operating without depending on the failed node.
+
