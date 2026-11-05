@@ -52,6 +52,34 @@ WHERE ID = 9;
 #### Scenario A: Without an Index (Full Table Scan)
 The database must inspect every single row sequentially until it finds `ID = 9`.
 
+```mermaid
+graph TD
+    %% Styling definitions
+    classDef default fill:#f9f9f9,stroke:#d3d3d3,stroke-width:1px,color:#333;
+    classDef mainHeader fill:#fff5f5,stroke:#feb2b2,stroke-width:1px,color:#1a202c,font-weight:bold;
+    classDef highlight fill:#f0fdf4,stroke:#bbf7d0,stroke-width:1px,color:#15803d,font-weight:bold;
+    classDef meta fill:none,stroke:none,color:#e53e3e,font-weight:bold;
+
+    %% Diagram structure
+    subgraph Full Table Scan
+        Title["Employee Table – 1 Million Rows<br><font size=2>Check rows one by one</font>"]:::mainHeader
+        
+        Title --> ID1[ID 1]
+        Title --> ID2[ID 2]
+        Title --> ID3[ID 3]
+        
+        ID1 --> ID4[ID 4]
+        ID2 --> ID5[ID 5]
+        ID3 --> Dots1[...]
+        
+        ID4 --> ID8[ID 8]
+        ID5 --> ID9[ID 9]:::highlight
+        Dots1 --> Dots2[...]
+        
+        WorstCase["Worst-case time: O(n)<br><font size=2>The database might examine all 1 million rows.</font>"]:::meta
+    end
+```
+
 ```
 +-----------------------------------------------------------------------------------+
 |                        SCENARIO A: FULL TABLE SCAN                                |
