@@ -190,6 +190,249 @@ WHERE ID BETWEEN 10 AND 100;
 
 ---
 
+### B+ Tree Searching, Insertion, and Deletion Step-by-Step
+
+Now let's learn the most important internal operations of a B+ Tree.
+
+> **Teaching Rules for our Example:**
+> - Each leaf node can store a **maximum of 3 keys**.
+> - Each non-root leaf must normally have at **least 2 keys**.
+> - Internal nodes store separator keys and child pointers.
+> - Leaf nodes are linked in sorted order.
+> - When a leaf splits, its first key in the right-hand leaf is copied up as a separator.
+>
+> *(Note: These are simplified teaching rules for our walkthrough, not universal settings for every database engine).*
+
+Think of each node as a small box with limited space:
+
+```
+[ 10 | 20 | 30 ]  <-- 3 keys (Full capacity). Inserting a 4th key causes a split.
+```
+
+---
+
+#### 1. B+ Tree Searching — Step by Step
+
+Suppose our tree looks like this:
+
+```
+                 [30 | 50]
+                /    |    \
+               /     |     \
+              /      |      \
+          [10,20] <-> [30,40] <-> [50,60]
+```
+
+We want to find key **40**.
+
+* **Step 1 — Start at the Root `[30 | 50]`:**
+  * The root contains separator keys `30` and `50`.
+  * We compare our search key `40` with these values.
+* **Step 2 — Choose the Correct Child:**
+  * `40` is $\ge 30$ and $< 50$.
+  * Therefore, follow the **middle child**.
+  ```
+                [30 | 50]
+                   |
+                   | 40 belongs here (30 <= 40 < 50)
+                   v
+                [30, 40]
+  ```
+* **Step 3 — Search the Leaf:**
+  * The leaf contains `[30, 40]`. We find `40`.
+* **Step 4 — Retrieve the Row:**
+  * If this is a non-clustered index, the leaf entry provides a row locator. The database then fetches the full row if necessary.
+
+```mermaid
+graph TD
+    classDef stepBox fill:#f0fdf4,stroke:#86efac,stroke-width:1px,color:#166534;
+    classDef arrowText fill:none,stroke:none,color:#4b5563,font-size:12px;
+
+    S1["<b>1. Root Node</b><br>Compare 40 with 30 & 50"]:::stepBox
+    S2["<b>2. Internal Routing</b><br>Select middle child (30 &le; 40 &lt; 50)"]:::stepBox
+    S3["<b>3. Leaf Node</b><br>Find key 40 in leaf [30, 40]"]:::stepBox
+    S4["<b>4. Record Retrieval</b><br>Follow locator to fetch full row"]:::stepBox
+
+    S1 --> S2 --> S3 --> S4
+```
+
+> **Search Summary:** Lookup always starts at the root and descends $O(\log N)$ levels down to one leaf node.
+
+---
+
+#### 2. B+ Tree Insertion — Step by Step
+
+Let's start with an empty tree and insert: `10, 20, 30, 40, 50, 60`.
+
+* **Step 1 — Insert 10:** Tree is empty. Create the first leaf (which is also the root):
+  ```
+  [10]
+  ```
+* **Step 2 — Insert 20:** $20 > 10$.
+  ```
+  [10, 20]
+  ```
+* **Step 3 — Insert 30:**
+  ```
+  [10, 20, 30]  <-- Leaf has reached maximum capacity (3 keys).
+  ```
+* **Step 4 — Insert 40 (Leaf Split):**
+  * Adding `40` temporarily produces `[10, 20, 30, 40]` (overflow).
+  * **Split** into two leaves: `[10, 20]` and `[30, 40]`.
+  * Copy the first key of the right leaf (`30`) up into a **new root** as a separator.
+  ```
+                 [30]
+                /    \
+           [10, 20] <-> [30, 40]
+  ```
+  *(Note: `30` remains in the right leaf and is copied into the root as a routing separator).*
+
+* **Step 5 — Insert 50:**
+  * Search from root: $50 \ge 30$, go right to leaf `[30, 40]`.
+  * Insert `50` (capacity is 3, so no split needed):
+  ```
+                 [30]
+                /    \
+           [10, 20] <-> [30, 40, 50]
+  ```
+
+* **Step 6 — Insert 60 (Second Leaf Split):**
+  * $60$ belongs in right leaf `[30, 40, 50, 60]` (overflow).
+  * Split right leaf into `[30, 40]` and `[50, 60]`.
+  * Copy `50` into the root as another separator.
+
+```
+Final tree after inserting 10, 20, 30, 40, 50, 60:
+
+                 [ 30 | 50 ]              <-- Root Node
+                /     |     \
+               /      |      \
+          [10, 20] <-> [30, 40] <-> [50, 60]   <-- Leaf Nodes (Data)
+```
+
+##### What if the root also becomes full? (Cascading Split)
+When the root reaches its maximum separator capacity and a child split pushes up another separator:
+1. The root overflows and splits into two internal nodes.
+2. A middle separator key is **promoted** to a new root level.
+3. The tree height increases by 1 while remaining **perfectly balanced** (all leaves stay at the same depth).
+
+```
+Before Root Split:
+          [20 | 40 | 60]
+          /    |   |   \
+         ...  ... ...  ...
+
+After Root Split (Tree grows 1 level):
+               [40]               <-- New Root
+              /    \
+          [20]      [60]          <-- Internal Nodes
+          / \        / \
+         ... ...    ... ...       <-- Leaves
+```
+
+| Step | Insertion Action Summary |
+| :---: | :--- |
+| **1** | Start at the root node. |
+| **2** | Follow child pointers to find the correct leaf node. |
+| **3** | Insert the key in sorted order. |
+| **4** | If there is space, finish. |
+| **5** | If the leaf is full (overflow), split the leaf into two nodes. |
+| **6** | Copy the first key of the right leaf into the parent as a separator. |
+| **7** | If the parent overflows, split the parent (cascading split). |
+
+---
+
+#### 3. B+ Tree Deletion — Step by Step (Borrowing / Redistribution)
+
+Insertion makes the tree grow; deletion must keep the tree balanced without violating minimum occupancy rules.
+
+Suppose we start with this tree:
+```
+                 [30]
+                /    \
+           [10, 20] <-> [30, 40, 50]
+```
+*(Rules: Maximum 3 keys per leaf, Minimum 2 keys per non-root leaf).*
+
+Let's **delete key 10**:
+
+* **Step 1 — Search for 10:** $10 < 30 \rightarrow$ go left to `[10, 20]`.
+* **Step 2 — Delete key 10:** Leaf becomes `[20]` (only 1 key $\rightarrow$ **Underflow**).
+* **Step 3 — Check Sibling:** The right sibling `[30, 40, 50]` has 3 keys (more than the minimum of 2).
+* **Step 4 — Borrow / Redistribute:**
+  * Move the smallest key from the right sibling (`30`) to the left leaf.
+  * Left leaf becomes `[20, 30]`.
+  * Right leaf becomes `[40, 50]`.
+  * Update parent separator from `30` to `40` (since the right leaf now starts at 40).
+
+```
+Final Tree after deleting 10 and borrowing 30:
+
+                 [40]
+                /    \
+           [20, 30] <-> [40, 50]
+```
+
+---
+
+#### 4. What if the Sibling Cannot Lend a Key? (Merging)
+
+Suppose we have this tree:
+```
+                 [30]
+                /    \
+           [10, 20] <-> [30, 40]
+```
+
+Now let's **delete key 10**:
+
+* **Step 1 — Remove 10:** Left leaf becomes `[20]` (**Underflow**).
+* **Step 2 — Check Sibling:** Right sibling `[30, 40]` has only 2 keys (exact minimum). It cannot lend a key.
+* **Step 3 — Merge the Leaves:** Combine `[20]` and `[30, 40]` into a single merged leaf `[20, 30, 40]`.
+* **Step 4 — Remove Obsolete Separator:** Since only one leaf remains, separator `30` is removed from the root. The merged leaf becomes the new root (tree height shrinks by 1).
+
+```
+Before Deletion:
+                 [30]
+                /    \
+           [10, 20] <-> [30, 40]
+
+After Deleting 10 and Merging:
+           [20, 30, 40]  <-- Merged Node (New Root & Leaf)
+```
+
+##### What if an internal node becomes underfull?
+1. Try to borrow a separator/key and child pointer from a sibling via the parent.
+2. If borrowing is not possible, merge the internal node with a sibling.
+3. Update/remove the corresponding separator in the parent.
+4. If the root is left with only one child, that child becomes the new root (tree shrinks).
+
+---
+
+#### 5. Insertion vs. Deletion Summary
+
+| Concept | Insertion | Deletion |
+| :--- | :--- | :--- |
+| **Main Action** | Add key | Remove key |
+| **Condition Problem** | Node **overflow** (too many keys) | Node **underflow** (too few keys) |
+| **First Resolution** | **Split** node into two | **Borrow** (redistribute) from sibling |
+| **If Sibling Full / Min** | Split parent too (cascading split) | **Merge** with sibling & adjust parent |
+| **Tree Height Impact** | May grow taller | May shrink shorter |
+
+```
+   ┌─────────────────────────────────────────────────────────┐
+   │             THE 4 ESSENTIAL B+ TREE OPERATIONS          │
+   ├────────────────────────────┬────────────────────────────┤
+   │  INSERT -> SPLIT           │  DELETE -> BORROW          │
+   │  (When a node is full)     │  (When sibling has extra)  │
+   ├────────────────────────────┼────────────────────────────┤
+   │  INSERT -> PROMOTE         │  DELETE -> MERGE           │
+   │  (Copy separator to parent)│  (When borrowing cannot be)│
+   └────────────────────────────┴────────────────────────────┘
+```
+
+---
+
 ## 3. Clustered Index
 
 A **Clustered Index** determines the **physical and logical organization** of the actual table records on disk according to the indexed key.
@@ -294,6 +537,61 @@ A non-clustered index creates a **completely separate, secondary index structure
                        [Clustered Table / Base Data Page]
                        [ ID: 3 | Priya | Finance | 60000 ] ===> Returns full record to client
 ```
+```mermaid
+graph TD
+    %% Styling definitions
+    classDef default fill:#ffffff,stroke:#cbd5e1,stroke-width:1px,color:#0f172a;
+    classDef indexContainer fill:#f8fafc,stroke:#cbd5e1,stroke-width:1px,color:#0f172a;
+    classDef indexHeader fill:#eff6ff,stroke:#bfdbfe,stroke-width:1px,color:#1e3a8a,font-weight:bold;
+    classDef subIndex fill:#ffffff,stroke:#e2e8f0,stroke-width:1px,color:#334155;
+    classDef lookupBox fill:#ffedd5,stroke:#fed7aa,stroke-width:1px,color:#c2410c,font-weight:bold;
+    classDef tableContainer fill:#ffffff,stroke:#10b981,stroke-width:1.5px,color:#0f172a;
+    classDef badge fill:#dcfce7,stroke:none,color:#15803d,font-weight:bold,font-size:12px;
+
+    %% Non-clustered index structure
+    subgraph NonClustered ["Non-clustered index on Employee.Name"]
+        TreeHeader["<b>Name index — B+ Tree</b><br><span style='font-size:16px; font-weight:bold;'>M</span>"]:::indexHeader
+        
+        AL["<b>A–L</b><br><span style='font-size:13px; font-weight:normal; color:#475569;'>Amit → ID 2<br>John → ID 4</span>"]:::subIndex
+        MZ["<b>M–Z</b><br><span style='font-size:13px; font-weight:normal; color:#475569;'>Priya → ID 3<br>Rahul → ID 1</span>"]:::subIndex
+        
+        TreeHeader --> AL
+        TreeHeader --> MZ
+    end
+    style NonClustered fill:#f8fafc,stroke:#cbd5e1,stroke-width:1px
+
+    %% Lookup Step
+    Lookup["Key / Bookmark lookup<br><span style='font-weight:normal; font-size:12px; color:#475569;'>Use the row locator ID = 3</span>"]:::lookupBox
+    
+    %% Target Table Structure
+    subgraph ClusteredTable ["Original clustered table"]
+        TableData["<b>ID 3 — Priya</b><br><span style='font-weight:normal; color:#334155; text-align:left; display:block;'>Department: Finance<br>Salary: 60,000</span>"]:::default
+        Found["Found"]:::badge
+    end
+    style ClusteredTable fill:#ffffff,stroke:#10b981,stroke-width:1.5px
+
+    %% Flow Connections
+    MZ -->|↓| Lookup
+    Lookup -->|↓| TableData
+
+```
+
+### Step-by-step retrieval
+For:
+```
+SELECT *
+FROM Employee
+WHERE Name = 'Priya';
+```
+
+1. Search the Name index.
+2. Find Priya.
+3. Get its row locator, such as ID 3.
+4. Go to the clustered table using that locator.
+5. Retrieve Department and Salary.
+6. Return the full record.
+
+This extra trip to the original table is called a Key Lookup or Bookmark Lookup in the relevant database terminology.
 
 ### Visual Representation of Separate Storage:
 
@@ -463,6 +761,48 @@ Indexes should be created only on columns frequently present in:
 
 ## 7. Real-World Example: Banking Application & Composite Indexing
 
+### How Indexing Fits into a Real Application Architecture
+
+Consider a modern tiered banking system where customers query their account transaction histories:
+- **Angular Frontend:** User interface displaying the transaction ledger.
+- **Banking Backend API:** Spring Boot / Node.js / .NET microservice receiving requests.
+- **Transactions Database:** Relational database storing millions of financial transactions.
+
+```mermaid
+graph TD
+    %% Styling
+    classDef clientBox fill:#eff6ff,stroke:#93c5fd,stroke-width:1.5px,color:#1e3a8a,font-weight:bold;
+    classDef apiBox fill:#f0fdf4,stroke:#86efac,stroke-width:1.5px,color:#166534,font-weight:bold;
+    classDef dbBox fill:#fffbeb,stroke:#fcd34d,stroke-width:1.5px,color:#92400e,font-weight:bold;
+    classDef indexBox fill:#fdf4ff,stroke:#f0abfc,stroke-width:1.5px,color:#86198f,font-weight:bold;
+
+    subgraph ArchitectureFlow["Real-World Query Execution Flow"]
+        direction TB
+        Frontend["<b>Angular Frontend</b><br><span style='font-weight:normal; font-size:12px;'>Customer opens transaction history</span>"]:::clientBox
+        Backend["<b>Banking Backend API</b><br><span style='font-weight:normal; font-size:12px;'>Receives request &amp; executes SQL query</span>"]:::apiBox
+        
+        subgraph DB["Database Engine"]
+            direction TB
+            CompositeIdx["<b>Composite B+ Tree Index</b><br><span style='font-weight:normal; font-size:12px;'>(Account_ID, Date)</span>"]:::indexBox
+            LeafMatch["<b>Matching Leaf Entries</b><br><span style='font-weight:normal; font-size:12px;'>Account 5001 &mdash; dates pre-sorted in order</span>"]:::indexBox
+            BaseRows["<b>Table Rows (Data Pages)</b><br><span style='font-weight:normal; font-size:12px;'>Fetch additional columns (Amount, etc.)</span>"]:::dbBox
+        end
+
+        Frontend -->|1. HTTP Request| Backend
+        Backend -->|2. SQL Query| CompositeIdx
+        CompositeIdx -->|3. Locate Range| LeafMatch
+        LeafMatch -->|4. Key Lookup| BaseRows
+        BaseRows -->|5. Result Set| Backend
+        Backend -->|6. JSON Response| Frontend
+    end
+```
+
+> **System Design Takeaway:** When a new transaction is inserted, the database also maintains all relevant indexes. Index design is a **system-design architectural decision**, balancing read velocity against write overhead.
+
+---
+
+### Transaction Table Data Example
+
 Imagine a banking system with a `Transactions` table containing millions of records:
 
 | Transaction ID | Account ID | Amount | Date |
@@ -602,6 +942,18 @@ Column order in composite indexes is paramount:
 
 ## 10. Final Mental Model & System Design Roadmap
 
+### Remember These Five Core Principles:
+1. **Index:** A shortcut data structure that helps the database locate records without scanning the entire table.
+2. **B+ Tree:** The universal balanced tree data structure used to organize most database indexes.
+3. **Clustered Index:** Organizes and physically stores table data sorted by its key in engines supporting clustered storage (1 per table).
+4. **Non-Clustered Index:** A separate helper search structure containing indexed keys and row locators (pointers or Primary Keys) back to the base data.
+5. **Composite Index:** A multi-column index where column ordering matters strictly (governed by the Leftmost Prefix Rule).
+
+### Summary of B+ Tree Operations:
+* **Search $\rightarrow$** Start at root $\rightarrow$ compare separator keys $\rightarrow$ follow child pointer down $\rightarrow$ reach the leaf node ($O(\log N)$).
+* **Insert $\rightarrow$** Traverse to target leaf $\rightarrow$ insert key in sorted order $\rightarrow$ **split node** and copy separator up if full.
+* **Delete $\rightarrow$** Traverse to leaf $\rightarrow$ remove key $\rightarrow$ **borrow** from sibling if underfull, otherwise **merge** nodes.
+
 ```
 +-----------------------------------------------------------------------------------+
 |                        DATABASE INDEXING MENTAL MODEL                             |
@@ -621,6 +973,11 @@ Column order in composite indexes is paramount:
 |                                                                                   |
 +-----------------------------------------------------------------------------------+
 ```
+
+> **Technical Caution for Interview Preparation:**
+> B+ Trees are the predominant indexing model across relational engines (InnoDB, SQL Server, PostgreSQL, Oracle). However, real-world databases can also use specialized index structures (e.g., Hash indexes, GiST/GIN, BRIN, Bitmap indexes, LSM Trees). Implementation details such as clustered storage, separator handling, page split fill factors, and index-only reads vary across database engines. These examples teach the fundamental mechanics universally tested in engineering interviews.
+
+---
 
 ### Next Topics for System Design Preparation:
 To master database internals for Senior Backend and System Design interviews, proceed to:
