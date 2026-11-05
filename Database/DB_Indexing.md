@@ -97,7 +97,40 @@ graph TD
 ```
 
 #### Scenario B: With an Index (B+ Tree Lookup)
+The database creates an index to locate the required record quickly.
+
 The database searches through the index structure rather than scanning all rows.
+```mermaid
+graph TD
+    %% Styling definitions
+    classDef default fill:#f9f9f9,stroke:#e2e8f0,stroke-width:1px,color:#333;
+    classDef headerBox fill:#f0fdf4,stroke:#dcfce7,stroke-width:1px,color:#166534;
+    classDef searchBox fill:#ffffff,stroke:#e2e8f0,stroke-width:1px,color:#000000;
+    classDef subText fill:none,stroke:none,color:#4b5563,font-size:12px;
+    classDef greenText fill:none,stroke:none,color:#16a34a,font-size:12px;
+    classDef badge fill:#dcfce7,stroke:none,color:#166534,font-weight:bold,font-size:12px;
+
+    %% Diagram structure
+    subgraph Index-based Lookup
+        direction TB
+        
+        %% Step 1: B+ Tree Index
+        A["<b>B+ Tree Index</b><br><span style='color:#4b5563; font-weight:normal; font-size:12px;'>Organized search structure</span>"]:::headerBox
+        
+        %% Step 2: Find ID = 9
+        B["<b>Find ID = 9</b><br><span style='color:#16a34a; font-weight:normal; font-size:12px;'>Navigate through the tree</span>"]:::searchBox
+        
+        %% Step 3: Employee ID = 9
+        C["<b>Employee ID = 9</b><br><span style='color:#4b5563; font-weight:normal; font-size:12px;'>Retrieve the matching record</span>"]:::headerBox
+        
+        %% Connections
+        A --> B
+        B --> C
+        
+        %% Complexity Badge
+        Complexity["Typical lookup: O(log n)"]:::badge
+    end
+```
 
 ```
 +-----------------------------------------------------------------------------------+
@@ -171,13 +204,41 @@ ON Employee(ID);
                                    [ Root Node ]
                                       [ 500 ]
                                      /       \
-                             [ Internal ]   [ Internal ]
-                                [ 250 ]        [ 750 ]
-                                /     \        /     \
-                               v       v      v       v
- Leaf Nodes:            [ ID: 1..249 ] <----> [ ID: 250..499 ] <----> [ ID: 500..749 ]
- (Actual Table Rows)    (Full Row Data)       (Full Row Data)         (Full Row Data)
+                   (ID <= 500)      /         \      (ID > 500)
+                            [ Internal ]   [ Internal ]
+                               [ 250 ]        [ 750 ]
+                               /     \        /     \
+                              v       v      v       v
+ Leaf Nodes:            [ ID: 1..249 ] <----> [ ID: 250..499 ] <----> [ ID: 500..749 ] <----> [ ID: 750..1000 ]
+ (Actual Table Rows)    (Full Row Data)       (Full Row Data)         (Full Row Data)         (Full Row Data)
 ```
+
+### Alternative: Matching the 5-Row Sample Table Below It
+If you want the tree nodes to map directly to the 5 rows listed right under it (ID: 1 through 5):
+```
+                     B+ Tree (Clustered Index on Employee ID)
+                                   [ Root Node ]
+                                      [  3  ]
+                                     /       \
+                   (ID <= 3)        /         \        (ID > 3)
+                            [ Internal ]   [ Internal ]
+                               [  2  ]        [  5  ]
+                               /     \        /     \
+                              v       v      v       v
+ Leaf Nodes:             [ ID: 1 ] <-> [ ID: 2 ] <-> [ ID: 3 ] <-> [ ID: 4 ] <-> [ ID: 5 ]
+ (Actual Table Rows)      Rahul         Amit          Priya         John          Neha
+                         (IT)          (HR)          (Finance)     (IT)          (HR)
+```
+
+| ID | Name | Department |
+| :--- | :--- | :--- |
+| 1 | Rahul | IT |
+| 2 | Amit | HR |
+| 3 | Priya | Finance |
+| 4 | John | IT |
+| 5 | Neha | HR |
+
+The clustered index allows the database to locate the relevant records using the tree structure.
 
 ### Important Characteristics:
 * **Data Organization:** The table's data rows are stored directly at the **leaf level** of the B+ Tree.
@@ -185,11 +246,27 @@ ON Employee(ID);
 * **Primary Key Default:** In most RDBMS engines (e.g., MySQL InnoDB), the `PRIMARY KEY` automatically forms the clustered index.
 * **Optimal Use Cases:** Primary key point lookups (`WHERE ID = 9`) and range queries (`WHERE ID BETWEEN 100 AND 200`).
 
+### Why only one clustered index?
+
+Imagine organizing the same physical table simultaneously by:
+- Employee ID
+- Employee Name
+- Department
+The records cannot all have three different physical orders at the same time.
+
+You can choose one clustered organization.
+
 ---
 
 ## 4. Non-Clustered Index
 
 When you need to search on columns other than the clustered key (such as `Name` or `Department`), you cannot create another clustered index. Instead, you create a **Non-Clustered Index (Secondary Index)**.
+
+But your clustered index is organized by ID.
+
+You cannot create another clustered index just for Name.
+
+Instead, create a Non-Clustered Index.
 
 ```sql
 CREATE NONCLUSTERED INDEX idx_employee_name
@@ -205,15 +282,17 @@ A non-clustered index creates a **completely separate, secondary index structure
                        [ Root Node ]
                           [ 'M' ]
                          /       \
-                     [ 'D' ]   [ 'S' ]
-                     /     \
-                    v       v
- Leaf: ['Priya' | Row Reference: ID=3]
-              |
-              | (Step 2: Key / Bookmark Lookup)
-              v
- [Clustered Table / Base Data Page]
- [ ID: 3 | Priya | Finance | 60000 ] ===> Returns full record to client
+     (Names <= 'M')    /           \   (Names > 'M')
+              [ 'D' ]                 [ 'S' ]
+              /     \                 /     \
+             v       v               v       v
+         ['Amit']  ['John']      ['Priya']  ['Rahul']
+                                  (ID = 3)   (ID = 1)
+                                     |
+                                     | (Step 2: Key / Bookmark Lookup)
+                                     v
+                       [Clustered Table / Base Data Page]
+                       [ ID: 3 | Priya | Finance | 60000 ] ===> Returns full record to client
 ```
 
 ### Visual Representation of Separate Storage:
@@ -283,6 +362,85 @@ Indexes dramatically improve **Read** performance (`SELECT`), but introduce sign
 |                                                                                   |
 +-----------------------------------------------------------------------------------+
 ```
+
+### Without indexes
+When you insert a new employee:
+```
+INSERT INTO Employee
+VALUES (10, 'Amit', 'IT', 60000);
+```
+
+The database primarily needs to insert the record into the table and maintain its existing constraints and structures.
+
+### With multiple indexes
+Imagine you have indexes on:
+- ID
+- Name
+- Department
+- Salary
+
+Now when a new employee is inserted, the database must:
+1. Insert the record into the table.
+2. Update the ID index.
+3. Update the Name index.
+4. Update the Department index.
+5. Update the Salary index.
+
+Each index must maintain its own structure and ordering.
+
+```mermaid
+graph TD
+    %% Styling definitions
+    classDef default fill:#ffffff,stroke:#e2e8f0,stroke-width:1px,color:#1a202c;
+    classDef insertBox fill:#eff6ff,stroke:#dbeafe,stroke-width:1px,color:#1e3a8a;
+    classDef mainTable fill:#ffffff,stroke:#cbd5e1,stroke-width:1px,color:#0f172a,font-weight:bold;
+    classDef indexBox fill:#ffffff,stroke:#e2e8f0,stroke-width:1px,color:#000000;
+    classDef labelText fill:none,stroke:none,color:#4b5563,font-size:12px;
+    classDef badge fill:#ffedd5,stroke:none,color:#c2410c,font-weight:bold,font-size:12px;
+
+    %% Diagram structure
+    subgraph Insert operation with multiple indexes
+        direction TB
+        
+        %% Core Flow
+        Insert["<b>INSERT Employee</b><br><span style='color:#64748b; font-weight:normal; font-size:12px;'>New employee record</span>"]:::insertBox
+        OrigTable["Original Employee Table"]:::mainTable
+        
+        Insert -->|↓| OrigTable
+        OrigTable -->|↓| MidLabel["Maintain all indexes"]:::labelText
+        
+        %% Branching to Indexes
+        MidLabel --> IDIdx
+        MidLabel --> NameIdx
+        MidLabel --> DeptIdx
+        MidLabel --> SalIdx
+
+        %% Index Rows
+        IDIdx["🌿<br><b>ID Index</b><br><span style='color:#64748b; font-weight:normal; font-size:12px;'>Update B+ Tree</span>"]:::indexBox
+        NameIdx["🌿<br><b>Name Index</b><br><span style='color:#64748b; font-weight:normal; font-size:12px;'>Update B+ Tree</span>"]:::indexBox
+        DeptIdx["🌿<br><b>Department Index</b><br><span style='color:#64748b; font-weight:normal; font-size:12px;'>Update B+ Tree</span>"]:::indexBox
+        SalIdx["🌿<br><b>Salary Index</b><br><span style='color:#64748b; font-weight:normal; font-size:12px;'>Update B+ Tree</span>"]:::indexBox
+        
+        %% Bottom Badge
+        Overhead["More indexes = More write overhead"]:::badge
+    end
+```
+
+| Operation	| Effect of indexes |
+| :--- | :--- |
+| SELECT	| Usually faster |
+| INSERT	| Usually slower |
+| UPDATE	| May be slower |
+| DELETE	| May be slower |
+| Storage| Requires additional disk space |
+
+Therefore, indexes should be created strategically on columns frequently used in:
+- WHERE conditions
+- JOIN conditions
+- ORDER BY
+- GROUP BY
+Not every column needs an index.
+
 
 ### Operation Impact Summary:
 
