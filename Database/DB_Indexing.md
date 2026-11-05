@@ -935,8 +935,52 @@ Column order in composite indexes is paramount:
 - B) Single index on `Date`
 - C) Index on an unrelated column
 
-> **Correct Answer: A**  
+> **Correct Answer: A**
 > *Explanation:* A composite index on `(Account_ID, Date)` allows the engine to seek directly to `Account_ID = 5001` and retrieve records in pre-sorted date order without an additional in-memory sort.
+
+---
+
+### Question 5
+**You insert a fourth key into a leaf node that can hold only three keys. What happens?**
+- A) The database deletes the oldest key
+- B) The leaf splits
+- C) The entire index is deleted
+
+> **Correct Answer: B**
+> *Explanation:* The leaf overflows its maximum capacity, so it splits into two smaller leaves and a separator key is copied/promoted up to the parent node.
+
+---
+
+### Question 6
+**You delete a key and the leaf node falls below its minimum size (underflow). What should the database try first?**
+- A) Borrow from a sibling if possible
+- B) Delete the root immediately
+- C) Scan the entire table
+
+> **Correct Answer: A**
+> *Explanation:* Redistribution/borrowing a key from a sibling node with extra keys fixes the underflow while avoiding the overhead of merging nodes.
+
+---
+
+### Question 7
+**A sibling cannot lend a key during deletion underflow. What is the next operation?**
+- A) Create a hash index
+- B) Merge the nodes
+- C) Perform a full table scan
+
+> **Correct Answer: B**
+> *Explanation:* If borrowing is not possible because siblings are at minimum occupancy, the underfull node merges with a sibling and the obsolete parent separator is removed.
+
+---
+
+### Question 8
+**Why are linked leaf nodes useful in a B+ Tree?**
+- A) They encrypt the records
+- B) They make range scans efficient
+- C) They eliminate all disk reads
+
+> **Correct Answer: B**
+> *Explanation:* After reaching the starting key in $O(\log N)$ time, the database can traverse horizontally across the doubly linked list of leaf pages in sorted order without re-traversing the root or internal nodes.
 
 ---
 
