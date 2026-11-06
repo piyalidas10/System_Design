@@ -183,6 +183,17 @@ One important concept is that OpenTelemetry is not the same as Prometheus, Grafa
 | Jaeger        | Visualizes distributed traces            |
 | Splunk        | Log management and analysis              |
 
+**Quick reference:**
+
+- OpenTelemetry SDK = Generates telemetry.
+- OpenTelemetry Collector = Receives, processes and exports telemetry.
+- Prometheus = Metrics storage and querying.
+- Loki = Log storage and querying.
+- Tempo / Jaeger = Distributed trace storage and investigation.
+- Grafana = Visualisation.
+- Alertmanager = Alert notification routing.
+
+
 ---
 
 ## 7. Interview-ready answer
@@ -375,13 +386,53 @@ groups:
 
 ### 9.6 Typical deployment options
 
-| Option | Description | When to use |
-|--------|-------------|-------------|
-| Self-hosted open source | Prometheus + Grafana + Loki + Tempo/Jaeger + OTel Collector on Kubernetes (Helm charts) | Full control, lower licence cost, team can operate it |
-| Managed open source | Grafana Cloud, Amazon Managed Prometheus / Grafana | Less operational work, pay per usage |
-| Commercial SaaS | Datadog, Splunk, New Relic | Fastest start, single vendor, higher cost |
+There are three common ways to deploy observability infrastructure.
 
-Because applications only talk to the OpenTelemetry Collector, you can switch backends (for example from Jaeger to Datadog) without changing application code.
+#### 1. Self-hosted open source
+
+Prometheus + Grafana + Loki + Tempo + OpenTelemetry Collector.
+
+- Full infrastructure control.
+- No commercial licence required for the open-source components.
+- Your team manages deployment, upgrades and storage.
+
+#### 2. Managed observability
+
+Examples: Grafana Cloud and Amazon Managed Service for Prometheus.
+
+- Less infrastructure management.
+- Managed storage and services.
+- Usage-based pricing may apply.
+
+#### 3. Commercial SaaS
+
+Examples: Datadog, New Relic and Splunk.
+
+- Integrated observability capabilities.
+- Faster initial setup.
+- Commercial pricing and vendor dependency.
+
+### 9.7 Why use OpenTelemetry instead of integrating every tool directly?
+
+This is an important system design question.
+
+Imagine initially using Jaeger for distributed tracing. Your application sends traces directly to Jaeger. Later, your organisation decides to migrate to Grafana Tempo.
+
+Without an abstraction layer, you may need to change application integration and configuration.
+
+With OpenTelemetry:
+
+```mermaid
+flowchart TD
+    A[Application] --> B[OpenTelemetry SDK]
+    B --> C[OpenTelemetry Collector]
+    C --> D[Jaeger]
+    C --> E[Tempo]
+```
+
+You can change the telemetry backend largely through Collector configuration rather than rewriting application instrumentation.
+
+**This is one of the biggest advantages of OpenTelemetry.**
 
 
 ---
