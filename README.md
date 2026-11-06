@@ -8,55 +8,105 @@
 7. System Design for Beginners : https://www.youtube.com/watch?v=lFeYU31TnQ8
 8. System Design Explained: APIs, Databases, Caching, CDNs, Load Balancing & Production Infra : https://www.youtube.com/watch?v=oYxTTirKY8M
 
+## System Design Concepts – Summary Table
+
+| Concept                 | Meaning                                                       | Problem it solves                      |
+| ----------------------- | ------------------------------------------------------------- | -------------------------------------- |
+| Monolithic Architecture | Application deployed as one unit                              | Simple initial deployment              |
+| Database Indexing       | Efficient data lookup using indexes                           | Slow database queries                  |
+| Environment Separation  | Isolating Dev, Staging, and Production environments           | Configuration and deployment mistakes  |
+| Secrets Management      | Secure credential handling                                    | Exposed credentials                    |
+| Monitoring              | Observing application health and performance                  | Undetected failures                    |
+| Database Separation     | Separating the database from the application server           | Resource contention                    |
+| Connection Pooling      | Reusing existing database connections                         | Too many database connections          |
+| Vertical Scaling        | Increasing machine resources (CPU, RAM)                       | Capacity limitations                   |
+| Horizontal Scaling      | Adding more machines or instances                             | Increased application capacity         |
+| Load Balancer           | Distributing incoming traffic across servers                  | Uneven server load                     |
+| Stateless Architecture  | No dependence on local server session state                   | Requests going to different servers    |
+| JWT                     | Signed token containing claims                                | Distributed authentication             |
+| Redis Sessions          | Centralized session storage                                   | Shared session state                   |
+| Read Replicas           | Replicating data to handle read queries                       | Primary database read load             |
+| Replication Lag         | Delay in replica synchronization                              | Stale reads                            |
+| CAP Theorem             | Consistency/Availability trade-off during a network partition | Distributed system design              |
+| Redis Caching           | Storing frequently accessed data in memory                    | Repeated database queries              |
+| TTL (Time To Live)      | Automatic cache expiry after a defined period                 | Stale cached data                      |
+| Write-through Caching   | Updating the database and cache during writes                 | Cache freshness                        |
+| Cache-aside             | Loading data into cache on cache misses                       | Efficient lazy caching                 |
+| CDN                     | Distributed content delivery network                          | Static content latency and origin load |
+| Message Queue           | Storing messages for asynchronous processing                  | Slow background operations             |
+| Kafka                   | Distributed event-streaming platform                          | High-throughput event processing       |
+| RabbitMQ                | Message broker supporting queues and routing                  | Task routing and processing            |
+| Amazon SQS              | Fully managed cloud message queue                             | Asynchronous cloud processing          |
+| Idempotency             | Repeated logical requests produce one intended effect         | Duplicate operations                   |
+
+## Important relationships to understand
+
+| Problem                                             | Solution                                      |
+| --------------------------------------------------- | --------------------------------------------- |
+| Application cannot handle increasing traffic        | Horizontal scaling + Load Balancer            |
+| Database receives too many read queries             | Read Replicas + Redis Caching                 |
+| Database receives too many connections              | Connection Pooling                            |
+| Users lose sessions across multiple servers         | Stateless Architecture + JWT / Redis Sessions |
+| Background tasks slow down API responses            | Message Queue                                 |
+| Frequently accessed data causes repeated DB queries | Redis Caching                                 |
+| Static files load slowly worldwide                  | CDN                                           |
+| Duplicate payment or order requests                 | Idempotency                                   |
+| Replica returns outdated information                | Replication Lag handling                      |
+
+This table gives you a useful progression from a simple monolithic application toward a scalable, distributed production architecture.
+
 ## Main topics covered
-1. Client–Server Architecture
+1. [Client–Server Architecture](Client%20Server%20Model/README.md)
 - Clients (browser/mobile apps) send requests to servers.
 - Servers process requests and return responses.
-2. DNS, IP Addresses, Proxies
+2. [DNS](DNS/README.md), IP Addresses, [Proxies](ForwardProxy_vs_ReverseProxy/README.md)
 - DNS maps domain names to IP addresses.
 - Proxy and reverse proxy servers act as intermediaries.
 3. Latency & Global Deployment
 - Physical distance affects response time.
 - Multiple data centers reduce latency.
-4. HTTP, HTTPS & APIs
+4. [HTTP](HTTP%201%20Vs%20HTTP%2011%20Vs%20HTTP2%20Vs%20HTTP3/README.md), [HTTPS](SSL_Certificate_Works.md) & [APIs](API%20Design/README.md)
 - HTTP request/response model.
 - HTTPS adds SSL/TLS encryption.
 - APIs expose server functionality to clients.
-5. REST vs GraphQL
+5. [REST vs GraphQL](REST,%20SOAP,%20GraphQL,%20gRPC%20&%20WebSockets/README.md)
 - REST uses resources and HTTP verbs.
-- GraphQL allows clients to fetch exactly the data they need.
-6. SQL vs NoSQL Databases
+- GraphQL ([notes](API/GraphQL.md)) allows clients to fetch exactly the data they need.
+6. [SQL vs NoSQL Databases](Database/README.md)
 - SQL: structured data, ACID properties, strong consistency.
 - NoSQL: scalability and schema flexibility.
-7. Scaling
+7. [Scaling](Scaling_Horizontal_Vertical/README.md)
 - Vertical Scaling (Scale Up)
 - Horizontal Scaling (Scale Out)
-- Load Balancers distribute traffic.
+- [Load Balancers](Load%20Balancer/Advanced%20Load%20Balancer%20Concepts.md) distribute traffic.
 8. Database Optimization
-- Indexing
-- Replication
-- Sharding
+- [Indexing](Indexing/README.md)
+  - [DB indexing notes](Database/DB_Indexing.md)
+  - B-Tree indexes: nodes, keys, splitting and key promotion ([Order 4 B-Tree](Binary%20Tree/B-Tree-Order-4.md))
+  - Building an Order 4 B-Tree step by step for a banking `customer_id` index ([Banking application — Customer ID index](Database/Banking%20application%20—%20Customer%20ID%20index.md))
+- [Replication](Replication/README.md) ([Read replicas](Database_Replicas/README.md))
+- [Sharding](Database_Sharding/README.md)
 - Vertical Partitioning
-- Caching (Cache-Aside Pattern)
+- [Caching](Caching%20&%20Caching%20Strategies/caching_system_design_study_notes.md) (Cache-Aside Pattern)
 9. Data Modeling
 - Normalization
 - Denormalization for read-heavy systems.
-10. Distributed Systems
-- CAP Theorem
+10. [Distributed Systems](Distributed%20System/Readme.md)
+- [CAP Theorem](CAP_Theorem/README.md)
 - Consistency vs Availability trade-offs.
 11. Storage & Content Delivery
-- Blob Storage (e.g., Amazon S3)
-- CDN (Content Delivery Network) for faster content delivery.
+- [Blob Storage](Distributed%20Blob%20Store/README.md) (e.g., Amazon S3)
+- [CDN](CDN/README.md) (Content Delivery Network) for faster content delivery.
 12. Real-Time Communication
-- WebSockets
-- Webhooks
+- [WebSockets](WebSockets%20vs%20Polling%20vs%20Server%20Sent%20Events/README.md)
+- [Webhooks](Webhooks_WebSocket_PubSub_Polling.pdf)
 13. Microservices
-- Independent services with their own databases.
-- Communication via APIs and message queues.
+- [Independent services](Monolith%20vs%20Microservices/README.md) with their own databases ([SOA & Microservices](SOA%20&%20Microservices/README.md)).
+- Communication via APIs and [message queues](Message%20Queue/README.md).
 14. System Protection & Reliability
-- Message Queues
-- Rate Limiting
-- API Gateway
+- [Message Queues](Message%20Queue/README.md)
+- [Rate Limiting](Rate_Limiter/Rate_Limiter_Final_Architecture.md)
+- [API Gateway](API%20Gateway/README.md)
 - Idempotency
 
 ### System Design
