@@ -2,6 +2,8 @@
 
 In simple terms, Observability helps us understand what is happening inside an application, why it is happening, and where a problem is occurring.
 
+<img src="./Observability_ From Signals to Solutions.png" />
+
 Imagine you have an enterprise application with:
 
 - Angular Frontend
