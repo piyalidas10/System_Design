@@ -17,6 +17,8 @@ Let's learn CDN from a system architect's perspective, starting with the basics 
 
 These notes follow the comprehensive lecture structure, explained with practical examples, request flows, and architecture diagrams.
 
+<img src="./img/CDN System Design and Origin Failover Guide.png" width="100%" />
+
 ---
 
 # Chapter 1 — Introduction to CDN
