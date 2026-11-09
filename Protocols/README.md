@@ -221,3 +221,4 @@ In system design interviews, questions around TCP vs. UDP evaluate your ability 
 
 - [Why Not Use HTTPS Everywhere? (Trade-offs & Protocol Selection)](./Why_Not_HTTPS_Everywhere.md)
 - [REST and RESTful API Design Principles](./REST_and_RESTful_API_Design.md)
+- [TCP vs. HTTP/HTTPS vs. REST: Architectural Differences & Trade-Offs](./HTTPS_vs_TCP.md)
