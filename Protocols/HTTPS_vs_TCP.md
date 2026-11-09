@@ -516,6 +516,22 @@ GET /accounts/102  ───►  [Layer 7 Load Balancer]  ───►  Server B
 
 ---
 
+### Complete Comparison: Raw TCP vs. REST/HTTP
+
+| Responsibility | Raw TCP | REST/HTTP |
+| :--- | :--- | :--- |
+| Sending JSON | You implement message handling | Supported by application frameworks |
+| Message framing | You implement | HTTP defines it |
+| Routing | You implement | HTTP + Express routing |
+| Authentication | You implement conventions | Standard HTTP mechanisms available |
+| Error codes | Custom protocol | HTTP status codes |
+| Caching | Custom implementation | Standard HTTP caching |
+| Load balancing | Layer 4 possible | Layer 4 and Layer 7 |
+| API documentation | Custom | OpenAPI ecosystem |
+| Browser integration | Custom | Native HTTP support |
+
+---
+
 ## 5. Authentication vs. Authorization in TCP and REST
 
 Both Authentication and Authorization can be implemented over raw TCP—they are application-level concepts. However, REST provides standard conventions.
