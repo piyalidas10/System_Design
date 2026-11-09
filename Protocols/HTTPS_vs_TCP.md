@@ -9,6 +9,10 @@ The short answer: **REST does not replace TCP.**
 - **HTTP / HTTPS** is a **Layer 7 application protocol** (commonly running on top of TCP) that defines web communication semantics.
 - **REST** is an **architectural style** that uses HTTP conventions to make APIs scalable, stateless, and interoperable.
 
+<img src="./img/Key Differences Between TCP & UDP.png" width="90%"/>
+
+<img src="./img/TCP vs HTTP_ Building Better APIs.png" width="90%"/>
+
 ---
 
 ## 1. High-Level Architectural Relationship
@@ -109,6 +113,35 @@ Request 2: POST /payments     ───► [L7 LB: Inspects Path] ───► P
 
 ## 3. Why Choose REST over Raw TCP? (Node.js Implementation)
 
+> "Actually, REST and TCP are not direct alternatives. REST is an architectural style that commonly uses HTTP, and HTTP/1.1 and HTTP/2 typically use TCP as their transport protocol.
+>
+> TCP provides reliable communication between two endpoints, but it doesn't define application-level concepts such as HTTP methods, resource URLs, status codes, headers or standardized message formats.
+>
+> REST uses these established HTTP capabilities to simplify communication between frontend and backend systems.
+>
+> Therefore, for enterprise applications such as banking, e-commerce and CRUD-based systems, REST is generally preferred because it offers standardization, interoperability, caching support and easier integration with API gateways and load balancers."
+
+### Remember this relationship: REST doesn't replace TCP
+
+```mermaid
+flowchart TD
+    subgraph Relationship ["Protocol & Architecture Hierarchy"]
+        direction TB
+        REST["<b>REST</b><br/>Architectural style"]
+        HTTP["<b>HTTP</b><br/>Application protocol"]
+        TCP["<b>TCP (HTTP/1.1 and HTTP/2)</b><br/>Transport protocol"]
+        IP["<b>IP</b><br/>Network protocol"]
+
+        REST -->|defines rules over| HTTP
+        HTTP -->|runs on top of| TCP
+        TCP -->|transports bytes over| IP
+    end
+```
+
+> **The biggest takeaway:** **TCP provides the communication channel; REST defines how applications should communicate using HTTP conventions.**
+
+---
+
 Imagine building a Banking API where a client queries an account balance.
 
 ### Option A: Using Raw TCP (`net` module)
@@ -204,7 +237,9 @@ getAccountBalance();
 
 ---
 
-## 4. The 6 Practical Problems of Sending Custom JSON over Raw TCP
+## 4. Problems We Must Handle Ourselves with Raw TCP
+
+<img src="./img/Raw TCP to HTTP_ JSON’s Journey.png" width="90%"/>
 
 Suppose you decide to send this JSON structure over raw TCP instead of HTTP:
 
@@ -213,61 +248,271 @@ Suppose you decide to send this JSON structure over raw TCP instead of HTTP:
   "type": "GET",
   "path": "/accounts/101",
   "headers": {
-    "authorization": "abc123token"
+    "authorization": "abc123"
   },
   "payload": null
 }
 ```
 
-Here are the six major problems you must manually solve:
+Now imagine this banking application scales to **10,000 concurrent clients and millions of requests**. Here are the 6 major architectural problems you must manually implement when using raw TCP instead of REST/HTTP:
 
-### 1. Message Framing (TCP is a Byte Stream, Not a Message Protocol)
-TCP treats data as a continuous stream of bytes. If a client sends two requests consecutively:
+```mermaid
+flowchart TD
+    subgraph RawTCP ["⚠️ Raw TCP: Custom Heavy Lifting Required"]
+        direction TB
+        P1["<b>1. Message Framing</b><br/>Handle stream chunking, delimiter scanning & length-prefixing"]
+        P2["<b>2. Routing & Methods</b><br/>Parse custom actions/paths & build dispatchers"]
+        P3["<b>3. AuthN & AuthZ</b><br/>Manual token extraction, validation & security pipelines"]
+        P4["<b>4. Error Handling</b><br/>Invent proprietary error codes & client-parsing schemas"]
+        P5["<b>5. Caching</b><br/>Opaque bytes to CDNs; manual distributed caching logic"]
+        P6["<b>6. Load Balancing</b><br/>Restricted to Layer 4 (connection-level routing)"]
+    end
+
+    subgraph RESTHTTP ["✅ REST / HTTP: Built-In Web Standards"]
+        direction TB
+        S1["Standard <code>Content-Length</code> & chunked framing"]
+        S2["Standard HTTP verbs (GET, POST, PUT, DELETE) & URL routing"]
+        S3["Standard <code>Authorization</code> headers & middleware chains"]
+        S4["Universal HTTP status codes (200, 400, 401, 404, 500)"]
+        S5["<code>Cache-Control</code>, <code>ETag</code> & native edge CDN caching"]
+        S6["Layer 7 intelligent request routing & stateless scaling"]
+    end
+
+    P1 -.->|Solved by| S1
+    P2 -.->|Solved by| S2
+    P3 -.->|Solved by| S3
+    P4 -.->|Solved by| S4
+    P5 -.->|Solved by| S5
+    P6 -.->|Solved by| S6
 ```
+
+---
+
+### Problem 1: Message Framing
+
+This is one of the biggest differences between TCP and HTTP.
+
+**TCP is a byte stream, not a message-based protocol.**
+
+Suppose a client sends two consecutive requests:
+```json
 Request 1: {"type":"GET","path":"/accounts/101"}
 Request 2: {"type":"GET","path":"/accounts/102"}
 ```
-TCP does not guarantee two separate `data` events on the server. The data might arrive split across chunks or fused together:
+
+```mermaid
+flowchart TD
+    subgraph ClientSend ["Client Sends 2 Consecutive Requests"]
+        M1["<b>Request 1:</b> <code>{'type':'GET','path':'/accounts/101'}</code>"]
+        M2["<b>Request 2:</b> <code>{'type':'GET','path':'/accounts/102'}</code>"]
+    end
+
+    subgraph Expected ["What Developers Expect (Message Boundaries)"]
+        E1["<b>Message 1:</b> Account 101"]
+        E2["<b>Message 2:</b> Account 102"]
+    end
+
+    subgraph ActualTCP ["What TCP Actually Delivers (Continuous Byte Stream)"]
+        direction TB
+        C1["<b>Chunk 1:</b> <code>{'type':'GET','path':'/acc</code>"]
+        C2["<b>Chunk 2:</b> <code>ounts/101'}{'type':'GET'</code>"]
+        C3["<b>Chunk 3:</b> <code>,'path':'/accounts/102'}</code>"]
+        
+        FAIL["💥 <code>JSON.parse(chunk)</code> throws <b>SyntaxError</b>"]
+        C1 --> C2 --> C3 --> FAIL
+    end
+
+    ClientSend -->|Expectation| Expected
+    ClientSend -->|TCP Transport Reality| ActualTCP
 ```
-Chunk 1: {"type":"GET","path":"/acc
-Chunk 2: ounts/101"}{"type":"GET","path":"/accounts/102"}
+
+- **What you expect:**
+  - `Message 1`: Account 101
+  - `Message 2`: Account 102
+
+- **What TCP might actually deliver:**
+  - `Chunk 1`: `{"type":"GET","path":"/acc`
+  - `Chunk 2`: `ounts/101"}{"type":"GET"`
+  - `Chunk 3`: `,"path":"/accounts/102"}`
+
+Or both requests might arrive together merged into a single chunk.
+
+#### The Problem:
+This common TCP server code is completely unsafe:
+```javascript
+socket.on("data", (data) => {
+    // 💥 Unsafe! data is NOT guaranteed to contain exactly one complete JSON document
+    const request = JSON.parse(data.toString());
+});
 ```
-> `JSON.parse(data.toString())` will crash with `SyntaxError`. You must implement custom **length-prefix framing** or **delimiter scanning**. HTTP already does this natively via `Content-Length` and chunked transfer encoding.
+
+#### What you must implement manually:
+You must implement a **custom Message Framing protocol**:
+- Add a fixed-size message length header before each JSON payload.
+- Read the length bytes first.
+- Buffer incoming bytes until the complete message arrives.
+- Parse the JSON only after the entire frame is received.
+
+> **HTTP solves this natively:** HTTP provides standardized framing via `Content-Length` headers and `Transfer-Encoding: chunked`.
 
 ---
 
-### 2. Routing and Handler Mapping
-With raw TCP, you must write a custom dispatcher:
-```javascript
-if (request.type === "GET" && request.path.startsWith("/accounts/")) {
-    handleGetAccount(request, socket);
-} else if (request.type === "POST" && request.path === "/payments") {
-    handleCreatePayment(request, socket);
+### Problem 2: HTTP Methods and Routing
+
+Your JSON request specifies:
+```json
+{
+  "type": "GET",
+  "path": "/accounts/101"
 }
 ```
-With Express/REST, routing, regex matching, and parameter extraction are solved problems.
+
+Now imagine you need standard banking operations:
+- `GET /accounts/101`
+- `POST /payments`
+- `PUT /accounts/101`
+- `DELETE /beneficiaries/101`
+
+#### With Raw TCP:
+You must write complex custom parsing code to:
+1. Read the `type` field.
+2. Read the `path` string.
+3. Identify the requested operation.
+4. Find the matching route handler.
+5. Validate route parameters.
+
+#### With Express / REST:
+Routing is clean, expressive, and out-of-the-box:
+```javascript
+app.get("/accounts/:id", getAccount);
+app.post("/payments", createPayment);
+app.put("/accounts/:id", updateAccount);
+app.delete("/beneficiaries/:id", deleteBeneficiary);
+```
 
 ---
 
-### 3. Authentication & Authorization Middleware
-With raw TCP, every handler must manually extract tokens, handle missing headers, and format custom error payloads. In REST frameworks, reusable middleware chains (`authenticate -> authorize -> handler`) enforce security uniformly.
+### Problem 3: Authentication and Authorization
+
+Your JSON request contains authentication metadata:
+```json
+"headers": {
+    "authorization": "abc123"
+}
+```
+
+#### With Raw TCP:
+You must manually write custom logic for:
+- Token extraction from custom payload formats.
+- Token validation and signature checking.
+- Expiration verification.
+- Formatting and sending authentication error payloads.
+- Enforcing authorization rules.
+
+#### With Express / REST:
+Reusable middleware handles authentication cleanly:
+```javascript
+function authenticate(req, res, next) {
+    const token = req.headers.authorization;
+
+    if (!token || token !== "abc123") {
+        return res.status(401).json({
+            error: "Unauthorized"
+        });
+    }
+
+    next();
+}
+
+app.get("/accounts/:id", authenticate, getAccount);
+```
+*(In production, use standard JWT verification, HTTPS, and secure token rotation).*
 
 ---
 
-### 4. Standardized Status Codes & Error Handling
-If Account 101 does not exist:
-- **Raw TCP:** You must define custom error contracts (`{ "error": "NOT_FOUND", "code": 404 }`) and ensure every client across every programming language handles it consistently.
-- **REST:** Return `404 Not Found`. Gateways, client SDKs, monitoring agents (e.g., Datadog, Prometheus) immediately record error metrics.
+### Problem 4: Error Handling and Status Codes
+
+Suppose account `101` does not exist in the database.
+
+#### With Raw TCP:
+You must invent your own error schema and ensure all clients in every programming language know how to parse it:
+```json
+{
+  "success": false,
+  "errorCode": "ACCOUNT_NOT_FOUND",
+  "message": "Account not found"
+}
+```
+
+#### With Express / REST:
+Standardized HTTP status codes communicate error semantics immediately to browsers, API gateways, load balancers, and monitoring tools:
+```http
+HTTP/1.1 404 Not Found
+Content-Type: application/json
+
+{
+  "message": "Account not found"
+}
+```
 
 ---
 
-### 5. Caching and CDN Compatibility
-CDNs (Cloudflare, Akamai, CloudFront) and reverse proxies (NGINX, Envoy) inspect HTTP headers (`Cache-Control`, `Vary`) to offload 90%+ of read traffic. Raw TCP traffic is opaque to CDNs and cannot be cached at edge nodes.
+### Problem 5: Caching
+
+Suppose 10,000 users simultaneously request:
+```http
+GET /products
+```
+
+#### With Express / REST:
+You can leverage standard HTTP caching headers:
+```http
+Cache-Control: public, max-age=300
+```
+CDNs (Cloudflare, CloudFront, Akamai) and reverse proxies (NGINX) immediately understand this and serve cached responses without hitting origin servers.
+
+#### With Raw TCP:
+TCP does not define caching. You must manually implement:
+- Cache key generation.
+- TTL expiration policies.
+- Cache invalidation and eviction.
+- Cache coordination across distributed nodes.
+
+*(Note: Sensitive banking account info must be marked `Cache-Control: no-store`; public caching would be inappropriate).*
 
 ---
 
-### 6. Layer 7 Load Balancing & Distributed Tracing
-Modern service meshes (Istio, Envoy) and API Gateways (Kong, AWS API Gateway) route traffic, perform canary releases, enforce rate limits, and inject distributed tracing headers (`traceparent`, `x-request-id`) by inspecting HTTP packets. Raw TCP prevents granular Layer 7 traffic management.
+### Problem 6: Load Balancing and Scaling
+
+Suppose we have 10,000 concurrent clients distributed across three Node.js application servers:
+
+```
+                  10,000 Clients
+                        │
+                        ▼
+               ┌─────────────────┐
+               │  Load Balancer  │
+               └────────┬────────┘
+        ┌───────────────┼───────────────┐
+        ▼               ▼               ▼
+┌──────────────┐┌──────────────┐┌──────────────┐
+│   Server A   ││   Server B   ││   Server C   │
+│   (Node.js)  ││   (Node.js)  ││   (Node.js)  │
+└──────────────┘└──────────────┘└──────────────┘
+```
+
+#### With Raw TCP (Layer 4 Load Balancing):
+- A Layer 4 load balancer distributes raw TCP connections (IP + Port).
+- You must design your own protocol for managing long-lived connections, connection drain, and routing failures.
+
+#### With HTTP/REST (Layer 7 Load Balancing):
+- A Layer 7 load balancer understands HTTP methods, URL paths, headers, and status codes.
+- **REST statelessness** enables granular request-level distribution:
+
+```
+GET /accounts/101  ───►  [Layer 7 Load Balancer]  ───►  Server A
+GET /accounts/102  ───►  [Layer 7 Load Balancer]  ───►  Server B
+```
 
 ---
 
