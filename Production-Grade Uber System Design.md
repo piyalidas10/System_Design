@@ -522,7 +522,7 @@ Initial database state: Driver D101 is `AVAILABLE`.
 
 Two requests arrive simultaneously (Rider A: assign D101 to Ride A; Rider B: assign D101 to Ride B). Both attempt to change D101 from `AVAILABLE` to `ASSIGNED` using the atomic conditional update.
 
-<img src="./imgs/Uber race condition -How atomic update solves the problem.png" width="80%" />
+<img src="./imgs/Uber race condition -How atomic update solves the problem.png" width="50%" />
 
 ```mermaid
 flowchart TB

@@ -1,35 +1,31 @@
-# Content Delivery Networks (CDNs)
+# Content Delivery Networks (CDN) — Complete System Design Study Notes
 
 - 📖 [Production-Scale URL Shortener & CDN Infrastructure Deep Dive](./Production_URL_Shortener_Architecture.md)
 - 📖 [Chaining Multiple CDNs vs. Parallel Multi-CDN Architectures](./Chaining_Multiple_CDNs_vs_Multi_CDN.md)
 - 📖 [Multiple Load Balancers vs. Multiple CDNs (Deep Dive)](./Multiple_Load_Balancers_vs_Multiple_CDNs.md)
+- 📖 [How Does a CDN Provide Services Other Than Caching?](./CDN_Uses.md)
 - 📖 [CDN In-Depth Guide](./info.md)
 
 ## Tutorials
-1. What is CDN | Content Delivery Network : https://www.youtube.com/watch?v=4pd5FgTluCM&t=2s
-2. Lec-4 : Content Delivery Network (CDN) | How it works : https://www.youtube.com/watch?v=ouqqU0FJjhQ
-3. System Design - Part 9 | Message Queue and CDN : https://www.youtube.com/watch?v=G2xEnPugNoo&list=PLFdAYMIVJQHOWJgRrjv_RH-ng95B2h3ON&index=10
+1. **What is CDN | Content Delivery Network**: https://www.youtube.com/watch?v=4pd5FgTluCM&t=2s
+2. **Lec-4 : Content Delivery Network (CDN) | How it works**: https://www.youtube.com/watch?v=ouqqU0FJjhQ
+3. **System Design - Part 9 | Message Queue and CDN**: https://www.youtube.com/watch?v=G2xEnPugNoo&list=PLFdAYMIVJQHOWJgRrjv_RH-ng95B2h3ON&index=10
 
-## What is CDN ?
+---
 
-A Content Delivery Network (CDN) is a geographically distributed network of servers that stores cached copies of content closer to users.
+Let's learn CDN from a system architect's perspective, starting with the basics and gradually moving towards enterprise-level architecture and interview questions.
 
-Its primary purpose is to reduce latency and improve application loading speed.
+These notes follow the comprehensive lecture structure, explained with practical examples, request flows, and architecture diagrams.
 
-Think about the bookstore example again.
+---
 
-Imagine you have 100 bookstores across different locations.
+# Chapter 1 — Introduction to CDN
 
-Instead of maintaining one central warehouse for all bookstores, you establish smaller warehouses near groups of bookstores.
+## 1. What is a Content Delivery Network?
 
-<img src="./img/CDN_Bookstore.jpg" width="60%" />
+A **Content Delivery Network (CDN)** is a globally distributed network of servers that delivers content to users from locations geographically closer to them.
 
-**Now:**
-- Customers get products from nearby warehouses.
-- They don't need to wait for products to travel from a distant central warehouse.
-- Delivery becomes faster.
-
-A CDN works on the same principle, except it delivers digital content such as images, CSS, JavaScript, videos and other cacheable resources.
+Instead of every user requesting content directly from one central server, a CDN stores copies of frequently requested content at distributed locations called **Edge Locations (Points of Presence / PoPs)**.
 
 **A Content Delivery Network (CDN) speeds up websites using three main parts.** 
 - The origin server stores the master files.
@@ -51,1270 +47,439 @@ A CDN works on the same principle, except it delivers digital content such as im
 - Cache hit: The edge server finds the requested file in its cache and sends it instantly.
 - Cache miss: The edge server lacks the file, pulls it from the origin server, saves a copy, and hands it to the user.
 
-<img src="./img/CDN Architecture Global Edge Network.png" width="65%"/><img src="./img/How%20CDN%20Works.png" width="35%" />
-
-## Introduction
-
-<img src="./img/CDN%20Caching%20Network%20Diagram.png" width="100%" />
-
-Today we're going to learn about CDNs—Content Delivery Networks.
-
-Many people who know a little about CDNs often get confused about one thing:
-- Which type of data should be cached?
-- Which type of data should never be cached?
-
 The basic definition everyone has heard is:
 ```
 "Cache static data, but don't cache dynamic data."
 ```
-But how accurate is that statement? Where does the confusion come from?
 
-Today we'll understand everything from A to Z.
+<img src="./img/CDN Caching Network Diagram.png" width="100%" />
+
+### Real-World Example: Video Streaming
+Imagine you are watching a video on a streaming platform:
+- The original video is stored on an origin server in the **USA**.
+- You are watching from **Kolkata, India**.
+- **Without a CDN:** Your request travels all the way to the USA (~14,000 km round trip), creating substantial delay and buffering.
+- **With a CDN:** The video is delivered from a local edge server located close to Kolkata.
+
+This drastically reduces network round-trip time (RTT) and delivers a smooth viewing experience.
+
+### The Bookstore Warehouse Analogy
+Imagine you run 100 bookstores across the country:
+- Instead of maintaining a single central warehouse and shipping every single book from it, you set up regional distribution hubs near clusters of bookstores.
+- Local customers get their books quickly from the nearby hub.
+- Only when a regional hub runs out of stock does it contact the central warehouse.
+
+<img src="./img/CDN_Bookstore.jpg" width="60%" />
+
+A CDN operates on this exact principle for digital assets (images, CSS, JavaScript, videos, fonts, and API data).
 
 ---
 
-## Why do we need a CDN?
+## 2. Why Do We Need a CDN?
 
-Imagine you build a web application with one central server in India.
-
-Your users are located across the world.
+Before CDNs existed, every client request had to travel directly to the origin server.
 
 <img src="./img/CDN_With_Without.webp" width="100%" />
 
-**Consider these users:**
-- User A: India
-- User B: USA
-- User C: Australia
-- User D: Europe
+This creates three major problems:
 
-All users request resources from the same central server.
+### Problem 1: Distance Creates Latency
+- Network signals travel through fiber-optic cables at approximately $200,000\text{ km/s}$ (sub-light speed).
+- When a user in India communicates with a server in the USA, data traverses thousands of kilometers and dozens of intermediate routers.
+- Round-trip latency can easily exceed $200\text{ ms}$ for a single request.
+- A modern web page requires dozens of requests (HTML, CSS bundles, JS bundles, images, fonts). Cumulative network delay significantly degrades user experience.
 
-The problem:
+> **Solution:** Serve content from geographically closer edge servers (reducing latency from $\approx 200\text{ ms}$ to $< 20\text{ ms}$).
 
-A user located far away must wait longer for network requests to travel between their location and your server.
+### Problem 2: Origin Server Becomes a Bottleneck
+- Imagine 1 million users accessing the application simultaneously during a flash sale or breaking news event.
+- Without a CDN, all 1 million requests hit the origin server directly.
+- The origin's CPU, memory, connection pools, and network interfaces get overwhelmed, leading to server crashes or high 5xx error rates.
 
-This increases latency and negatively impacts the user experience.
+> **Solution:** CDN edge servers absorb and serve the vast majority of incoming traffic, shielding the origin.
 
-> **Solution: Deploy CDN edge servers across different geographical regions.**
+### Problem 3: Increased Origin Bandwidth Consumption & Cost
+- Static assets like high-resolution images, video files, JS bundles, and CSS stylesheets make up over $80\%$ of typical web payload size.
+- If 1 million users repeatedly download the same 5 MB banner image from the origin, the origin must transfer 5 Terabytes of redundant data.
+- Cloud origin bandwidth egress is expensive.
+
+> **Solution:** Cache reusable content at the edge and serve it repeatedly with zero origin bandwidth cost.
 
 ---
 
-## CDN Process Flow
+## 3. Problems vs. CDN Solutions
+
+| Problem | CDN Solution |
+| :--- | :--- |
+| **High Latency** | Serve content closer to users from edge servers |
+| **Origin Overload** | Offload traffic to edge locations (Origin Offloading) |
+| **High Bandwidth Consumption** | Cache reusable assets at the edge |
+| **Traffic Spikes** | Globally distribute requests across thousands of servers |
+| **Regional Outages / Failures** | Automatically reroute requests to healthy edge nodes |
+| **Security Threats** | Filter malicious traffic, mitigate DDoS, and terminate TLS at the edge |
+
+> **Key Rule:** A CDN is not just a caching layer. It is a **performance, scalability, availability, and security layer**.
+
+---
+
+# Chapter 2 — CDN Architecture Overview
+
+A CDN consists of three key architectural components:
+
+<img src="./img/CDN Architecture Global Edge Network.png" width="65%"/><img src="./img/How CDN Works.png" width="35%" />
+
+```
++-------------------------------------------------------------------------+
+|                              CDN ARCHITECTURE                           |
+|                                                                         |
+|   [ User in Asia ]  ---------> ( Edge PoP - Asia )                      |
+|                                         | (Cache Miss)                  |
+|   [ User in Europe ] --------> ( Edge PoP - Europe ) ---> [ ORIGIN ]    |
+|                                         | (Cache Miss)   [ SERVER ]     |
+|   [ User in US ]    ---------> ( Edge PoP - US )                        |
++-------------------------------------------------------------------------+
+```
+
+### 1. Origin Server
+- The original source of truth where primary application code, databases, media files, and APIs live.
+- The CDN does **not** replace the origin server; it minimizes direct traffic reaching it.
+
+### 2. Edge Servers (Points of Presence / PoPs)
+- Edge servers reside in distributed data centers located in major metropolitan areas around the world.
+- Responsibilities:
+  - Store cached copies of assets.
+  - Terminate client TLS connections.
+  - Serve content with ultra-low latency.
+  - Execute edge logic and security rules.
+
+### 3. Request Routing System
+When a user types a URL, how does the CDN pick the right edge server?
+The CDN request routing system uses **Anycast DNS**, Geo-DNS, or latency-based routing taking into account:
+- **Geographic proximity**
+- **Network latency & round-trip time**
+- **Network congestion & BGP routing paths**
+- **Server health and current load**
+
+> *Important:* The physically nearest server is not always the fastest. Network congestion and route availability are factored in real time.
+
+---
+
+# Chapter 3 — How CDN Works: Step-by-Step Request Lifecycle
+
+Let's understand the complete request flow when a user requests an asset (e.g., `https://example.com/images/logo.png`).
 
 <img src="./img/CDN_Flow.webp" width="70%" />
 
-Let's understand using an example.
+### 1. Complete Request Flow
+1. **User sends request:** Browser initiates an HTTPS request for `logo.png`.
+2. **Routing:** DNS resolves the domain to the nearest/best CDN Edge IP.
+3. **Cache Inspection:** The edge server checks its local storage for `logo.png`.
+4. **Cache Hit:** If found and fresh, edge returns it directly to the user (sub-millisecond lookup).
+5. **Cache Miss:** If not found or expired, edge sends an origin request to fetch `logo.png`.
+6. **Origin Response:** Origin server sends the image and cache-control headers back to edge.
+7. **Edge Caching:** Edge stores a copy in local memory/disk according to TTL policies.
+8. **Client Delivery:** Edge returns the image to the user.
 
-Suppose a user opens an e-commerce website and requests its homepage.
+---
 
-1. User requests a website resource : Browser requests logo.png from the website.
-2. Request reaches the nearest CDN edge server : CDN checks whether the requested image is available in its cache.
-3. Cache Hit : If the image exists, the CDN immediately returns it to the browser.
-4. Cache Miss : If the image doesn't exist, the CDN fetches it from the origin server.
-5. Cache and deliver : The CDN stores the fetched content according to its caching policy and delivers it to the user.
+### 2. Cache Hit
 
-No CDN just blindly caches anything. Everything has a strategy and CDN has a lot of strategies involved depending upon what do you want to cache. From 100s of requests that went out , many of them were actually served by the CloudFlare CDN.
+A **Cache Hit** occurs when the requested content is already available and valid in the edge server's cache.
 
-You can actually check this image. Cf-Cache-Status: HIT (It was a Cache HIT by Cloudflare). Actually You might see 200 OK(from disk cache) . This means browser actually pre loaded it from disk, but first time it was served from Cloudflare
+```
+Browser  ----( 1. GET /logo.png )---->  CDN Edge Server (Found in Cache!)
+Browser  <---( 2. 200 OK + Image )----  CDN Edge Server
+                                        (Origin NOT contacted)
+```
+
+**Advantages:**
+- Ultra-low latency (often $<10\text{ ms}$).
+- Zero origin CPU or bandwidth consumption.
+- Maximum throughput.
 
 <img src="./img/CloudFlare_CDN.webp" width="70%" />
 
 ---
 
-## Region-specific CDN
-The lecture also explains an important concept: region-specific content.
+### 3. Cache Miss
 
-Imagine you build a Netflix-like application.
+A **Cache Miss** occurs when requested content is not present or has expired in the edge server's cache.
 
-Users in India may prefer different content from users in the USA.
+```
+Browser  --( 1. GET /new-image.png )-->  CDN Edge Server
+                                              |
+                                              | ( 2. Origin Fetch )
+                                              v
+                                         Origin Server
+                                              |
+                                              | ( 3. Return Content )
+                                              v
+Browser  <--( 5. 200 OK + Image )------  CDN Edge Server
+                                         ( 4. Stores copy in Cache )
+```
 
-You can cache region-specific content at different CDN locations.
-
-<img src="./img/Region-specific-CDN.jpg" width="80%" />
-
-| CDN Region | Cached content |
-| :--- | :--- |
-| India | Indian movies and regional content |
-| USA | US movies and popular shows |
-| Europe | European regional content |
-
-If a user requests content not available in their local CDN, the CDN may retrieve it from another appropriate source or origin, depending on the architecture.
-
+**Subsequent Requests:**
+Every subsequent user in that region requesting `/new-image.png` will now trigger a **Cache Hit**.
 
 ---
 
-## Understanding the Problem
+### 4. Cache Hit vs. Cache Miss
 
-Imagine this is my server. It hosts the website striver.in, and the server is located in Mumbai.
-
-Now suppose I'm located in Delhi.
-
-Whenever I visit this website, my browser sends a request to the Mumbai server. The server processes the request and sends back a response, after which the website opens in my browser.
-
-Now imagine another user who is located in the United States.
-
-This user also wants to access the same website. The server is still located in Mumbai, so their request also has to travel all the way to Mumbai before the response comes back.
-
-Now let me ask you something.
-
-Who will receive the response faster?
-- The user in Delhi?
-- Or the user in the USA?
-
-Some people might think both should receive it at the same speed.
-
-But that's not true.
-
-The physical distance matters a lot.
-
-For example:
-- The round-trip distance between the USA and Mumbai may be around 14,000 kilometers.
-- The round-trip distance between Delhi and Mumbai may be roughly 1,400 kilometers.
-
-The data traveling over the network has a speed limit.
-
-Nothing can travel faster than the speed of light.
-
-The speed of light is approximately 300,000 km/s, while network signals typically travel at around 200,000 km/s through fiber optic cables.
-
-Because of this:
-- The user in the USA may receive a response after roughly 70 milliseconds.
-- The user in Delhi may receive a response in around 7 milliseconds.
-
-So clearly there's a noticeable delay.
-
-And honestly, even 70 milliseconds sounds small.
-
-In reality, the request doesn't travel directly.
-
-It passes through many routers along the way, and each router performs some processing. Because of this additional network overhead, the delay increases.
-
-In practice:
-- A request from the USA might take around 200 milliseconds.
-- A request from Delhi might take roughly 30 milliseconds.
-
-Now you may think:
-```
-"What's the big deal? Even 200 milliseconds is less than one second."
-```
-That's true, but this is only the delay for a single request.
-
----
-
-## Advantages of CDN
-The lecture highlights the following advantages.
-
-A. Reduced latency : Users receive content from geographically closer servers.
-
-B. Faster website loading : Static resources such as images, banners, CSS and JavaScript can be cached at edge locations.
-
-C. Reduced origin-server load : Repeated requests can be served by CDN caches rather than reaching the origin server.
-
-D. Better global user experience : Users across different geographical regions can access content faster.
-
-## Challenges of CDN
-
-| Challenge | Explanation | Possible approach |
+| Feature | Cache Hit | Cache Miss |
 | :--- | :--- | :--- |
-| Stale content | CDN may serve older content after an update | Cache invalidation and TTL |
-| Cache freshness | Different edge locations may have different cached versions | Purging and versioned assets |
-| Cost | CDN bandwidth, requests and storage cost money | Monitor usage and optimize caching |
+| **Content in Edge Cache** | Yes | No |
+| **Origin Server Contacted** | No | Yes |
+| **Response Latency** | Substantially faster ($5\text{--}20\text{ ms}$) | Slower ($100\text{--}300\text{ ms}$) |
+| **Origin Load** | None (Offloaded) | Incurred for this request |
+| **Data Source** | Edge RAM / SSD | Origin backend / Object Store |
 
-**Understand the stale content problem**
-
-Suppose you update your website logo.
-
-Your origin server now contains the new logo.
-
-However, CDN edge servers may still have the old logo.
-
-Users may continue seeing the old logo.
-
-This is called a stale cache problem.
-
-**Solutions include:**
-- TTL (Time To Live)
-- Cache invalidation/purging
-- Versioned file names, such as logo-v2.png
+> **Interview Insight:** If 1 million users in different regions request the same new image simultaneously, each distinct edge PoP experiences its own initial cache miss. Once each PoP caches it, subsequent regional requests become cache hits.
 
 ---
 
-## A Website Requires Multiple Requests
+# Chapter 4 — Additional Capabilities of Modern CDNs
 
-Let's see what actually happens when someone visits a website.
+Modern CDNs provide much more than basic caching.
 
-Suppose I'm trying to open the Striver website.
+<img src="./img/CDN Capabilities Beyond Caching.png" width="100%" />
 
-The browser first sends a request.
+### 1. Caching
+Storing static assets (images, CSS, JS, video chunks, PDF documents) at edge PoPs worldwide.
 
-The very first thing the server sends back is an HTML page.
+### 2. Traffic Distribution & High Availability
+- Distributes millions of concurrent requests globally.
+- Automatically reroutes traffic if an edge PoP, fiber line, or cloud region fails.
 
-Initially, the browser receives only the HTML document.
+### 3. Content Optimization
+- **Compression:** Dynamically applies **Gzip** or **Brotli (`br`)** compression on text responses, reducing transfer sizes by up to $70\text{--}80\%$.
+- **Asset Minification:** Strips unnecessary whitespace, comments, and unused code from CSS and JavaScript.
+- **Image Optimization:** Dynamically converts images to modern formats (WebP, AVIF) and resizes on the fly based on client `User-Agent`.
 
-Inside that HTML file, there are references to other resources.
+### 4. Security Layer at the Edge
 
-For example, the HTML says:
-- I need this CSS file.
-- I need this JavaScript file.
+<img src="./img/DDoS Mitigation — How does CDN absorb attacks.jpg" width="90%" />
 
-There may be multiple JavaScript files.
-
-There may also be multiple CSS stylesheets.
-
-After receiving the HTML page, the browser has to send additional requests:
-- "Please send me the CSS file."
-- "Please send me the JavaScript file."
-
-The server responds with the CSS.
-
-Then another request is made.
-
-The JavaScript file is downloaded.
-
-Each one of these requests introduces additional network delay.
+| Security Capability | Purpose |
+| :--- | :--- |
+| **Malicious Traffic Filtering (WAF)** | Inspects HTTP headers/body and blocks SQLi, XSS, and bot attacks before they hit the origin. |
+| **DDoS Mitigation** | Absorbs massive Layer 3/4 (SYN floods, UDP reflection) and Layer 7 (HTTP floods) attacks using vast edge capacity. |
+| **TLS Termination** | Handles SSL/TLS handshake at edge, offloading heavy cryptographic computations from origin servers. |
+| **Origin Shielding / IP Masking** | Hides origin IP behind CDN Anycast IPs to prevent direct attacks on origin infrastructure. |
 
 ---
 
-## How Can We Solve This?
+# Chapter 5 — Use Cases of CDN
 
-We want the user sitting in the USA to experience the website just as quickly as someone sitting near the server.
+### 1. Static Content Delivery
+- **Assets:** Images, videos, fonts, CSS bundles, JS build files, installers.
+- **Pattern:** Cache once with long TTL (e.g., 1 year with content hashes).
+- **Example:** An e-commerce site serving 100,000 product images.
 
-One possible idea is:
+### 2. Dynamic Content Delivery
+- **Assets:** User profiles, search queries, real-time prices.
+- Even if the full HTML/JSON cannot be cached for everyone, the CDN accelerates delivery by:
+  - Establishing persistent, pre-warmed TCP/TLS connections to origin.
+  - Route optimization across private CDN backbone fibers rather than public internet hops.
+  - Micro-caching responses that are valid for short intervals (e.g., 2–5 seconds).
+
+### 3. API Acceleration
+```http
+GET /api/v1/products/categories
+GET /api/v1/exchange-rates
+GET /api/v1/system-config
 ```
-"Why don't I simply create another server in the USA?"
+- Public, frequently requested API data can be safely cached at edge locations.
+- **Banking / Enterprise rule:** Public catalog or exchange rates are cached at CDN edge; sensitive personal records (account balance, transaction history) must have `Cache-Control: no-store, private` so they are never stored in shared CDN caches.
+
+### 4. Edge Computing
+
+<img src="./img/Rate Limiting — How does CDN control abusive traffic.jpg" width="90%" />
+
+Edge computing allows running lightweight serverless code (e.g., Cloudflare Workers, AWS Lambda@Edge, Fastly Compute@Edge) directly at CDN PoPs.
+
 ```
-Then American users would directly connect to the US server instead of the Mumbai server.
+Traditional CDN:
+User  ------>  CDN Edge (Simple Cache)  ------>  Origin Server
 
-Sounds like a good solution.
-
-But there's a major problem.
-
-Cost.
-
-If I want fast performance across the world, I'd have to deploy servers in:
-- The USA
-- Europe
-- Asia
-- Australia
-- And many other regions
-
-Maintaining servers in every region would be extremely expensive.
-
-Even within India, if I wanted users from every state to experience very low latency, I might need to deploy 10 to 15 additional servers.
-
-That would significantly increase infrastructure costs.
-
-Instead of building all of that infrastructure myself, wouldn't it be better to use a third-party service that has already built a global network of servers?
-
-That's exactly where a Content Delivery Network (CDN) comes in.
+CDN with Edge Computing:
+User  ------>  CDN Edge
+                 |
+                 +---- Request Validation & Geo-blocking
+                 +---- Authentication / JWT Verification
+                 +---- A/B Testing & URL Rewriting / Redirects
+                 +---- Dynamic Header Manipulation
+                 +---- Lightweight Response Generation
+                 |
+                 v
+               Origin Server (Only when database/core business logic is required)
+```
 
 ---
 
-## What Is a CDN?
+# Chapter 6 — CDN in a Real-World Application Architecture
 
-Companies such as:
-- Amazon CloudFront
-- Cloudflare
-- Akamai
+Let's examine how a modern enterprise production architecture integrates CDN, WAF, Load Balancers, and API Gateways:
 
-already have servers distributed all over the world.
+```
+                          [ USERS (Web / Mobile) ]
+                                     |
+                                     | HTTPS Request
+                                     v
+                       +---------------------------+
+                       |         CDN EDGE          |
+                       |  - TLS Termination        |
+                       |  - Edge Caching           |
+                       |  - Content Optimization   |
+                       |  - DDoS Mitigation        |
+                       +---------------------------+
+                                     |
+                                     | (Cache Miss / Dynamic API)
+                                     v
+                       +---------------------------+
+                       |   WAF (Edge or Perimeter) |
+                       |  - SQLi / XSS Rules       |
+                       |  - Bot Detection          |
+                       +---------------------------+
+                                     |
+                                     v
+                       +---------------------------+
+                       |       LOAD BALANCER       |
+                       |  - Health Checks          |
+                       |  - Traffic Distribution   |
+                       +---------------------------+
+                                     |
+                                     v
+                       +---------------------------+
+                       |        API GATEWAY        |
+                       |  - Auth & Token Validation|
+                       |  - Rate Limiting / Quotas |
+                       |  - Routing to Services    |
+                       +---------------------------+
+                                     |
+                       +-------------+-------------+
+                       |                           |
+                       v                           v
+              [ Product Service ]          [ Order Service ]
+                       |                           |
+                       v                           v
+              [ Product Database ]         [ Order Database ]
+```
 
-These companies provide what we call CDN services.
+### Responsibility Matrix
 
-A CDN is essentially a network of servers that cache your data.
-
-Now let's understand exactly how it works.
+| Component | Primary Responsibility |
+| :--- | :--- |
+| **CDN** | Global traffic delivery, edge caching, static asset acceleration, DDoS absorption |
+| **WAF** | HTTP payload inspection, SQL injection & XSS filtering, threat blocking |
+| **Load Balancer** | Distribute incoming traffic across healthy backend compute instances |
+| **API Gateway** | Request routing, user authentication, service orchestration, rate limiting |
+| **Backend Services** | Core domain logic, transactions, and business workflows |
+| **Database** | Persistent data storage and consistency management |
 
 ---
 
-## How a CDN Works
+# Chapter 7 — Important CDN Interview Questions
 
-Suppose a user in the USA wants to visit striver.in.
+### Q1. What is a CDN and why do we need it?
+**Answer:** A CDN is a globally distributed network of edge servers that caches and delivers content close to end users. It reduces latency, prevents origin bottlenecks, saves bandwidth costs, and provides global scalability, availability, and security.
 
-Instead of sending the request directly to my origin server in Mumbai, the request first goes to the nearest CDN server.
+### Q2. What is an Origin Server?
+**Answer:** The primary server or cloud storage where the master copy (source of truth) of content and application code resides.
 
-Initially, this CDN server has no cached copy of the website.
+### Q3. What is a Point of Presence (PoP)?
+**Answer:** A physical data center location where CDN edge servers, networking hardware, and routers are deployed to interface with local ISPs and users.
 
-Since it doesn't have the requested data, it forwards the request to the original server.
+### Q4. What is the difference between an Edge Server and an Origin Server?
+**Answer:** An edge server resides near the user to serve cached copies rapidly. An origin server holds the master data and processes backend business logic when an edge server experiences a cache miss.
 
-The origin server sends back the required files—such as the HTML document.
+### Q5. What happens during a cache hit?
+**Answer:** The requested content is already available and fresh in the edge server's cache. The edge serves it immediately to the client without contacting the origin server.
 
-The CDN forwards those files to the user.
+### Q6. What happens during a cache miss?
+**Answer:** The requested asset is not present or has expired. The edge server fetches it from the origin, stores a copy based on `Cache-Control` directives, and returns it to the client.
 
-At the same time, it stores a copy locally.
+### Q7. Does a CDN only work for static content?
+**Answer:** No. Modern CDNs also optimize dynamic content delivery (via route optimization and connection pooling), accelerate APIs, provide edge security (WAF/DDoS), and run serverless edge compute logic.
 
-So now the CDN has cached that content.
+### Q8. How does a CDN improve availability?
+**Answer:** It absorbs traffic spikes and uses health checks to automatically reroute traffic away from degraded edge nodes or failing origin regions to healthy alternatives.
 
-Later, if another user from the same region visits the same website, the request again reaches the CDN server.
+### Q9. How does a CDN improve security?
+**Answer:** It acts as a reverse proxy shield, terminates TLS at the edge, filters malicious Layer 7 traffic with WAF rules, absorbs massive Layer 3/4/7 DDoS attacks, and conceals the origin server's real IP address.
 
-This time, the CDN already has the HTML page stored.
+### Q10. What is Edge Computing?
+**Answer:** The execution of lightweight application logic (e.g., authentication checks, header modifications, geo-routing, A/B testing) directly at CDN edge PoPs, minimizing trips to origin servers.
 
-Instead of contacting the origin server again, it immediately serves the cached copy to the user.
-
-The first request resulted in a cache miss, because the CDN didn't have the data.
-
-The second request becomes a cache hit, because the content is already available in the CDN cache.
-
-This means the origin server no longer has to process every request from users in that region.
-
-The CDN serves the content directly, making the website much faster while reducing the load on the original server.
-
----
-
-## The CDN Stores a Copy of the Data
-
-After the CDN requests the HTML file from the origin server, it returns that file to the user.
-
-But something else happens behind the scenes.
-
-The CDN keeps a copy of that data in its own storage.
-
-In other words, it caches the data locally.
-
-Now imagine that another user from the same region wants to visit the same website.
-
-The request again goes to the CDN server.
-
-This time, however, the CDN already has the HTML file for the website.
-
-Instead of contacting the origin server again, it simply serves the cached copy directly.
-
-The first request was a cache miss because the CDN didn't have the data.
-
-The second request is a cache hit, because the required content is already available in the CDN cache.
-
-The CDN has stored that information so it can quickly serve future users without repeatedly contacting the origin server.
+### Q11. What happens if 1 million users request the same image simultaneously?
+**Answer:** The first request at each regional edge PoP causes a cache miss and fetches the asset from the origin. Once cached locally at that PoP, all subsequent requests in that region are served directly as cache hits, completely protecting the origin from receiving 1 million requests.
 
 ---
 
-## Another Example: Video Delivery
+# Chapter 8 — Important Revision Notes
 
-Let's take another example.
+| Term | Meaning |
+| :--- | :--- |
+| **CDN** | Content Delivery Network |
+| **Origin** | Master source of truth server / storage |
+| **Edge Server** | Geographically distributed caching and proxy server |
+| **PoP** | Point of Presence (Edge Data Center) |
+| **Cache Hit** | Requested asset found and served directly from edge cache |
+| **Cache Miss** | Asset not found in edge cache; retrieved from origin |
+| **Latency** | Network transit time taken for data packets to travel |
+| **Origin Offloading** | Percentage of total traffic handled by CDN instead of origin |
+| **DDoS** | Distributed Denial of Service attack |
+| **TLS Termination** | Decrypting and completing the TLS handshake at the edge |
+| **Edge Computing** | Running programmable logic on edge servers |
 
-Suppose your server hosts a video.
-
-A user named Rohit wants to watch that video.
-
-When Rohit requests it:
-1. The request reaches the CDN.
-2. The CDN doesn't have the video.
-3. It forwards the request to the origin server.
-4. The origin server sends the video.
-5. The CDN sends the video to Rohit.
-6. At the same time, it stores a copy locally.
-
-Later, another user from the same region requests the exact same video.
-
-Now the CDN already has the video.
-
-It serves the video immediately without contacting the origin server again.
-
-This is exactly what caching means.
-
-The CDN stores frequently requested content so it can serve it much faster to future users.
+### The Four Pillars of CDN Architecture:
+1. **Performance:** Sub-millisecond local responses via geographically proximate edge caches.
+2. **Scalability:** Absorbs massive traffic spikes and offloads up to $90\%+$ of origin load.
+3. **Availability:** Redundant multi-PoP routing and instant failover protection.
+4. **Security:** Global DDoS absorption, WAF rule enforcement, and origin masking.
 
 ---
 
-## CDN Servers Exist Everywhere
+# Chapter 9 — Test Your Understanding
 
-CDN providers operate servers across the globe.
-
-Imagine they have 300–400 servers worldwide.
-
-Whenever a user makes a request, it is routed to the nearest CDN server.
-
-The process works like this:
-- The user sends a request to the nearest CDN.
-- If that CDN already has the requested content, it serves it immediately.
-- If it doesn't, it fetches the content from the origin server.
-- It stores a copy locally.
-- Then it serves the content to the user.
-
-Now, if another user from the same geographical region requests the same resource, the CDN can deliver it directly.
-
-There is no need to repeatedly contact the origin server.
+### 1. A user requests an image and the nearest CDN edge already has it. What happens?
+- [ ] Request goes to origin
+- [x] Edge returns cached image (Cache Hit)
+- [ ] Database returns image
+- [ ] Load balancer creates a new image
+> **Explanation:** This is a cache hit. The edge serves the cached content without contacting the origin.
 
 ---
 
-## What Kind of Data Should a CDN Cache?
-
-This is one of the most important questions.
-
-I'll give you a very simple way to think about it.
-
-Suppose one million users use your website.
-
-Ask yourself:
-```
-Which data is identical for all one million users?
-```
-That is the data you should cache.
+### 2. What is the primary responsibility of an Origin Server?
+- [ ] Distribute traffic globally
+- [x] Store the original master content (Source of Truth)
+- [ ] Route users to edge servers
+- [ ] Mitigate DDoS attacks
+> **Explanation:** The origin is the authoritative source of content from which edge servers fetch missing data.
 
 ---
 
-## Example: Website Homepage
-
-Suppose someone visits striver.in.
-
-Every visitor sees:
-- The website logo
-- Home button
-- Courses
-- Practice
-- Articles
-- Contest
-- Navigation bar
-- Colors
-- Background
-- Cards
-- Layout
-
-All of this is the same for every user.
-
-Since every visitor receives identical content, this is excellent cacheable content.
+### 3. Why does a CDN reduce latency?
+- [ ] It increases database size
+- [ ] It removes the backend
+- [x] It serves content from geographically closer locations
+- [ ] It increases CPU capacity
+> **Explanation:** Serving content physically closer to the user minimizes fiber-optic transit distance and intermediate router hops.
 
 ---
 
-## What Should Not Be Cached?
-
-Now think about the profile section.
-
-Suppose the profile shows:
-
-**Aditya Tomar**
-
-Another user may see:
-
-**Mohan**
-
-Someone else may see:
-
-**Priya**
-
-This data is different for every individual user.
-
-Therefore, it is dynamic data.
-
-Dynamic, user-specific information should not be stored in a shared CDN cache.
-
-Whenever this information is needed, the application should request it directly from the origin server.
+### 4. What happens during a cache miss?
+- [ ] The request is rejected
+- [x] The edge fetches content from origin, caches it, and returns it
+- [ ] The database is deleted
+- [ ] The CDN shuts down
+> **Explanation:** The edge fetches the missing content from origin, stores a copy based on caching rules, and delivers it to the user.
 
 ---
 
-## More Examples of Dynamic Data
-
-Suppose your profile page displays:
-- Number of problems solved
-- Personal achievements
-- Progress
-- User statistics
-
-These values are different for every user.
-
-Similarly, imagine opening a coding problem where you've already written some code.
-
-That source code belongs only to you.
-
-Another user has completely different code.
-
-Again, this is user-specific information.
-
-Such content should never be cached globally.
-
----
-
-## User-Specific Recommendations
-
-The same applies to:
-- Personalized recommendations
-- User-specific dashboards
-- Private information
-- Account settings
-
-Anything that belongs to one specific user should always be fetched from the origin server rather than being stored inside a shared CDN cache.
-
----
-
-## What Can Be Cached?
-
-Let's look at a coding platform.
-
-Suppose thousands of users open the same programming problem.
-
-The problem statement itself is identical for everyone.
-
-Since every user receives exactly the same problem description, this is a perfect candidate for CDN caching.
-
----
-
-## Why Not Cache Personal Information?
-
-You might ask:
-```
-"Can't a CDN cache personal data as well?"
-```
-Technically, it can.
-
-The technology is capable of storing any kind of data.
-
-But doing so creates several problems.
-
-**1. Security**
-
-Users trust your application with their personal information.
-
-If that sensitive information is copied across hundreds of CDN servers worldwide, the risk of data leakage increases significantly.
-
-That's one major reason.
-
-**2. Synchronization**
-
-Imagine a user updates their profile.
-
-If that profile were cached in hundreds of CDN servers, every cached copy would also need to be updated.
-
-Keeping all those copies synchronized would become extremely difficult and inefficient.
-
-Therefore, dynamic and frequently changing user information is usually not stored inside the CDN.
-
----
-
-## General Rule
-
-Cache content that is:
-- Common for everyone
-- Public
-- Shared by the majority of users
-
-Examples include:
-- CSS files
-- JavaScript files
-- Images
-- Fonts
-- Videos
-
-Do not cache:
-- User details
-- Personal information
-- Sensitive data
-- Individual account information
-
-These should always come from the origin server.
-
----
-
-## Is Static Content Really Static?
-
-When I first learned about CDNs, I was told:
-```
-"Static data means data that never changes."
-```
-But let's think carefully.
-
-Suppose you've deployed your website.
-
-Does that mean you'll never change your CSS again?
-
-Of course not.
-
-Tomorrow you might:
-- Add a new font.
-- Change the theme.
-- Change the background color.
-- Update the styling.
-
-That means even CSS files can change over time.
-
-So how does the CDN know when it should serve the updated version instead of the old cached one?
-
-That's exactly the problem we'll solve in the next section.
-
----
-
-## Static Files Can Also Change
-
-At first glance, we think of CSS, JavaScript, and images as "static" files.
-
-But are they truly permanent?
-
-Not at all.
-
-Imagine you've deployed your website today.
-
-A week later, your designer changes the UI.
-
-You modify:
-- CSS styles
-- JavaScript code
-- Images
-- Icons
-
-Now a question arises.
-
-The CDN has already cached the old CSS file.
-
-How will users receive the updated version?
-
-If the CDN keeps serving the old file forever, users will continue seeing the outdated website.
-
-Clearly, there must be a mechanism to update the cached content.
-
----
-
-## The Problem with Cached Files
-
-Let's understand the problem.
-
-Suppose your HTML page contains:
-```
-<link rel="stylesheet" href="style.css">
-```
-The browser requests:
-```
-style.css
-```
-The CDN caches this file.
-
-Later you update your CSS and deploy the new version.
-
-However, the filename remains exactly the same:
-
-style.css
-
-The CDN cannot automatically determine that the file contents have changed.
-
-As a result, users may continue receiving the older cached version.
-
----
-
-## The Solution: Versioning
-
-A simple solution is to change the filename whenever the content changes.
-
-Instead of:
-```
-style.css
-```
-deploy:
-```
-style-v2.css
-```
-or
-```
-style-v3.css
-```
-Now your HTML references:
-```
-<link rel="stylesheet" href="style-v2.css">
-```
-Since the CDN has never seen this filename before, it treats it as a completely new resource.
-
-The request goes to the origin server.
-
-The updated CSS is downloaded.
-
-The CDN stores the new version in its cache.
-
-Future users now receive the latest file.
-
----
-
-## Hash-Based File Names
-
-Modern frontend frameworks automate this process.
-
-Instead of naming files:
-```
-style-v2.css
-```
-they generate filenames containing a unique hash.
-
-For example:
-```
-style.4fd9ab.css
-```
-or
-```
-main.93af21.js
-```
-Whenever the file content changes, the hash changes automatically.
-
-Since the filename changes, the CDN immediately knows it needs to fetch a fresh copy.
-
-This technique avoids cache-related problems without requiring manual intervention.
-
----
-
-## Why Frameworks Generate Hashed Files
-
-Frameworks like Angular, React, and Vue automatically create hashed filenames during production builds.
-
-This provides several advantages:
-- Long-term browser caching
-- Efficient CDN caching
-- Automatic cache invalidation
-- Better deployment strategy
-
-Users always receive the latest version whenever the application's assets change.
-
----
-
-## Does HTML Also Get Cached?
-
-This raises another question.
-
-What about the HTML page itself?
-
-Can HTML also be cached?
-
-The answer is:
-
-Yes.
-
-HTML can also be cached.
-
-However, unlike CSS or JavaScript, HTML tends to change more frequently.
-
-For example:
-- Home page announcements
-- New blog posts
-- Updated navigation
-- Promotional banners
-
-Because HTML changes more often, it is usually cached for a much shorter duration.
-
----
-
-## Understanding Time-To-Live (TTL)
-
-Every cached resource has an expiration time.
-
-This is called Time-To-Live (TTL).
-
-For example:
-- CSS may be cached for one year.
-- Images may be cached for one year.
-- Fonts may be cached for several months.
-- HTML may be cached for only a few minutes or a few hours.
-
-After the TTL expires, the CDN checks with the origin server to determine whether a newer version exists.
-
-If a newer version is available, the CDN updates its cache.
-
-Otherwise, it continues serving the existing copy.
-
----
-
-## Choosing an Appropriate TTL
-
-The TTL depends on how frequently the content changes.
-
-For example:
-
-Static Assets
-
-Resources such as:
-- Logos
-- Fonts
-- JavaScript bundles
-- CSS files
-
-rarely change after deployment.
-
-These can safely have very long TTL values.
-
----
-
-## Frequently Updated Content
-
-Resources like:
-- Homepage HTML
-- News pages
-- Blog listings
-
-change more frequently.
-
-These should have shorter TTL values.
-
-A shorter TTL ensures that users receive updated information relatively quickly.
-
----
-
-## Is Dynamic Content Never Cached?
-
-Many beginners believe:
-```
-"Dynamic content should never be cached."
-```
-That isn't always true.
-
-Let's consider an example.
-
-Suppose you're watching a YouTube video.
-
-Below the video is a comments section.
-
-Comments are dynamic.
-
-New comments appear regularly.
-
-Should every user request force the origin server to generate the comments again?
-
-Not necessarily.
-
----
-
-## Short-Term Caching
-
-Imagine comments are cached for only 30 seconds.
-
-During those 30 seconds:
-- Thousands of users can receive the cached response.
-- The origin server avoids processing thousands of identical requests.
-
-After 30 seconds:
-- The cache expires.
-- The CDN requests fresh comments.
-- The updated response is cached again.
-
-Most users won't even notice a 30-second delay in newly posted comments.
-
-Yet the origin server experiences a dramatic reduction in load.
-
----
-
-## Performance vs Freshness
-
-Caching is always a balance between two goals:
-1. Performance
-2. Freshness of data
-
-Long TTL values improve performance because fewer requests reach the origin server.
-
-Short TTL values improve freshness because updates become visible more quickly.
-
-Choosing the right TTL depends entirely on the nature of the application and how frequently its content changes.
-
-In the next section, we'll see what happens when you need users to receive updated content immediately, without waiting for the TTL to expire.
-
-## What If We Need Users to See Updates Immediately?
-
-So far, we've discussed Time-To-Live (TTL).
-
-Normally, the CDN serves cached content until the TTL expires.
-
-But what if you've made an important update and you don't want to wait?
-
-For example:
-- You fixed a critical bug.
-- You updated your website's homepage.
-- You corrected incorrect information.
-- You changed an important CSS or JavaScript file.
-
-Waiting for the cache to expire naturally isn't always acceptable.
-
-In such situations, CDNs provide another mechanism.
-
-## Cache Invalidation
-
-CDN providers allow developers to invalidate or purge cached content.
-
-When you invalidate the cache:
-1. The cached copy is removed from CDN servers.
-2. The next incoming request cannot be served from the cache.
-3. The CDN contacts the origin server.
-4. It retrieves the latest version.
-5. It stores the updated version in the cache.
-6. Future users now receive the latest content.
-
-This process is called cache invalidation or cache purging.
-
-## When Should Cache Be Invalidated?
-
-Cache invalidation is useful whenever users must receive updated content immediately.
-
-Common examples include:
-- Emergency production bug fixes
-- Security patches
-- Updated homepage announcements
-- Pricing changes
-- Product information updates
-- Important business announcements
-
-Instead of waiting for the TTL to expire, developers simply purge the affected cache entries.
-
-## Cache Expiration vs Cache Invalidation
-
-It's important to understand the difference.
-
-**Cache Expiration**
-
-The cache automatically expires after its configured TTL.
-
-No manual action is required.
-
-Example:
-```
-TTL = 1 hour
-```
-After one hour, the CDN requests a fresh copy from the origin server.
-
-**Cache Invalidation**
-
-The developer manually removes the cached resource before the TTL expires.
-
-Example:
-```
-TTL = 1 year
-```
-But today you deploy a new version.
-
-Rather than waiting an entire year, you invalidate the cache immediately.
-
-The CDN fetches the new file on the very next request.
-
-## Can Premium Content Be Served Through a CDN?
-
-Many people ask this question.
-
-Suppose you're running an online learning platform.
-
-Some courses are free.
-
-Some courses are available only to paid subscribers.
-
-Can those paid videos also be delivered through a CDN?
-
-Yes.
-
-They absolutely can.
-
-However, the CDN must first verify whether the user is authorized to access the content.
-
-## Authentication Before Serving Protected Content
-
-The process works like this.
-1. The user logs in.
-2. The application verifies the user's credentials.
-3. The origin server generates an authentication token.
-4. The user includes this token in future requests.
-5. The CDN validates the token.
-6. If the token is valid, the CDN serves the protected resource.
-7. Otherwise, access is denied.
-
-This ensures that only authorized users receive premium content.
-
-## Why Authentication Matters
-
-Imagine a premium course worth thousands of dollars.
-
-If the CDN simply served the cached video without checking authentication, anyone who knew the URL could access the course.
-
-That would be a serious security problem.
-
-Therefore, authentication is always verified before protected content is delivered.
-
-Caching should never bypass authorization.
-
-## Large CDN Architectures
-
-Large CDN providers don't rely on just a single cache server.
-
-Instead, they build multiple layers of caching.
-
-A simplified architecture looks like this:
-```
-User
-   │
-   ▼
-Nearest Edge Server
-   │
-   ▼
-Regional Cache
-   │
-   ▼
-Origin Shield
-   │
-   ▼
-Origin Server
-```
-Each layer increases efficiency.
-
-If the edge server doesn't have the requested resource, it first checks a higher-level cache before contacting the origin server.
-
-This greatly reduces traffic reaching the application server.
-
-## Why Multiple Cache Layers?
-
-Suppose several CDN edge locations belong to the same region.
-
-Instead of every edge server independently contacting the origin server, they can first communicate with a shared regional cache.
-
-Benefits include:
-- Fewer requests to the origin server
-- Lower bandwidth usage
-- Faster cache warm-up
-- Better scalability
-
-This hierarchical design is one of the reasons modern CDNs handle millions of requests efficiently.
-
-## Does Every Request Reach the Origin Server?
-
-No.
-
-Ideally, only a very small percentage of requests ever reach the origin server.
-
-A typical flow looks like this:
-- User requests a resource.
-- Edge cache checks for the file.
-- If found, it serves the response immediately.
-- If not found, it checks higher cache layers.
-- Only if all cache layers miss does the request reach the origin server.
-
-This minimizes both latency and server load.
-
-## Why Is This Beneficial?
-
-Because the origin server no longer needs to handle every user request.
-
-Instead, it only processes:
-- New content
-- Uncached requests
-- Expired content
-- Dynamic user-specific data
-
-Everything else can be served directly from the CDN.
-
-As traffic grows from thousands to millions of users, this dramatically improves scalability while reducing infrastructure costs.
-
-In the final section, we'll discuss another major advantage of CDNs—security—including how they help protect applications against attacks such as DDoS and why many organizations place a CDN in front of their origin servers.
-
-## CDNs Are Not Just About Speed
-
-So far, we've learned that CDNs reduce latency and improve website performance.
-
-But that's not their only advantage.
-
-A CDN also acts as an additional layer between users and your origin server.
-
-Instead of allowing every request to directly reach your application, users first communicate with the CDN.
-
-Only when necessary does the CDN forward requests to the origin server.
-
-This architecture provides significant security benefits.
-
-## Protecting the Origin Server
-
-Without a CDN, users communicate directly with the origin server.
-
-That means:
-```
-User
-   │
-   ▼
-Origin Server
-```
-Every incoming request reaches the application server.
-
-If millions of requests suddenly arrive, the server may become overloaded.
-
-## CDN as a Protective Layer
-
-With a CDN in front of the application, the architecture changes.
-```
-Users
-   │
-   ▼
-Content Delivery Network
-   │
-   ▼
-Origin Server
-```
-Now the origin server is no longer directly exposed to the public internet.
-
-Instead, the CDN becomes the public-facing layer.
-
-Most traffic is handled there.
-
-Only necessary requests reach the application server.
-
-## Hiding the Origin Server
-
-Another important benefit is that the actual IP address of the origin server can remain hidden.
-
-Users interact with the CDN rather than communicating directly with the server hosting the application.
-
-Because the origin server is less exposed, attackers have a more difficult time targeting it directly.
-
-This significantly improves the application's overall security posture.
-
-## Protection Against DDoS Attacks
-
-One of the biggest advantages of using a CDN is protection against Distributed Denial-of-Service (DDoS) attacks.
-
-A DDoS attack attempts to overwhelm a server by sending an enormous number of requests simultaneously.
-
-For example:
-- Thousands
-- Millions
-- Or even billions of requests
-
-may arrive within a short period.
-
-If every request reached the origin server, the application could become unavailable.
-
-## How a CDN Helps
-
-A CDN operates a massive global network.
-
-Instead of allowing all malicious traffic to reach the application, the CDN absorbs and distributes the traffic across its infrastructure.
-
-Many malicious requests are identified and blocked before they ever reach the origin server.
-
-As a result:
-- The application remains available.
-- The origin server processes far fewer unnecessary requests.
-- Legitimate users continue accessing the website.
-
-## Traffic Filtering
-
-Modern CDNs do much more than simple caching.
-
-They also inspect incoming traffic.
-
-Depending on the provider, they can:
-- Detect suspicious requests.
-- Block malicious clients.
-- Rate-limit abusive traffic.
-- Filter automated attacks.
-- Protect against common web threats.
-
-This makes the CDN an important component of an application's security architecture.
-
-## Reduced Load on the Origin Server
-
-Because cached content is served directly from CDN edge servers:
-- Static resources never reach the origin server.
-- Many repeated requests are eliminated.
-- Network bandwidth consumption decreases.
-- CPU utilization on the application server is reduced.
-
-The origin server can dedicate its resources to processing:
-- Dynamic requests
-- Authentication
-- Business logic
-- Database operations
-
-instead of repeatedly serving identical files.
-
-## Improved Scalability
-
-Imagine your website suddenly becomes popular.
-
-Instead of serving ten thousand users, it now serves ten million users.
-
-Without a CDN, your infrastructure requirements would increase dramatically.
-
-With a CDN:
-- Frequently requested content is already distributed globally.
-- Most users are served directly by nearby edge servers.
-- Only a relatively small number of requests reach the origin server.
-
-This allows applications to scale much more efficiently.
-
-## Key Takeaways
-
-Let's summarize everything we've learned.
-
-**Why Do We Need a CDN?**
-
-Because users are located around the world.
-
-Serving content from geographically nearby servers reduces network latency and improves page load speed.
-
-**How Does a CDN Work?**
-1. A user sends a request.
-2. The request reaches the nearest CDN edge server.
-3. If the content is cached (Cache Hit), it is served immediately.
-4. Otherwise (Cache Miss), the CDN requests it from the origin server.
-5. The CDN caches the content.
-6. Future users receive the cached copy.
-
-**What Should Be Cached?**
-
-Cache content that is:
-- Public
-- Shared among most users
-- Relatively stable
-
-Examples include:
-- HTML (where appropriate)
-- CSS
-- JavaScript
-- Images
-- Fonts
-- Videos
-- Documents
-
-**What Should Not Be Cached?**
-
-Avoid globally caching:
-- User profiles
-- Personalized dashboards
-- Shopping carts
-- Account settings
-- Private messages
-- Sensitive personal information
-
-These should be retrieved directly from the origin server.
-
-**How Is Cached Content Updated?**
-
-CDNs use several techniques:
-- File versioning
-- Hashed filenames
-- Time-To-Live (TTL)
-- Cache expiration
-- Manual cache invalidation (purging)
-
-These mechanisms ensure users receive updated content when necessary.
-
-**Can Dynamic Data Be Cached?**
-
-Yes.
-
-If temporary staleness is acceptable, dynamic responses can be cached for short durations.
-
-Examples include:
-- Comments
-- Public statistics
-- Trending content
-- Frequently accessed API responses
-
-The TTL should be selected based on how fresh the data needs to be.
-
-**Security Benefits**
-
-A CDN also improves security by:
-- Acting as a protective layer in front of the origin server.
-- Hiding the origin server from public access.
-- Filtering malicious traffic.
-- Mitigating DDoS attacks.
-- Reducing unnecessary requests to the application.
-
-## Conclusion
-
-Content Delivery Networks are far more than simple caching systems.
-
-They form a globally distributed infrastructure that improves:
-- Website performance
-- Scalability
-- Availability
-- Reliability
-- Security
-
-Understanding what to cache, how long to cache it, when to invalidate cached content, and how CDNs protect applications is essential for designing modern, high-performance web applications.
-
-With that, we've completed our discussion on Content Delivery Networks (CDNs) from first principles.
-
-I hope this session helped you understand not only how CDNs work, but also why they are one of the most important building blocks of modern web architecture.
+### 5. Which CDN capability allows lightweight application logic to execute close to users?
+- [ ] Database replication
+- [x] Edge computing
+- [ ] Cache eviction
+- [ ] Load balancing
+> **Explanation:** Edge computing executes serverless functions at distributed edge locations without needing an origin round trip.
