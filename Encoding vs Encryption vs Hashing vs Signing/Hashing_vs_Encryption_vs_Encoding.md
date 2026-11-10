@@ -68,7 +68,7 @@ You don't want anyone who intercepts the message to understand it. So you use en
 
 Encryption transforms readable data (**plaintext**) into unreadable data (**ciphertext**) using a cryptographic key.
 
-<img src=".\img\Encryption transforms.jpg" iwdth="80%" />
+<img src="./img/Encryption transforms.jpg" iwdth="80%" />
 
 ### How does it work?
 
@@ -181,7 +181,7 @@ SGVsbG8=
 
 This is called **encoded data**.
 
-<img src=".\img\Base64_encoding.jpg" width="90%"/>
+<img src="./img/Base64_encoding.jpg" width="90%"/>
 
 ### How does it work?
 
@@ -457,52 +457,96 @@ print(decoded.decode("utf-8"))        # Hello
 
 ---
 
-## 4. AES encryption and decryption
+## 4. AES encryption and decryption using Python
 
-Scenario: store sensitive customer data so it is unreadable if someone accesses the database.
+**Reversible transformation using a key**
+
+Now let's understand encryption.
+
+**Scenario:** A banking application needs to store sensitive customer information, such as confidential account details.
+
+We don't want the information to be readable if someone accesses the database.
+
+We can use AES encryption. AES stands for **Advanced Encryption Standard**.
+
+### Step 1: Install the Python library
+
+We'll use the `cryptography` package.
 
 ```bash
 pip install cryptography
 ```
 
-### Encrypt
+### Step 2: Encrypt the original data
 
 ```python
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 import os
 
+# Original information
 message = "AccountNumber123456"
 
-# 256-bit key
+# Generate a 256-bit encryption key
 key = AESGCM.generate_key(bit_length=256)
+
+# Create AES encryption object
 aes = AESGCM(key)
 
-# Random 12-byte nonce
+# Generate a random 12-byte nonce
 nonce = os.urandom(12)
 
-ciphertext = aes.encrypt(nonce, message.encode(), None)
+# Encrypt the message
+ciphertext = aes.encrypt(
+    nonce,
+    message.encode(),
+    None
+)
 
 print("Original:", message)
 print("Encrypted:", ciphertext.hex())
 ```
 
-| Component  | Purpose                                    |
-| ---------- | ------------------------------------------ |
-| AES        | Encryption algorithm                       |
-| 256-bit key| Secret encryption key                      |
-| Nonce      | Unique value per encryption operation      |
-| Ciphertext | Encrypted information                      |
+Here are the important things:
 
-### Decrypt
+| Component  | Purpose                                |
+| ---------- | -------------------------------------- |
+| AES        | Encryption algorithm                   |
+| 256-bit key| Secret encryption key                  |
+| Nonce      | Unique value for an encryption operation |
+| Ciphertext | Encrypted information                  |
+
+### Step 3: Decrypt the information
+
+Now imagine the banking application needs the original account information.
+
+It uses the same AES key and nonce.
 
 ```python
-decrypted = aes.decrypt(nonce, ciphertext, None)
-print("Decrypted:", decrypted.decode())   # AccountNumber123456
+# Decrypt the encrypted data
+decrypted = aes.decrypt(
+    nonce,
+    ciphertext,
+    None
+)
+
+print("Decrypted:", decrypted.decode())
 ```
 
-### Tamper detection
+Output:
 
-AES-GCM is **authenticated encryption**: it also detects modification of the ciphertext.
+```
+Decrypted: AccountNumber123456
+```
+
+<img src="./img/Encryption-Decryption Workflow.webp" width="90%" />
+
+### Step 4: What if someone changes the ciphertext?
+
+AES-GCM provides **authenticated encryption**.
+
+It doesn't just encrypt the data; it also checks whether the encrypted data has been modified.
+
+Try:
 
 ```python
 tampered = bytearray(ciphertext)
@@ -514,91 +558,161 @@ except Exception:
     print("Decryption failed: data was modified!")
 ```
 
-### Production considerations
-1. Never hardcode encryption keys in source code.
-2. Store keys in a key-management system (AWS KMS, Azure Key Vault).
+Output:
+
+```
+Decryption failed: data was modified!
+```
+
+### Important production considerations
+1. Never hardcode encryption keys in application source code.
+2. Store keys in a secure key-management system, such as AWS KMS or Azure Key Vault.
 3. Never reuse a nonce with the same AES-GCM key.
-4. Store the nonce alongside the ciphertext - it is not secret.
-5. Protect and manage the key separately from the encrypted data.
+4. Store the nonce alongside the ciphertext. The nonce is not secret.
+5. Protect and manage the encryption key separately from the encrypted data.
+
+**Remember:** Encryption allows recovery of the original information, but only with the correct key.
 
 ---
 
-## 5. HTTPS / TLS
+## 5. HTTPS / TLS – How frontend and backend communicate securely
 
-Scenario: Angular frontend + FastAPI backend + PostgreSQL. How does `{"accountNumber": "123456789", "amount": 10000}` travel securely? Via **HTTPS**, which uses **TLS**.
+**Encryption in network communication**
 
-| Protocol | Protection                                      |
-| -------- | ----------------------------------------------- |
-| HTTP     | Not encrypted                                   |
-| HTTPS    | TLS protected - data is protected in transit    |
+This is particularly important when you build Angular frontend + FastAPI backend applications.
 
-### Simplified TLS 1.3 handshake
+Imagine your banking application has:
+- Angular frontend.
+- FastAPI backend.
+- PostgreSQL database.
+
+The user enters:
+
+```json
+{
+  "accountNumber": "123456789",
+  "amount": 10000
+}
+```
+
+How does this information travel securely from Angular to FastAPI?
+
+The answer is **HTTPS**, which uses **TLS**.
+
+### Step 1: HTTP vs HTTPS
+
+| Protocol  | Status         | Explanation                                    |
+| --------- | -------------- | ---------------------------------------------- |
+| **HTTP**  | Not encrypted  | Data is transmitted without TLS protection.    |
+| **HTTPS** | TLS protected  | Data is protected during transmission.         |
+
+<img src="./img/http.jpg" width="45%" />
+<img src="./img/https_vs_https.jpg" width="45%" />
+
+### Step 2: Understand the TLS handshake
+
+Before sending application data, the browser and server establish a secure TLS connection.
+
+A simplified TLS 1.3 process:
 
 ```mermaid
 sequenceDiagram
-    participant C as Browser (Angular)
-    participant S as Server (FastAPI)
+    participant C as Angular / Browser (Client)
+    participant S as FastAPI / Web Server
     C->>S: ClientHello (supported TLS options + key share)
     S->>C: ServerHello (key share) + certificate
-    Note over C: Verify certificate, derive session keys
-    Note over S: Derive session keys
-    C->>S: Application data (symmetric authenticated encryption)
-    S->>C: Application data (symmetric authenticated encryption)
+    Note over C,S: Browser verifies the server certificate and both sides derive shared session keys
+    Note over C,S: Secure TLS connection established
+    C->>S: Application data protected with symmetric authenticated encryption
+    S->>C: Application data protected with symmetric authenticated encryption
 ```
 
+**What is happening internally?**
 1. Browser requests a secure connection.
-2. Server presents its digital certificate.
+2. Server provides its digital certificate.
 3. Browser verifies the certificate and server identity.
-4. Both sides derive shared session keys via the handshake.
-5. Application traffic is protected with symmetric authenticated encryption (commonly AES-GCM or ChaCha20-Poly1305).
+4. Both sides establish shared session keys using the TLS handshake.
+5. They use symmetric authenticated encryption to protect application traffic.
 
-> HTTPS is not simply AES. TLS combines certificates, public-key cryptography, key exchange and symmetric encryption.
+TLS 1.3 commonly uses AES-GCM or ChaCha20-Poly1305 for application-data protection.
 
-### Python example
+> **Important:** HTTPS is not simply AES. TLS combines certificates, public-key cryptography, key exchange and symmetric encryption.
+
+### Step 3: Practical Python example
+
+Install Requests:
 
 ```bash
 pip install requests
 ```
 
+Now call an HTTPS endpoint:
+
 ```python
 import requests
 
-response = requests.get("https://example.com", timeout=10)
+response = requests.get(
+    "https://example.com",
+    timeout=10
+)
 
 print("Status:", response.status_code)
 print("Response:", response.text[:100])
 ```
 
-`requests` verifies the server's TLS certificate by default.
+Requests verifies the server's TLS certificate by default.
+
+You can also send banking-style JSON data:
 
 ```python
 import requests
 
 url = "https://api.example.com/transfer"
-payload = {"accountNumber": "123456789", "amount": 10000}
 
-response = requests.post(url, json=payload, timeout=10)
+payload = {
+    "accountNumber": "123456789",
+    "amount": 10000
+}
+
+response = requests.post(
+    url,
+    json=payload,
+    timeout=10
+)
+
 print(response.status_code)
 ```
 
-(Assumes the API exists and has a trusted TLS certificate.)
+This assumes the API exists and is configured with a trusted TLS certificate.
 
 **Never do this in production:**
 
 ```python
-requests.get("https://example.com", verify=False)
+requests.get(
+    "https://example.com",
+    verify=False
+)
 ```
 
-It disables certificate verification and exposes you to man-in-the-middle attacks.
+This disables certificate verification and exposes you to man-in-the-middle risks.
 
-### Where does AES fit into HTTPS? (common interview question)
-- TLS uses key exchange to establish shared session keys.
-- AES-GCM then encrypts and authenticates the actual application data.
-- Browser and server do not encrypt each HTTP request using RSA.
+### Where does AES fit into HTTPS?
+
+This is a common interview question.
+
+The simplified answer:
+- TLS uses cryptographic key exchange to establish shared session keys.
+- AES-GCM can then encrypt and authenticate the actual application data.
+- The browser and server do not need to encrypt every HTTP request using RSA.
 
 ---
 
 ## 6. Putting it together: banking application
+Now let's combine all four techniques and HTTPS.
+
+Imagine you're building a banking application using Angular, FastAPI and PostgreSQL.
+
+<img src="./img/centralized_deployment.webp" width="90%" />
 
 | Application activity             | Technique                  | Python technology        |
 | -------------------------------- | -------------------------- | ------------------------ |
@@ -609,13 +723,43 @@ It disables certificate verification and exposes you to man-in-the-middle attack
 | Frontend to backend              | Encryption in transit      | HTTPS / TLS              |
 | Represent binary data as text    | Encoding                   | Base64                   |
 
-User journey:
-1. **Registers** - FastAPI creates an Argon2id salted hash and stores it in PostgreSQL. *(Hashing)*
-2. **Logs in** - FastAPI verifies the password against the stored hash; nothing is decrypted. *(Hashing)*
-3. **Transfers money** - Angular sends the request over HTTPS. *(Encryption - TLS)*
-4. **Backend stores confidential data** - encrypted with AES-GCM, keys managed separately. *(Encryption - AES)*
-5. **Transmits a binary document** - encoded with Base64 if the API needs text. *(Encoding)*
-6. **Verifies document integrity** - compute SHA-256 and compare with a trusted checksum. *(Hashing)*
+Let's walk through a user journey.
+
+**1. User registers**
+
+User enters their password. FastAPI uses Argon2id to create a salted password hash and stores the result in PostgreSQL.
+
+**Technique: Hashing**
+
+**2. User logs in**
+
+FastAPI verifies the entered password against the stored password hash. It does not decrypt or recover the original password.
+
+**Technique: Hashing**
+
+**3. User transfers money**
+
+Angular sends the transfer request to FastAPI through HTTPS. TLS protects the request during network transmission.
+
+**Technique: Encryption – TLS**
+
+**4. Backend stores confidential information**
+
+Sensitive information that requires application-level encryption is encrypted using AES-GCM, with keys managed separately.
+
+**Technique: Encryption – AES**
+
+**5. Application transmits a binary document**
+
+If a particular API requires text representation of binary data, the application can encode it using Base64.
+
+**Technique: Encoding**
+
+**6. Application verifies document integrity**
+
+The application can calculate SHA-256 and compare it with a trusted checksum.
+
+**Technique: Hashing**
 
 ## 7. Comparison through code
 
