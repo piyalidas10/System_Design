@@ -606,8 +606,7 @@ The answer is **HTTPS**, which uses **TLS**.
 | **HTTP**  | Not encrypted  | Data is transmitted without TLS protection.    |
 | **HTTPS** | TLS protected  | Data is protected during transmission.         |
 
-<img src="./img/http.jpg" width="45%" />
-<img src="./img/https_vs_https.jpg" width="45%" />
+<img src="./img/http.jpg" width="45%" /><img src="./img/https_vs_https.jpg" width="45%" />
 
 ### Step 2: Understand the TLS handshake
 
