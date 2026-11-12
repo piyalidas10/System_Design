@@ -176,6 +176,7 @@ sequenceDiagram
 4. **Request A (Read):** Finally executes its delayed write to Redis, setting the old value (`"Mumbai"`).
 
 > **Outcome:** Redis holds `"Mumbai"` while PostgreSQL holds `"Pune"` until the key expires or is deleted again.
+> **Problem:** Stale cache recreated
 
 ---
 
