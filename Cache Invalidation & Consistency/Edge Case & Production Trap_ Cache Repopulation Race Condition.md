@@ -44,7 +44,7 @@ sequenceDiagram
 ```
 
 ### Detailed Breakdown
-1. **Request A (Read):** Queries cache (miss), reads old value (`"Mumbai"`) from DB. Before it writes back to Redis, context switching or network lag delays Request A.
+1. **Request A (Read):** Queries cache (miss), reads old value (`"Mumbai"`) from the **primary** database **before Request B's update commits**, so `"Mumbai"` was still the correct committed value at that moment. Before it writes back to Redis, context switching or network lag delays Request A.
 2. **Request B (Write):** Updates DB to `"Pune"`.
 3. **Request B (Write):** Deletes Redis key `user:101`.
 4. **Request A (Read):** Finally executes its delayed write to Redis, setting the old value (`"Mumbai"`).
@@ -142,7 +142,7 @@ sequenceDiagram
 
 ### Atomic Redis Lua Scripts
 
-The compare and the write must happen in **one atomic step**; otherwise another writer can slip in between the check and the `SET`. Redis executes a Lua script atomically.
+The compare and the write must happen in **one atomic compare-and-set step** (read the stored version, compare it with the incoming one, and write only if valid); otherwise another writer can slip in between the check and the `SET`. Redis executes a Lua script atomically. The version key is the durable metadata described above: it is never deleted with the cached value and carries no TTL.
 
 Both keys share the hash tag `{user:101}` so they land in the same slot when using Redis Cluster (multi-key scripts require this).
 
@@ -226,8 +226,29 @@ sequenceDiagram
 
 **Purpose:** Catch and remove stale data that an overlapping reader may have repopulated.
 
+### How to Choose the Second-Deletion Delay
+
+The delay must be **longer than the time a slow reader needs to finish its read-then-write cycle**: the time from "reader queried PostgreSQL" to "reader's `SET` reaches Redis". If the second `DEL` runs before that delayed `SET`, it removes nothing and the stale value survives.
+
+A practical way to pick it:
+1. **Measure** the reader path: DB read latency + application processing + Redis write latency, and look at high percentiles (p99 / p99.9), not the average.
+2. **Add replica lag** if readers can hit a read replica, because a replica may still return the old value for that long after the commit.
+3. **Add a safety margin**, for example `delay ≈ p99 read-to-cache-write time + replica lag + margin`.
+4. **Re-evaluate under load**: GC pauses, retries and slow queries stretch the tail, so the delay that works at 10 req/s may not work at 10,000 req/s.
+
+| Delay | Effect |
+| :--- | :--- |
+| Too short | Second delete runs before the slow reader writes, so stale data survives |
+| Too long | Stale data stays visible longer, and the writer holds resources or a scheduled task for longer |
+
+Run the second delete **asynchronously** (a scheduled task, delayed queue or message) instead of sleeping inside the request, and make it retryable so a lost task does not skip the second delete. Even then the delay is an estimate, which is why this remains a mitigation rather than a guarantee.
+
 ### Example
+Illustrative code: it assumes `db` and `redis` are already configured async clients.
 ```python
+import asyncio
+
+
 async def update_user(user_id, new_city):
     # 1. Update database
     await db.update_user(user_id, new_city)
@@ -267,6 +288,16 @@ flowchart LR
 
 > **Limitation:** TTL limits *how long* stale data can remain, but users can still receive stale data before expiration.
 
+### TTL Does Not Fix Repeated Stale Repopulation
+
+TTL starts counting from the moment the entry is written. If a stale value is written, it lives for the full TTL. If the race repeats, each stale repopulation **restarts the clock**, so staleness can be extended well beyond a single TTL window:
+
+1. Stale `Mumbai` is cached at t = 0 with a 300 s TTL.
+2. At t = 290 s the entry is about to expire, but another slow reader repopulates `Mumbai` again.
+3. The TTL resets, so `Mumbai` can now survive until t = 590 s.
+
+A hot key that is repeatedly invalidated and reloaded concurrently can stay stale for much longer than the nominal TTL. Choose TTLs based on how stale the business can tolerate, treat TTL as a **safety net rather than the primary protection**, and combine it with versioning/fencing or other write-side protection.
+
 ---
 
 ## 6. Solution 4: Transactional Outbox + CDC + Kafka
@@ -287,6 +318,16 @@ flowchart TD
 The **transactional outbox** ensures the database update and event record are committed together. **CDC** publishes the event, and consumers invalidate their caches.
 
 > **Limitation:** Event delivery and processing are generally asynchronous. Consumers need retries, idempotency and monitoring. This provides *eventual propagation*, not instantaneous consistency.
+
+### Operational Concerns: Lag, Duplicates and Ordering
+
+| Concern | What happens | Mitigation |
+| :--- | :--- | :--- |
+| **Consumer lag** | Events wait in Kafka while the consumer is slow, restarting or rebalancing. Caches keep serving stale data until the invalidation is processed. | Monitor consumer lag per partition, alert on thresholds, scale consumers, and keep a TTL as a safety net. |
+| **Duplicate events** | Delivery is typically at-least-once, so the same `UserUpdated` event can arrive more than once (retries, rebalances, CDC restarts). | Make invalidation **idempotent**. Deleting a key twice is harmless; deduplicate by event ID or version where handlers have side effects. |
+| **Out-of-order events** | Events for different partitions or after retries can arrive out of sequence (version 3 processed before version 2). | Key events by entity ID so one entity stays in one partition (preserves per-key order), carry a version number, and ignore or safely handle events older than what has been applied (see the `max` rule in Solution 1). |
+
+Another subtle point: an invalidation consumer deletes the key *after* the commit, so a slow reader can still repopulate a stale value just after the consumer runs. CDC narrows the problem but does not remove the need for versioning/fencing or a TTL.
 
 ---
 
@@ -446,6 +487,54 @@ For a typical enterprise application using PostgreSQL + Redis:
 3. **Use TTL.** Set a reasonable expiration as a safety net.
 4. **Protect against stale repopulation.** Use atomic versioning/fencing when stronger protection is required.
 5. **Use Transactional Outbox + CDC for distributed systems.** Propagate invalidation events reliably to multiple services.
+
+### Production Architecture Diagram
+
+```mermaid
+flowchart TD
+    APP["Application / API"] --> PG[("PostgreSQL<br/>Business data + version + outbox event")]
+    PG --> CDC["CDC / Debezium"]
+    CDC --> K["Kafka<br/>UserUpdated event"]
+    K --> CON["Cache Invalidation Consumer<br/>Idempotency + version check + retries"]
+    CON --> R[("Redis<br/>Cache invalidation + TTL + version protection")]
+```
+
+How the pieces fit together:
+- **Application / API:** writes business data, increments the row version and inserts the outbox event in **one PostgreSQL transaction**.
+- **CDC / Debezium:** reads the committed changes and publishes them, so the event exists only if the transaction committed.
+- **Kafka:** carries the `UserUpdated` event to every interested service.
+- **Cache invalidation consumer:** applies the event idempotently, checks the version so older or duplicate events are ignored, and retries on failure.
+- **Redis:** the consumer invalidates the value and advances the version metadata atomically (Solution 1), and every cached value still carries a TTL as a safety net.
+
+> **Important:** This is an **asynchronous invalidation architecture**, not a strict strong-consistency guarantee. There is still a window between the database commit and the consumer processing the event (consumer lag, retries), during which Redis can serve stale data. Stronger read guarantees, such as read-your-writes or strong consistency, require additional coordination, for example reading from the primary for the writer's own reads or skipping the cache for critical data. See the *Cache Consistency Models* note.
+
+### Failure Scenario: DB Commit Succeeds, Redis Invalidation Fails
+
+Step 2 is not guaranteed to succeed. After PostgreSQL commits `Pune`, the `DEL user:101` call can fail (Redis timeout, network partition, failover, or the application crashing between the commit and the delete). Redis still holds `Mumbai`, and nothing tells it to drop that value.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant App as Application
+    participant DB as PostgreSQL
+    participant R as Redis
+
+    App->>DB: UPDATE city = Pune (commit OK)
+    App-xR: DEL user:101 (timeout / crash)
+    Note over R: Still holds Mumbai (stale)
+```
+
+The database transaction cannot be rolled back, because it has already committed. A direct `DEL` in application code is therefore **not reliable on its own**. Defences, from simplest to strongest:
+
+| Defence | How it helps |
+| :--- | :--- |
+| **Retry with backoff** | Retry the `DEL` a few times; handles transient failures only |
+| **TTL safety net** | Bounds how long the stale value can live even if every retry fails |
+| **Transactional Outbox + CDC** | The invalidation intent is committed in the same DB transaction as the update, so it survives an application crash and is delivered (and retried) by the consumer |
+| **Versioning / fencing** | A later cache write or read can detect that the cached version is older than the database version |
+| **Alerting on failed invalidations** | Makes silent staleness visible (dead-letter queue, error metrics) |
+
+> **Takeaway:** Treat cache invalidation as something that can fail. Make it retryable and durable (outbox), and keep a TTL as the last line of defence.
 
 ---
 
