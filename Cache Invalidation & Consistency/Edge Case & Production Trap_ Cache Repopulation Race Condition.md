@@ -76,43 +76,128 @@ Continuing with the same example:
 
 ## 3. Solution 1: Cache Versioning / Fencing Tokens
 
-*Strong protection against stale writes.*
+*Strong protection against stale writes, but only if the version survives cache invalidation.*
 
-Instead of storing only the user data in Redis, store a **version number** too.
+The idea: every cache write carries a version, and Redis **rejects any cache write whose version is older than the latest version it knows about**.
 
-Initially:
+### The Trap: Where Does Redis Get the Latest Version From?
+
+A naive design stores the version *inside* the cached value:
+
 ```json
-{
-  "city": "Mumbai",
-  "version": 1
-}
+{ "city": "Mumbai", "version": 1 }
 ```
 
-When Request B updates the database:
-```json
-{
-  "city": "Pune",
-  "version": 2
-}
-```
-
-Redis must now **reject any cache write carrying an older version**.
-
-### Execution
+Now replay the race:
 1. Request A reads `Mumbai`, version 1.
 2. Request B updates PostgreSQL to `Pune`, version 2.
-3. Request B invalidates Redis and advances the cache version / fencing token.
-4. Request A attempts to write `Mumbai`, version 1.
-5. Redis **rejects** the stale write because version 1 is older than version 2.
+3. Request B **deletes the Redis key**, and the version stored inside it is deleted too.
+4. Request A attempts to insert `Mumbai`, version 1.
+5. Redis has **nothing to compare against**, so the stale write is accepted.
 
-```mermaid
-flowchart TD
-    A["Request A<br/>carries Version 1"] --> C{"Version check<br/>1 < latest 2?"}
-    B["Latest database version<br/>Version 2"] --> C
-    C -- "Yes" --> R["Reject Request A's stale cache write"]
+> **Rule:** Deleting the cached *value* must not also destroy the *version information* needed to reject stale writes.
+
+### The Correction: Keep Version Metadata Separate From the Cached Value
+
+Maintain a **durable, monotonically increasing version (generation) number separately from the cached value**:
+
+| Redis key | Holds | Lifecycle |
+| :--- | :--- | :--- |
+| `{user:101}:value` | Cached payload, e.g. `{"city":"Pune"}` | Deleted on invalidation, has a TTL |
+| `{user:101}:ver` | Latest known version, e.g. `2` | **Survives value deletion**, never shortened by the value's TTL |
+
+```
+REDIS VERSION METADATA
+  Current version ............ 2
+
+REQUEST A ATTEMPTS CACHE WRITE
+  Request A version .......... 1
+  Redis current version ...... 2
+
+  => Write rejected: 1 is older than 2
 ```
 
-> **Important:** The version check and cache write must be **atomic** (for example, using a Redis Lua script). The version itself must also be maintained safely; simply deleting the cache key and then checking its version is insufficient.
+### Corrected Execution
+1. Request A reads `Mumbai` **and its version (1) from PostgreSQL in the same query**.
+2. Request B updates PostgreSQL to `Pune`; the row's version becomes 2 (incremented in the same transaction).
+3. After commit, Request B runs an atomic script that **advances `{user:101}:ver` to 2 and deletes `{user:101}:value`**. The version key is kept.
+4. Request A attempts to write `Mumbai` with version 1 through an atomic script.
+5. The script sees `1 < 2` and **rejects** the write. The next reader loads `Pune` (version 2) from the DB and caches it.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant A as Request A (Reader)
+    participant B as Request B (Writer)
+    participant DB as PostgreSQL
+    participant R as Redis
+
+    A->>DB: SELECT city, version (Mumbai, v1)
+    B->>DB: UPDATE city = Pune, version = 2 (commit)
+    B->>R: Lua: set ver = max(ver, 2), DEL value
+    Note over R: value deleted, ver = 2 retained
+    A->>R: Lua: write Mumbai only if 1 >= ver
+    R-->>A: Rejected (1 < 2)
+```
+
+### Atomic Redis Lua Scripts
+
+The compare and the write must happen in **one atomic step**; otherwise another writer can slip in between the check and the `SET`. Redis executes a Lua script atomically.
+
+Both keys share the hash tag `{user:101}` so they land in the same slot when using Redis Cluster (multi-key scripts require this).
+
+**Guarded cache write (reader):**
+```lua
+-- KEYS[1] = {user:101}:value   KEYS[2] = {user:101}:ver
+-- ARGV[1] = incoming version   ARGV[2] = payload   ARGV[3] = value TTL (seconds)
+local current  = tonumber(redis.call('GET', KEYS[2]) or '0')
+local incoming = tonumber(ARGV[1])
+
+if incoming < current then
+  return 0                                   -- stale write rejected
+end
+
+redis.call('SET', KEYS[2], incoming)         -- version key: no TTL
+redis.call('SET', KEYS[1], ARGV[2], 'EX', tonumber(ARGV[3]))
+return 1
+```
+
+**Invalidate + advance version (writer):**
+```lua
+-- KEYS[1] = {user:101}:value   KEYS[2] = {user:101}:ver
+-- ARGV[1] = new version committed in PostgreSQL
+local current  = tonumber(redis.call('GET', KEYS[2]) or '0')
+local incoming = tonumber(ARGV[1])
+
+if incoming > current then
+  redis.call('SET', KEYS[2], incoming)       -- never move the version backwards
+end
+
+redis.call('DEL', KEYS[1])                   -- delete the value, keep the version
+return 1
+```
+
+### Additional Requirements
+
+- **Reliable, monotonic version source:** The version must come from a source that only moves forward, such as a PostgreSQL `version` column incremented in the same transaction as the update, a sequence, or a log position (LSN). Do not use per-server clocks or per-instance counters.
+- **Version metadata must outlive the cached value:** It must survive value deletion and must not vanish prematurely through TTL. Give it no TTL, or a TTL much longer than the value's TTL *and* the longest possible reader delay. If the version key is evicted (for example by `maxmemory` eviction, a restart without persistence, or a failover that loses recent writes), Redis falls back to `0` and stale writes are accepted again. Protect it with a no-eviction policy or a separate Redis instance and persistence.
+- **Coordinate invalidation with version advancement:** Delete the value and advance the version in the **same atomic script**, after the database commit. Doing them as two separate commands reopens a window.
+- **Handle concurrent updates and out-of-order events:** Use `max` semantics (only advance when `incoming > current`) so a late invalidation for version 2 can never lower a version already advanced to 3. Deleting the value for an old event is harmless. Make consumers idempotent.
+- **Read the data and its version together:** Load the value and its version in one DB query or snapshot, so the version describes exactly the data being cached.
+
+### Fencing Token vs Plain Version Field
+
+A **fencing token is not simply a version field.** It is a **monotonically increasing token issued with each operation or lock acquisition**, used to stop an older lock holder or older operation from modifying protected state after a newer one has taken over. The protected resource remembers the highest token it has seen and **rejects anything lower**.
+
+| | Plain version inside the value | Fencing token |
+| :--- | :--- | :--- |
+| Where it lives | Inside the cached payload | In state that outlives the payload |
+| Issued by | Whoever builds the value | A monotonic authority (DB sequence/version, lock service) |
+| Enforcement | Often just informational | The resource itself rejects lower tokens |
+
+In this design the PostgreSQL-assigned version acts as the fencing token and Redis, through the Lua script, is the resource that rejects lower tokens. For background on why fencing tokens matter with distributed locks, see the [Redis distributed locks pattern](https://github.com/redis/redis-doc/blob/master/docs/manual/patterns/distributed-locks.md).
+
+> **Important:** The version check and cache write must be **atomic**, and the version must be stored and advanced **independently of the cached value**. Deleting the key and then checking its (now missing) version is insufficient.
 
 ---
 
@@ -207,15 +292,136 @@ The **transactional outbox** ensures the database update and event record are co
 
 ## 7. Solution 5: Distributed Lock / Mutex
 
-Coordinate readers and writers using a lock.
+*Coordinate readers and writers so their critical sections cannot overlap.*
 
-- Request A acquires a lock before loading data into Redis.
-- Request B must coordinate with that lock before updating the database and invalidating the cache.
-- The system controls which operation can proceed.
+### The Locking Protocol Must Be Shared
 
-This can prevent certain overlapping operations, but introduces **lock expiry, deadlock, availability and performance** concerns.
+A lock only helps if **both readers and writers follow the same protocol on the same lock key** (for example `lock:user:101`). If only the reader locks, or the writer ignores the lock, the race is still possible. Saying "Request A takes a lock" and "Request B coordinates with it" is not enough; the exact sequence matters.
 
-> Use it selectively rather than automatically adding distributed locks to every cache operation.
+**Reader (cache miss path)**
+1. Acquire the lock for `user:101`.
+2. Read the value from PostgreSQL.
+3. Populate Redis.
+4. Release the lock.
+
+**Writer**
+5. Acquire the **same** lock for `user:101`.
+6. Update PostgreSQL.
+7. Invalidate (delete) the Redis key.
+8. Release the lock.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant A as Request A (Reader)
+    participant B as Request B (Writer)
+    participant L as Lock (lock:user:101)
+    participant DB as PostgreSQL
+    participant R as Redis
+
+    A->>L: Acquire lock
+    A->>DB: SELECT city (Mumbai)
+    A->>R: SET user:101 = Mumbai
+    A->>L: Release lock
+    B->>L: Acquire same lock
+    B->>DB: UPDATE city = Pune
+    B->>R: DEL user:101
+    B->>L: Release lock
+    Note over A,B: Reader and writer critical sections never overlap, so a delayed reader cannot repopulate after the delete
+```
+
+If Request B arrives while Request A holds the lock, B waits (or retries) until A releases it. A's stale `SET` therefore always happens **before** B's `DEL`, and the delete removes it.
+
+### The Hidden Problem: Lock Expiry
+
+Distributed locks must have an expiry (TTL), otherwise a crashed client would hold the lock forever. But expiry breaks the guarantee when a client is slow:
+
+1. Request A acquires the lock with a 10 s TTL and reads `Mumbai` from PostgreSQL.
+2. Request A stalls (GC pause, network lag, CPU starvation) for longer than 10 s.
+3. The lock **expires**. Request B acquires it, updates PostgreSQL to `Pune`, deletes the Redis key and releases it.
+4. Request A wakes up, still believing it holds the lock, and writes `Mumbai` into Redis.
+
+Result: the stale value is back in the cache, and **the lock gave no protection**. The client cannot reliably detect this itself, because a pause can happen right after its last "do I still hold the lock?" check.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant A as Request A (slow reader)
+    participant B as Request B (Writer)
+    participant L as Lock
+    participant R as Redis
+
+    A->>L: Acquire lock (TTL 10 s)
+    Note over A: Reads Mumbai, then stalls for more than 10 s
+    Note over L: Lock expires
+    B->>L: Acquire lock (succeeds)
+    B->>R: DB updated to Pune, DEL user:101
+    B->>L: Release lock
+    A->>R: SET user:101 = Mumbai (stale write accepted)
+```
+
+### Fix: Fencing Tokens
+
+Have the lock service issue a **monotonically increasing fencing token** with every successful acquisition, and make the **protected resource enforce it**, rejecting any operation that carries a token lower than one it has already seen.
+
+| Event | Token |
+| :--- | :--- |
+| Request A acquires lock | 33 |
+| Lock expires, Request B acquires lock | 34 |
+| Request B invalidates Redis, resource remembers highest token | 34 |
+| Request A's delayed write arrives with token 33 | **Rejected (33 < 34)** |
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant A as Request A (slow reader)
+    participant B as Request B (Writer)
+    participant L as Lock service
+    participant R as Redis (checks token)
+
+    A->>L: Acquire
+    L-->>A: token 33
+    Note over A: Reads Mumbai, then stalls, lock expires
+    B->>L: Acquire
+    L-->>B: token 34
+    B->>R: Lua: record fence = 34, DEL value
+    A->>R: Lua: write Mumbai with token 33
+    R-->>A: Rejected (33 < 34)
+```
+
+The enforcement uses the same pattern as Solution 1: a fence key stored **separately from the cached value** and an **atomic Lua script** that compares tokens and writes only when the token is not older. Here the token comes from the lock acquisition instead of the database row version.
+
+```lua
+-- KEYS[1] = {user:101}:value   KEYS[2] = {user:101}:fence
+-- ARGV[1] = fencing token      ARGV[2] = payload   ARGV[3] = value TTL (seconds)
+local fence = tonumber(redis.call('GET', KEYS[2]) or '0')
+local token = tonumber(ARGV[1])
+
+if token < fence then
+  return 0                                    -- stale lock holder rejected
+end
+
+redis.call('SET', KEYS[2], token)             -- fence key: no TTL
+redis.call('SET', KEYS[1], ARGV[2], 'EX', tonumber(ARGV[3]))
+return 1
+```
+
+Important details:
+- **The token must be monotonic.** A random lock value (the usual `SET lock <random> NX PX ...` pattern) proves ownership but does **not** give ordering. You need a counter or sequence issued at acquisition, or a lock service that provides one. Do not assume a lock implementation issues fencing tokens; verify it.
+- **The resource must enforce the token.** Checking the token only in the client is useless, because the client is exactly the thing that may be paused. Enforce it in the Redis script, and for the database write path also in PostgreSQL (for example `UPDATE ... WHERE fence < :token`).
+- **Release safely.** Release the lock only if you still own it (compare the stored owner value, then delete, atomically), so an expired holder cannot release a newer holder's lock.
+- **Keep the fence key.** As in Solution 1, it must outlive the cached value and must not be evicted or expire early.
+
+For background on why fencing tokens matter, see the [Redis distributed locks pattern](https://github.com/redis/redis-doc/blob/master/docs/manual/patterns/distributed-locks.md).
+
+### Other Costs of Distributed Locks
+
+- **Deadlock / stuck locks:** a crashed holder blocks others until the TTL expires.
+- **Availability:** if the lock service is down or partitioned, reads on cache misses and writes may block or fail.
+- **Latency and contention:** every cache miss and every write pays an extra round trip, and hot keys serialize.
+- **Complexity:** timeouts, retries, safe release, and token enforcement must all be implemented correctly.
+
+> **Recommendation:** Do **not** make distributed locks the default solution for cache invalidation. Prefer TTL, invalidation after commit, and versioning/fencing first, and use locks **selectively** where coordination is genuinely necessary (for example, protecting an expensive cache rebuild or a critical read-modify-write), and then always together with fencing tokens.
 
 ---
 
@@ -223,11 +429,11 @@ This can prevent certain overlapping operations, but introduces **lock expiry, d
 
 | Strategy | Primary purpose | Limitation |
 | :--- | :--- | :--- |
-| **Cache versioning / fencing** | Reject stale writes | Requires atomic version checks |
+| **Cache versioning / fencing** | Reject stale writes | Requires atomic checks and durable version metadata that outlives value deletion |
 | **Delayed double deletion** | Catch stale repopulation | Timing-dependent |
 | **TTL** | Limit stale-data lifetime | Doesn't prevent stale reads |
 | **Outbox + CDC + Kafka** | Distributed cache invalidation | Eventual consistency |
-| **Distributed lock** | Coordinate concurrent operations | Added complexity and latency |
+| **Distributed lock** | Coordinate concurrent operations | Readers and writers must share the protocol; lock expiry needs fencing tokens; added complexity and latency |
 
 ---
 
