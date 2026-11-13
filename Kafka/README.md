@@ -11,10 +11,11 @@ Apache Kafka is an open-source software platform written in Scala and Java, main
 > Kafka With ZooKeeper
 
 ## Tutorials
-1. Apache Kafka : https://kafka.apache.org/23/getting-started/introduction/
-2. Apache Kafka Crash Course | What is Kafka? : https://www.youtube.com/watch?v=ZJJHm_bd9Zo
-3. Kafka geeksforgeeks : https://www.geeksforgeeks.org/apache-kafka/apache-kafka/
-4. Using Kafka With ZooKeeper : https://www.openlogic.com/blog/using-kafka-zookeeper
+1. What is Kafka? Kafka Explained : https://www.youtube.com/watch?v=PoWXevbw-Uk&t=10s
+2. Apache Kafka : https://kafka.apache.org/23/getting-started/introduction/
+3. Apache Kafka Crash Course | What is Kafka? : https://www.youtube.com/watch?v=ZJJHm_bd9Zo
+4. Kafka geeksforgeeks : https://www.geeksforgeeks.org/apache-kafka/apache-kafka/
+5. Using Kafka With ZooKeeper : https://www.openlogic.com/blog/using-kafka-zookeeper
 
 ## What Is Apache Kafka?
 Apache Kafka is a distributed event streaming platform that moves data from producers to consumers in real time. Producers write data to Kafka topics, and consumers read from those topics. Topics are divided into partitions, allowing messages to be distributed across multiple brokers for scalability and fault tolerance. Kafka’s append-only log and replication model enable it to achieve extremely high throughput — ranging from thousands to millions of messages per second.
