@@ -70,6 +70,8 @@ Continuing with the same example:
 
 **Goal:** Prevent Request A from inserting old data after Request B has updated the database.
 
+<img src="./Cache Repopulation Race Condition Explained.png" width="100%"/>
+
 ---
 
 ## 3. Solution 1: Cache Versioning / Fencing Tokens
