@@ -32,6 +32,8 @@ The central example is an **enterprise online shopping application** where one c
 
 > 💡 **The Most Important Concept:** Every technology in this architecture solves a **particular engineering problem**. You don't add tools simply because they are popular; you add them because the problem they solve is greater than the operational overhead they introduce.
 
+Youtube Video : https://www.youtube.com/watch?v=h3St8AXYwCs
+
 <div align="center">
   <img src="./imgs/Complete DevOps Workflow_ Code to Cloud.png" alt="Complete Guide: How Modern DevOps, Cloud & Backend Tools Work Together in One Real Application" width="100%"/>
 </div>
