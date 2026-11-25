@@ -295,8 +295,235 @@ From git push to live traffic.
               Production 🚀
 ```
 
+---
 
+# Modern CI/CD Pipeline in Production (2026)
 
+## Chapter 1: CI and Build Verification
 
+How do engineering teams at companies like Adobe, Spotify, Uber, GitHub, and Meta safely move a code change into production?
 
+We will start with:
+- Local checks
+- Pull requests (PRs)
+- CI checks
+- Code review gates
+- Docker builds
 
+Then, we will explore:
+- OIDC authentication
+- Amazon ECR
+- Image digests
+- Security scanning
+- SBOM (Software Bill of Materials)
+- Build provenance
+
+We will then move the same container image through staging using GitHub Actions, Argo CD, and Kubernetes.
+
+After that, we will perform health checks, testing, and production approvals.
+
+Finally, we will understand different deployment strategies:
+- Rolling deployments
+- Canary deployments
+- Blue-green deployments
+
+We will also explore how real user traffic reaches our application, how observability and monitoring work, how alerts are generated, and how automated rollbacks help recover from failures.
+
+In short, we will understand how a modern CI/CD pipeline works in production in 2026.
+
+### 1. Local checks and pre-commit hooks
+
+Suppose you have just finished developing a new feature.
+
+Before pushing your code, you might already have a few checks running on your local machine.
+
+For example, imagine you accidentally added an AWS secret access key directly into your source code.
+
+Obviously, you don't want this secret to reach GitHub.
+
+To prevent this, we can run a small validation check before Git creates a commit. This is called a **pre-commit hook**.
+
+It can perform checks such as:
+- Code formatting
+- Linting
+- Accidental secret detection
+
+For example, we can use a tool called **GitLeaks** to scan the staged changes before committing.
+
+If GitLeaks detects a secret, the pre-commit hook can fail and prevent the commit.
+
+The goal is to catch simple mistakes before the code leaves the developer's laptop.
+
+However, there is one problem: these checks are local.
+
+A developer might misconfigure them, they might not be installed, or Git hooks might be bypassed.
+
+Therefore, local checks are useful, but we should never depend on them alone.
+
+We need a centralized place where every developer's code goes through the same validation process.
+
+That process starts when we open a pull request.
+
+### 2. Pull requests and continuous integration
+
+Now, I push my feature branch to GitHub and open a pull request.
+
+Essentially, I am saying:
+
+> "This is the change I want to merge into the main codebase."
+
+But should GitHub allow me to merge it immediately?
+
+No.
+
+My code might work perfectly on my laptop, but it could break another part of the application.
+
+For example:
+- One of the tests might fail.
+- I might have introduced a dependency with a known vulnerability.
+- My local secret checks might have missed something.
+
+Therefore, we configure a CI workflow to run whenever a pull request is opened or updated.
+
+For example, GitHub Actions can execute this workflow.
+
+Every pull request goes through the same validation process.
+
+We might perform the following checks:
+1. Code formatting
+2. Unit tests
+3. Code security scanning
+4. Dependency security scanning
+5. Secret detection
+
+This is one of the fundamental parts of Continuous Integration (CI).
+
+Now, validation no longer depends only on an individual developer's laptop. Everyone follows the same centralized CI process.
+
+### 3. Branch protection and required checks
+
+Suppose my pull request has five important checks.
+
+Four checks pass, but one unit test fails.
+
+Should GitHub still allow me to merge the code?
+
+No, provided we have configured the repository correctly.
+
+GitHub allows us to protect the main branch using **branch protection rules** or **rulesets**.
+
+Inside these rules, we can specify that certain checks must pass before anyone can merge code.
+
+These are called **required checks**.
+
+The workflow becomes straightforward:
+1. Developer opens a pull request.
+2. CI runs the required checks.
+3. If any required check fails, merging is blocked.
+4. The developer fixes the problem and pushes the changes again.
+5. CI runs the checks again.
+6. Once all required checks pass, the code can move forward.
+
+We can also configure the repository to require one or more reviewer approvals.
+
+Therefore, we enforce two important conditions:
+- Have all automated checks passed?
+- Have the required reviewers approved the changes?
+
+Only when both conditions are satisfied can we merge the code into the main branch.
+
+### 4. What is a CI runner?
+
+There is another important question.
+
+We said GitHub runs our tests and security checks.
+
+But if the workflow contains commands such as:
+```bash
+npm install
+npm test
+```
+
+Some computer must actually execute these commands, right?
+
+That computer is called a **runner**.
+
+A runner is the machine that performs the actual work in the CI pipeline.
+
+There are two common options:
+
+**GitHub-hosted runner**
+
+GitHub provides a fresh hosted environment for the job.
+1. The job starts.
+2. The environment executes the commands.
+3. The job finishes.
+4. GitHub removes the temporary environment.
+
+**Self-hosted runner**
+
+A company manages its own runner.
+
+A normal self-hosted runner can remain available between jobs. Therefore, the company must properly manage cleanup and isolation.
+
+Alternatively, the company can use an **ephemeral self-hosted runner**, which handles one job and is then removed.
+
+Companies might choose self-hosted runners because they need:
+- Special hardware
+- Access to private networks
+- Greater control over the execution environment
+
+Remember:
+- GitHub Actions decides what work needs to happen.
+- The runner is the machine that actually performs that work.
+
+### 5. What is an environment?
+
+Now, all the checks have passed.
+
+The team has approved the changes, and we have finally merged the code into the main branch.
+
+Until now, our main question was:
+
+> "Is this change safe enough to merge?"
+
+Now the question changes:
+
+> "What exactly are we going to deploy?"
+
+Before answering that, let's understand an important term: **environment**.
+
+An environment is a complete setup where our application runs for a particular purpose.
+
+It can include:
+- The application
+- Its configuration
+- Supporting infrastructure
+- Other services on which the application depends
+
+For example, we might have three environments:
+1. **Development:** Used by developers to build and test features.
+2. **Staging:** A production-like environment where we validate a release before real users receive it.
+3. **Production:** The live environment used by actual customers.
+
+The exact environments may differ between companies.
+
+However, the underlying principle is simple:
+
+> We test changes in lower-risk environments before introducing them into the real production system.
+
+## Remaining chapters
+
+The complete lecture covers nine chapters:
+
+| Chapter | Topic |
+| ------- | ----- |
+| 1 | CI and Build Verification |
+| 2 | Artifact Trust and Security |
+| 3 | GitOps and Staging |
+| 4 | Database Migration Strategies |
+| 5 | Deployment and Release Strategies |
+| 6 | Observability and Recovery |
+| 7 | Infrastructure as Code |
+| 8 | Platform Governance and Developer Portals |
+| 9 | Pipeline Summary and Conclusion |
