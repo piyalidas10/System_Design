@@ -3,6 +3,7 @@
 In production enterprise applications, you can use Amazon S3 Glacier to store application logs for long-term retention at a low cost.
 
 > **Key principle:** Don't send all production logs directly to Glacier. First store and process logs in a system that supports quick searching and troubleshooting. Move older logs to Glacier automatically.
+> **Amazon S3 Glacier** is a family of low-cost, durable cloud storage classes from AWS designed for long-term data archiving and backups. It stores objects directly inside Amazon S3 buckets and provides 99.999999999% (11 nines) annual durability.
 
 <img src="./Production Logs_ Storage and Retrieval Flow.png" width="100%" />
 
