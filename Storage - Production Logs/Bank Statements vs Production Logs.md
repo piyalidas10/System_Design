@@ -84,6 +84,50 @@ flowchart TD
 
 ---
 
+## 5. Mapping the Bank Example to AWS Storage Architecture and Data Lifecycle
+
+This is how the bank example maps to AWS cloud storage architecture and data lifecycle management, a core system design pattern for financial compliance and cost optimization.
+
+### End-to-End Architecture Flow
+
+```mermaid
+flowchart TD
+    A[Bank generates statement PDF] --> B[Amazon S3<br/>encrypted, 11 nines durability]
+    A --> M[(Metadata DB<br/>DynamoDB / RDS<br/>AccountID, StatementDate, S3_URI)]
+    B --> L[S3 Object Lock<br/>WORM retention]
+    B --> P[S3 Lifecycle Policy<br/>age-based transitions]
+    P --> IA[S3 Infrequent Access<br/>e.g. after 90 days]
+    IA --> G[S3 Glacier Deep Archive<br/>very old statements]
+    C[Customer requests statement] --> M
+    M --> D{Storage tier?}
+    D -- S3 / IA --> R[Read PDF directly]
+    D -- Deep Archive --> X[Glacier restore job<br/>12 to 48 hours]
+    X --> T[Temporary readable copy in S3<br/>e.g. 24-hour window]
+    X --> N[Notify customer<br/>email / push notification]
+    T --> R
+    R --> U[Customer downloads securely]
+```
+
+### Concept Breakdown
+
+| Bank scenario | AWS technical concept | How it works and why it matters |
+|---|---|---|
+| 2015 bank statement | Historical business document | Unstructured, immutable data that must be retained for years to meet financial regulations (e.g., RBI, SEC, GDPR). |
+| Store PDF securely | Amazon S3 (Simple Storage Service) | Object storage offering 99.999999999% (11 nines) durability, encrypted at rest (SSE-S3/KMS) and in transit (TLS). |
+| Protect from modification | S3 Object Lock | Enforces WORM (Write-Once-Read-Many). Prevents anyone, even root admins (in Compliance Mode), from deleting or altering the PDF during a set retention period. |
+| Find by account/date | Metadata database and search | S3 is a key-value store, not a search engine. You store file attributes (AccountID, StatementDate, S3_URI) in a database like Amazon DynamoDB or RDS for instant querying. |
+| Move older statements | S3 Lifecycle Policy | Automated rules that transition objects to cheaper storage tiers based on age (e.g., move to Infrequent Access after 90 days) without manual intervention. |
+| Store very old statements | S3 Glacier Deep Archive | The lowest-cost AWS storage tier (~$0.00099/GB/month), designed for data accessed once or twice a year, such as a 2015 statement. |
+| Customer requests statement | Glacier restore | Deep Archive files cannot be read instantly. An asynchronous restore job copies the PDF back to a readable S3 tier for a set window (e.g., 24 hours), taking 12 to 48 hours to complete. |
+
+### Key Engineering Trade-offs
+
+- **Cost vs. retrieval speed:** Glacier Deep Archive saves a large amount of money on multi-year archives, but customers cannot download the statement immediately. The application must notify them (e.g., via email or push notification) once the restore completes.
+- **Compliance Mode vs. Governance Mode:** When configuring S3 Object Lock, Compliance Mode strictly blocks all deletions until the timer expires (ideal for banking regulations), whereas Governance Mode allows privileged admins to override the lock.
+
+
+---
+
 ## Key Takeaway
 
 > A bank statement is like a **historical business document**. Production logs are like the **technical diary** of the banking system.
