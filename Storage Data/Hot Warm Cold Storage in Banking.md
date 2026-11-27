@@ -81,6 +81,9 @@ flowchart LR
 
 ## 5. What Happens When a Customer Requests a 2015 Bank Statement?
 
+Let's understand the actual production flow.
+<img src="./Data access patterns for Amazon S3.png" width="90%" />
+
 Suppose a customer logs into the banking application and requests a statement from January 2015.
 
 ```mermaid
@@ -185,6 +188,8 @@ Suppose a banking application receives 10 million API requests every day. It gen
 
 A practical architecture:
 
+<img src="./Application and security logs.jpg" width="90%" />
+
 | Storage | AWS service | Example |
 |---|---|---|
 | Hot | CloudWatch Logs / OpenSearch | Today's API errors and security alerts |
@@ -219,6 +224,8 @@ For sensitive KYC documents, the bank must also enforce strict authorization, en
 ## 4. Complete Production Architecture
 
 Logical architecture combining all three data categories:
+
+<img src="./Core Banking System on AWS.png" width="100%" />
 
 ```text
               BANKING APPLICATION
