@@ -82,7 +82,7 @@ flowchart LR
 ## 5. What Happens When a Customer Requests a 2015 Bank Statement?
 
 Let's understand the actual production flow.
-<img src="./Data access patterns for Amazon S3.png" width="90%" />
+<img src="./imgs/Data access patterns for Amazon S3.png" width="90%" />
 
 Suppose a customer logs into the banking application and requests a statement from January 2015.
 
@@ -188,7 +188,7 @@ Suppose a banking application receives 10 million API requests every day. It gen
 
 A practical architecture:
 
-<img src="./Application and security logs.jpg" width="90%" />
+<img src="./imgs/Application and security logs.jpg" width="90%" />
 
 | Storage | AWS service | Example |
 |---|---|---|
@@ -225,7 +225,7 @@ For sensitive KYC documents, the bank must also enforce strict authorization, en
 
 Logical architecture combining all three data categories:
 
-<img src="./Core Banking System on AWS.png" width="100%" />
+<img src="./imgs/Core Banking System on AWS.png" width="100%" />
 
 ```text
               BANKING APPLICATION
@@ -282,3 +282,5 @@ Logical architecture combining all three data categories:
 Understand these three storage strategies separately before implementing them together. **A transaction database is not a log store, and a PDF archive is not a searchable transaction database.**
 
 That distinction is extremely important when designing banking systems at enterprise scale.
+
+> **Remember this: Glacier Deep Archive is not a place where the customer directly searches and downloads PDFs. It is the bank's low-cost archival storage. The bank's backend manages the restore process and securely delivers the document to the customer.**
