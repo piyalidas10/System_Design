@@ -2,6 +2,10 @@
 
 How a social media platform combines **Object Storage, CDN, Caching, a Metadata Database and Hot/Warm/Cold storage** to store and serve billions of photos and videos.
 
+<img src="./imgs/Hot, Warm and Cold Social Storage-1.png" />
+
+<img src="./imgs/Social Media Storage Strategy Infographic-2.png" />
+
 ---
 
 ## Design Assumptions
